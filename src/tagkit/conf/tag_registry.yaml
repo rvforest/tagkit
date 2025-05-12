@@ -1,0 +1,892 @@
+Image:
+  11:
+    name: ProcessingSoftware
+    type: ASCII
+  254:
+    name: NewSubfileType
+    type: LONG
+  255:
+    name: SubfileType
+    type: SHORT
+  256:
+    name: ImageWidth
+    type: LONG
+  257:
+    name: ImageLength
+    type: LONG
+  258:
+    name: BitsPerSample
+    type: SHORT
+  259:
+    name: Compression
+    type: SHORT
+  262:
+    name: PhotometricInterpretation
+    type: SHORT
+  263:
+    name: Thresholding
+    type: SHORT
+  264:
+    name: CellWidth
+    type: SHORT
+  265:
+    name: CellLength
+    type: SHORT
+  266:
+    name: FillOrder
+    type: SHORT
+  269:
+    name: DocumentName
+    type: ASCII
+  270:
+    name: ImageDescription
+    type: ASCII
+  271:
+    name: Make
+    type: ASCII
+  272:
+    name: Model
+    type: ASCII
+  273:
+    name: StripOffsets
+    type: LONG
+  274:
+    name: Orientation
+    type: SHORT
+  277:
+    name: SamplesPerPixel
+    type: SHORT
+  278:
+    name: RowsPerStrip
+    type: LONG
+  279:
+    name: StripByteCounts
+    type: LONG
+  282:
+    name: XResolution
+    type: RATIONAL
+  283:
+    name: YResolution
+    type: RATIONAL
+  284:
+    name: PlanarConfiguration
+    type: SHORT
+  290:
+    name: GrayResponseUnit
+    type: SHORT
+  291:
+    name: GrayResponseCurve
+    type: SHORT
+  292:
+    name: T4Options
+    type: LONG
+  293:
+    name: T6Options
+    type: LONG
+  296:
+    name: ResolutionUnit
+    type: SHORT
+  301:
+    name: TransferFunction
+    type: SHORT
+  305:
+    name: Software
+    type: ASCII
+  306:
+    name: DateTime
+    type: ASCII
+  315:
+    name: Artist
+    type: ASCII
+  316:
+    name: HostComputer
+    type: ASCII
+  317:
+    name: Predictor
+    type: SHORT
+  318:
+    name: WhitePoint
+    type: RATIONAL
+  319:
+    name: PrimaryChromaticities
+    type: RATIONAL
+  320:
+    name: ColorMap
+    type: SHORT
+  321:
+    name: HalftoneHints
+    type: SHORT
+  322:
+    name: TileWidth
+    type: SHORT
+  323:
+    name: TileLength
+    type: SHORT
+  324:
+    name: TileOffsets
+    type: SHORT
+  325:
+    name: TileByteCounts
+    type: SHORT
+  330:
+    name: SubIFDs
+    type: LONG
+  332:
+    name: InkSet
+    type: SHORT
+  333:
+    name: InkNames
+    type: ASCII
+  334:
+    name: NumberOfInks
+    type: SHORT
+  336:
+    name: DotRange
+    type: BYTE
+  337:
+    name: TargetPrinter
+    type: ASCII
+  338:
+    name: ExtraSamples
+    type: SHORT
+  339:
+    name: SampleFormat
+    type: SHORT
+  340:
+    name: SMinSampleValue
+    type: SHORT
+  341:
+    name: SMaxSampleValue
+    type: SHORT
+  342:
+    name: TransferRange
+    type: SHORT
+  343:
+    name: ClipPath
+    type: BYTE
+  344:
+    name: XClipPathUnits
+    type: LONG
+  345:
+    name: YClipPathUnits
+    type: LONG
+  346:
+    name: Indexed
+    type: SHORT
+  347:
+    name: JPEGTables
+    type: UNDEFINED
+  351:
+    name: OPIProxy
+    type: SHORT
+  512:
+    name: JPEGProc
+    type: LONG
+  513:
+    name: JPEGInterchangeFormat
+    type: LONG
+  514:
+    name: JPEGInterchangeFormatLength
+    type: LONG
+  515:
+    name: JPEGRestartInterval
+    type: SHORT
+  517:
+    name: JPEGLosslessPredictors
+    type: SHORT
+  518:
+    name: JPEGPointTransforms
+    type: SHORT
+  519:
+    name: JPEGQTables
+    type: LONG
+  520:
+    name: JPEGDCTables
+    type: LONG
+  521:
+    name: JPEGACTables
+    type: LONG
+  529:
+    name: YCbCrCoefficients
+    type: RATIONAL
+  530:
+    name: YCbCrSubSampling
+    type: SHORT
+  531:
+    name: YCbCrPositioning
+    type: SHORT
+  532:
+    name: ReferenceBlackWhite
+    type: RATIONAL
+  700:
+    name: XMLPacket
+    type: BYTE
+  18246:
+    name: Rating
+    type: SHORT
+  18249:
+    name: RatingPercent
+    type: SHORT
+  32781:
+    name: ImageID
+    type: ASCII
+  33421:
+    name: CFARepeatPatternDim
+    type: SHORT
+  33422:
+    name: CFAPattern
+    type: BYTE
+  33423:
+    name: BatteryLevel
+    type: RATIONAL
+  33432:
+    name: Copyright
+    type: ASCII
+  33434:
+    name: ExposureTime
+    type: RATIONAL
+  34377:
+    name: ImageResources
+    type: BYTE
+  34665:
+    name: ExifTag
+    type: LONG
+  34675:
+    name: InterColorProfile
+    type: UNDEFINED
+  34853:
+    name: GPSTag
+    type: LONG
+  34857:
+    name: Interlace
+    type: SHORT
+  34858:
+    name: TimeZoneOffset
+    type: LONG
+  34859:
+    name: SelfTimerMode
+    type: SHORT
+  37387:
+    name: FlashEnergy
+    type: RATIONAL
+  37388:
+    name: SpatialFrequencyResponse
+    type: UNDEFINED
+  37389:
+    name: Noise
+    type: UNDEFINED
+  37390:
+    name: FocalPlaneXResolution
+    type: RATIONAL
+  37391:
+    name: FocalPlaneYResolution
+    type: RATIONAL
+  37392:
+    name: FocalPlaneResolutionUnit
+    type: SHORT
+  37393:
+    name: ImageNumber
+    type: LONG
+  37394:
+    name: SecurityClassification
+    type: ASCII
+  37395:
+    name: ImageHistory
+    type: ASCII
+  37397:
+    name: ExposureIndex
+    type: RATIONAL
+  37398:
+    name: TIFFEPStandardID
+    type: BYTE
+  37399:
+    name: SensingMethod
+    type: SHORT
+  40091:
+    name: XPTitle
+    type: BYTE
+  40092:
+    name: XPComment
+    type: BYTE
+  40093:
+    name: XPAuthor
+    type: BYTE
+  40094:
+    name: XPKeywords
+    type: BYTE
+  40095:
+    name: XPSubject
+    type: BYTE
+  50341:
+    name: PrintImageMatching
+    type: UNDEFINED
+  50706:
+    name: DNGVersion
+    type: BYTE
+  50707:
+    name: DNGBackwardVersion
+    type: BYTE
+  50708:
+    name: UniqueCameraModel
+    type: ASCII
+  50709:
+    name: LocalizedCameraModel
+    type: BYTE
+  50710:
+    name: CFAPlaneColor
+    type: BYTE
+  50711:
+    name: CFALayout
+    type: SHORT
+  50712:
+    name: LinearizationTable
+    type: SHORT
+  50713:
+    name: BlackLevelRepeatDim
+    type: SHORT
+  50714:
+    name: BlackLevel
+    type: RATIONAL
+  50715:
+    name: BlackLevelDeltaH
+    type: SRATIONAL
+  50716:
+    name: BlackLevelDeltaV
+    type: SRATIONAL
+  50717:
+    name: WhiteLevel
+    type: SHORT
+  50718:
+    name: DefaultScale
+    type: RATIONAL
+  50719:
+    name: DefaultCropOrigin
+    type: SHORT
+  50720:
+    name: DefaultCropSize
+    type: SHORT
+  50721:
+    name: ColorMatrix1
+    type: SRATIONAL
+  50722:
+    name: ColorMatrix2
+    type: SRATIONAL
+  50723:
+    name: CameraCalibration1
+    type: SRATIONAL
+  50724:
+    name: CameraCalibration2
+    type: SRATIONAL
+  50725:
+    name: ReductionMatrix1
+    type: SRATIONAL
+  50726:
+    name: ReductionMatrix2
+    type: SRATIONAL
+  50727:
+    name: AnalogBalance
+    type: RATIONAL
+  50728:
+    name: AsShotNeutral
+    type: SHORT
+  50729:
+    name: AsShotWhiteXY
+    type: RATIONAL
+  50730:
+    name: BaselineExposure
+    type: SRATIONAL
+  50731:
+    name: BaselineNoise
+    type: RATIONAL
+  50732:
+    name: BaselineSharpness
+    type: RATIONAL
+  50733:
+    name: BayerGreenSplit
+    type: LONG
+  50734:
+    name: LinearResponseLimit
+    type: RATIONAL
+  50735:
+    name: CameraSerialNumber
+    type: ASCII
+  50736:
+    name: LensInfo
+    type: RATIONAL
+  50737:
+    name: ChromaBlurRadius
+    type: RATIONAL
+  50738:
+    name: AntiAliasStrength
+    type: RATIONAL
+  50739:
+    name: ShadowScale
+    type: SRATIONAL
+  50740:
+    name: DNGPrivateData
+    type: BYTE
+  50741:
+    name: MakerNoteSafety
+    type: SHORT
+  50778:
+    name: CalibrationIlluminant1
+    type: SHORT
+  50779:
+    name: CalibrationIlluminant2
+    type: SHORT
+  50780:
+    name: BestQualityScale
+    type: RATIONAL
+  50781:
+    name: RawDataUniqueID
+    type: BYTE
+  50827:
+    name: OriginalRawFileName
+    type: BYTE
+  50828:
+    name: OriginalRawFileData
+    type: UNDEFINED
+  50829:
+    name: ActiveArea
+    type: SHORT
+  50830:
+    name: MaskedAreas
+    type: SHORT
+  50831:
+    name: AsShotICCProfile
+    type: UNDEFINED
+  50832:
+    name: AsShotPreProfileMatrix
+    type: SRATIONAL
+  50833:
+    name: CurrentICCProfile
+    type: UNDEFINED
+  50834:
+    name: CurrentPreProfileMatrix
+    type: SRATIONAL
+  50879:
+    name: ColorimetricReference
+    type: SHORT
+  50931:
+    name: CameraCalibrationSignature
+    type: BYTE
+  50932:
+    name: ProfileCalibrationSignature
+    type: BYTE
+  50934:
+    name: AsShotProfileName
+    type: BYTE
+  50935:
+    name: NoiseReductionApplied
+    type: RATIONAL
+  50936:
+    name: ProfileName
+    type: BYTE
+  50937:
+    name: ProfileHueSatMapDims
+    type: LONG
+  50938:
+    name: ProfileHueSatMapData1
+    type: FLOAT
+  50939:
+    name: ProfileHueSatMapData2
+    type: FLOAT
+  50940:
+    name: ProfileToneCurve
+    type: FLOAT
+  50941:
+    name: ProfileEmbedPolicy
+    type: LONG
+  50942:
+    name: ProfileCopyright
+    type: BYTE
+  50964:
+    name: ForwardMatrix1
+    type: SRATIONAL
+  50965:
+    name: ForwardMatrix2
+    type: SRATIONAL
+  50966:
+    name: PreviewApplicationName
+    type: BYTE
+  50967:
+    name: PreviewApplicationVersion
+    type: BYTE
+  50968:
+    name: PreviewSettingsName
+    type: BYTE
+  50969:
+    name: PreviewSettingsDigest
+    type: BYTE
+  50970:
+    name: PreviewColorSpace
+    type: LONG
+  50971:
+    name: PreviewDateTime
+    type: ASCII
+  50972:
+    name: RawImageDigest
+    type: UNDEFINED
+  50973:
+    name: OriginalRawFileDigest
+    type: UNDEFINED
+  50974:
+    name: SubTileBlockSize
+    type: LONG
+  50975:
+    name: RowInterleaveFactor
+    type: LONG
+  50981:
+    name: ProfileLookTableDims
+    type: LONG
+  50982:
+    name: ProfileLookTableData
+    type: FLOAT
+  51008:
+    name: OpcodeList1
+    type: UNDEFINED
+  51009:
+    name: OpcodeList2
+    type: UNDEFINED
+  51022:
+    name: OpcodeList3
+    type: UNDEFINED
+Exif:
+  33434:
+    name: ExposureTime
+    type: RATIONAL
+  33437:
+    name: FNumber
+    type: RATIONAL
+  34850:
+    name: ExposureProgram
+    type: SHORT
+  34852:
+    name: SpectralSensitivity
+    type: ASCII
+  34855:
+    name: ISOSpeedRatings
+    type: SHORT
+  34856:
+    name: OECF
+    type: UNDEFINED
+  34864:
+    name: SensitivityType
+    type: SHORT
+  34865:
+    name: StandardOutputSensitivity
+    type: LONG
+  34866:
+    name: RecommendedExposureIndex
+    type: LONG
+  34867:
+    name: ISOSpeed
+    type: LONG
+  34868:
+    name: ISOSpeedLatitudeyyy
+    type: LONG
+  34869:
+    name: ISOSpeedLatitudezzz
+    type: LONG
+  36864:
+    name: ExifVersion
+    type: UNDEFINED
+  36867:
+    name: DateTimeOriginal
+    type: ASCII
+  36868:
+    name: DateTimeDigitized
+    type: ASCII
+  36880:
+    name: OffsetTime
+    type: ASCII
+  36881:
+    name: OffsetTimeOriginal
+    type: ASCII
+  36882:
+    name: OffsetTimeDigitized
+    type: ASCII
+  37121:
+    name: ComponentsConfiguration
+    type: UNDEFINED
+  37122:
+    name: CompressedBitsPerPixel
+    type: RATIONAL
+  37377:
+    name: ShutterSpeedValue
+    type: SRATIONAL
+  37378:
+    name: ApertureValue
+    type: RATIONAL
+  37379:
+    name: BrightnessValue
+    type: SRATIONAL
+  37380:
+    name: ExposureBiasValue
+    type: SRATIONAL
+  37381:
+    name: MaxApertureValue
+    type: RATIONAL
+  37382:
+    name: SubjectDistance
+    type: RATIONAL
+  37383:
+    name: MeteringMode
+    type: SHORT
+  37384:
+    name: LightSource
+    type: SHORT
+  37385:
+    name: Flash
+    type: SHORT
+  37386:
+    name: FocalLength
+    type: RATIONAL
+  37396:
+    name: SubjectArea
+    type: SHORT
+  37500:
+    name: MakerNote
+    type: UNDEFINED
+  37510:
+    name: UserComment
+    type: UNDEFINED
+  37520:
+    name: SubSecTime
+    type: ASCII
+  37521:
+    name: SubSecTimeOriginal
+    type: ASCII
+  37522:
+    name: SubSecTimeDigitized
+    type: ASCII
+  37888:
+    name: Temperature
+    type: SRATIONAL
+  37889:
+    name: Humidity
+    type: RATIONAL
+  37890:
+    name: Pressure
+    type: RATIONAL
+  37891:
+    name: WaterDepth
+    type: SRATIONAL
+  37892:
+    name: Acceleration
+    type: RATIONAL
+  37893:
+    name: CameraElevationAngle
+    type: SRATIONAL
+  40960:
+    name: FlashpixVersion
+    type: UNDEFINED
+  40961:
+    name: ColorSpace
+    type: SHORT
+  40962:
+    name: PixelXDimension
+    type: LONG
+  40963:
+    name: PixelYDimension
+    type: LONG
+  40964:
+    name: RelatedSoundFile
+    type: ASCII
+  40965:
+    name: InteroperabilityTag
+    type: LONG
+  41483:
+    name: FlashEnergy
+    type: RATIONAL
+  41484:
+    name: SpatialFrequencyResponse
+    type: UNDEFINED
+  41486:
+    name: FocalPlaneXResolution
+    type: RATIONAL
+  41487:
+    name: FocalPlaneYResolution
+    type: RATIONAL
+  41488:
+    name: FocalPlaneResolutionUnit
+    type: SHORT
+  41492:
+    name: SubjectLocation
+    type: SHORT
+  41493:
+    name: ExposureIndex
+    type: RATIONAL
+  41495:
+    name: SensingMethod
+    type: SHORT
+  41728:
+    name: FileSource
+    type: UNDEFINED
+  41729:
+    name: SceneType
+    type: UNDEFINED
+  41730:
+    name: CFAPattern
+    type: UNDEFINED
+  41985:
+    name: CustomRendered
+    type: SHORT
+  41986:
+    name: ExposureMode
+    type: SHORT
+  41987:
+    name: WhiteBalance
+    type: SHORT
+  41988:
+    name: DigitalZoomRatio
+    type: RATIONAL
+  41989:
+    name: FocalLengthIn35mmFilm
+    type: SHORT
+  41990:
+    name: SceneCaptureType
+    type: SHORT
+  41991:
+    name: GainControl
+    type: SHORT
+  41992:
+    name: Contrast
+    type: SHORT
+  41993:
+    name: Saturation
+    type: SHORT
+  41994:
+    name: Sharpness
+    type: SHORT
+  41995:
+    name: DeviceSettingDescription
+    type: UNDEFINED
+  41996:
+    name: SubjectDistanceRange
+    type: SHORT
+  42016:
+    name: ImageUniqueID
+    type: ASCII
+  42032:
+    name: CameraOwnerName
+    type: ASCII
+  42033:
+    name: BodySerialNumber
+    type: ASCII
+  42034:
+    name: LensSpecification
+    type: RATIONAL
+  42035:
+    name: LensMake
+    type: ASCII
+  42036:
+    name: LensModel
+    type: ASCII
+  42037:
+    name: LensSerialNumber
+    type: ASCII
+  42240:
+    name: Gamma
+    type: RATIONAL
+GPS:
+  0:
+    name: GPSVersionID
+    type: BYTE
+  1:
+    name: GPSLatitudeRef
+    type: ASCII
+  2:
+    name: GPSLatitude
+    type: RATIONAL
+  3:
+    name: GPSLongitudeRef
+    type: ASCII
+  4:
+    name: GPSLongitude
+    type: RATIONAL
+  5:
+    name: GPSAltitudeRef
+    type: BYTE
+  6:
+    name: GPSAltitude
+    type: RATIONAL
+  7:
+    name: GPSTimeStamp
+    type: RATIONAL
+  8:
+    name: GPSSatellites
+    type: ASCII
+  9:
+    name: GPSStatus
+    type: ASCII
+  10:
+    name: GPSMeasureMode
+    type: ASCII
+  11:
+    name: GPSDOP
+    type: RATIONAL
+  12:
+    name: GPSSpeedRef
+    type: ASCII
+  13:
+    name: GPSSpeed
+    type: RATIONAL
+  14:
+    name: GPSTrackRef
+    type: ASCII
+  15:
+    name: GPSTrack
+    type: RATIONAL
+  16:
+    name: GPSImgDirectionRef
+    type: ASCII
+  17:
+    name: GPSImgDirection
+    type: RATIONAL
+  18:
+    name: GPSMapDatum
+    type: ASCII
+  19:
+    name: GPSDestLatitudeRef
+    type: ASCII
+  20:
+    name: GPSDestLatitude
+    type: RATIONAL
+  21:
+    name: GPSDestLongitudeRef
+    type: ASCII
+  22:
+    name: GPSDestLongitude
+    type: RATIONAL
+  23:
+    name: GPSDestBearingRef
+    type: ASCII
+  24:
+    name: GPSDestBearing
+    type: RATIONAL
+  25:
+    name: GPSDestDistanceRef
+    type: ASCII
+  26:
+    name: GPSDestDistance
+    type: RATIONAL
+  27:
+    name: GPSProcessingMethod
+    type: UNDEFINED
+  28:
+    name: GPSAreaInformation
+    type: UNDEFINED
+  29:
+    name: GPSDateStamp
+    type: ASCII
+  30:
+    name: GPSDifferential
+    type: SHORT
+  31:
+    name: GPSHPositioningError
+    type: RATIONAL
+Interop:
+  1:
+    name: InteroperabilityIndex
+    type: ASCII

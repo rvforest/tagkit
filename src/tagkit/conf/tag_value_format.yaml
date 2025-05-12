@@ -1,0 +1,311 @@
+ExposureTime:
+  display: fraction
+  unit: sec
+FNumber:
+  display: f-number
+CompressedBitsPerPixel:
+  display: decimal
+  unit: bpp
+ShutterSpeedValue:  #! The fraction needs to be reduced. Maybe a map would work better?
+  display: fraction
+  unit: sec
+ApertureValue:
+  display: f-number  # !I'm not sure this is correct
+BrightnessValue:
+  show_plus: true
+  display: decimal
+  unit: EV
+ExposureBiasValue:
+  show_plus: true
+  display: decimal
+  unit: EV
+MaxApertureValue:
+  display: f-number
+SubjectDistance:
+  display: decimal
+  unit: m
+FocalLength:
+  display: decimal
+  unit: mm
+FlashEnergy:
+  display: decimal
+  unit: BCPS
+FocalPlaneXResolution:
+  display: decimal
+  unit: dpi
+FocalPlaneYResolution:
+  display: decimal
+  unit: dpi
+ExposureIndex:
+  display: decimal
+DigitalZoomRatio:
+  display: multiplier
+XResolution:
+  display: decimal
+  unit: dpi
+YResolution:
+  display: decimal
+  unit: dpi
+XPosition:
+  display: decimal
+YPosition:
+  display: decimal
+ReferenceBlackWhite:
+  display: fraction
+Temperature:
+  display: decimal
+  unit: °C
+Humidity:
+  display: percent
+Pressure:
+  display: decimal
+  unit: hPa
+WaterDepth:
+  display: decimal
+  unit: m
+Acceleration:
+  display: decimal
+  unit: mGal
+CameraElevationAngle:
+  display: decimal
+  unit: °
+WhitePoint:
+  display: decimal
+PrimaryChromaticities:
+  display: decimal
+ReferenceBlackWhite:
+  display: decimal
+ColorMatrix1:
+  display: decimal
+ColorMatrix2:
+  display: decimal
+CameraCalibration1:
+  display: decimal
+CameraCalibration2:
+  display: decimal
+ReductionMatrix1:
+  display: decimal
+ReductionMatrix2:
+  display: decimal
+ForwardMatrix1:
+  display: decimal
+ForwardMatrix2:
+  display: decimal
+AsShotWhiteXY:
+  display: decimal
+LensInfo:
+  display: lens-info
+DefaultScale:
+  display: decimal
+GPSLatitude:
+  display: coordinates
+GPSLongitude:
+  display: coordinates
+GPSAltitude:
+  display: decimal
+  unit: m
+GPSTimeStamp:
+  display: timestamp
+GPSDOP:
+  display: decimal
+GPSSpeed:
+  display: decimal
+GPSTrack:
+  display: decimal
+GPSImgDirection:
+  display: decimal
+GPSDestLatitude:
+  display: coordinates
+GPSDestLongitude:
+  display: coordinates
+GPSDestBearing:
+  display: decimal
+GPSDestDistance:
+  display: decimal
+Orientation:
+  display: map
+  mapping:
+      1: Top-left
+      2: Top-right
+      3: Bottom-right
+      4: Bottom-left
+      5: Left-top
+      6: Right-top
+      7: Right-bottom
+      8: Left-bottom
+ExposureProgram:
+  display: map
+  mapping:
+      0: Not defined
+      1: Manual
+      2: Normal program
+      3: Aperture priority
+      4: Shutter priority
+      5: Creative program
+      6: Action program
+      7: Portrait mode
+      8: Landscape mode
+MeteringMode:
+  display: map
+  mapping:
+      0: Unknown
+      1: Average
+      2: Center-weighted average
+      3: Spot
+      4: Multi-spot
+      5: Multi-segment
+      6: Partial
+      255: Other
+LightSource:
+  display: map
+  mapping:
+      0: Unknown
+      1: Daylight
+      2: Fluorescent
+      3: Tungsten (incandescent)
+      4: Flash
+      9: Fine weather
+      10: Cloudy weather
+      11: Shade
+      12: Daylight fluorescent
+      13: Day white fluorescent
+      14: Cool white fluorescent
+      15: White fluorescent
+      17: Standard light A
+      18: Standard light B
+      19: Standard light C
+      20: D55
+      21: D65
+      22: D75
+      23: D50
+      24: ISO studio tungsten
+      255: Other
+Flash:
+  display: map
+  mapping:
+      0: Flash did not fire
+      1: Flash fired
+      5: Flash fired, return not detected
+      7: Flash fired, return detected
+      8: Flash did not fire, compulsory flash mode
+      9: Flash fired, compulsory flash mode
+      13: Flash fired, compulsory flash mode, return not detected
+      15: Flash fired, compulsory flash mode, return detected
+      16: Flash did not fire, auto mode
+      20: Flash did not fire, auto mode, return not detected
+      24: Flash did not fire, auto mode
+      25: Flash fired, auto mode
+      29: Flash fired, auto mode, return not detected
+      31: Flash fired, auto mode, return detected
+      32: No flash function
+      48: Flash did not fire, no flash function
+      65: Flash fired, red-eye reduction mode
+      69: Flash fired, red-eye reduction mode, return not detected
+      71: Flash fired, red-eye reduction mode, return detected
+      73: Flash fired, compulsory flash mode, red-eye reduction mode
+      77: Flash fired, compulsory flash mode, red-eye reduction mode, return not detected
+      79: Flash fired, compulsory flash mode, red-eye reduction mode, return detected
+      80: Flash did not fire, compulsory flash mode, red-eye reduction mode
+      88: Flash did not fire, auto mode, red-eye reduction mode
+      89: Flash fired, auto mode, red-eye reduction mode
+      93: Flash fired, auto mode, red-eye reduction mode, return not detected
+      95: Flash fired, auto mode, red-eye reduction mode, return detected
+ColorSpace:
+  display: map
+  mapping:
+      1: sRGB
+      65535: Uncalibrated
+CustomRendered:
+  display: map
+  mapping:
+      0: Normal process
+      1: Custom process
+      2: HDR (no original saved)
+      3: HDR (original saved)
+      4: Original (for HDR)
+      6: Panorama
+      7: Portrait HDR
+      8: Portrait
+ExposureMode:
+  display: map
+  mapping:
+      0: Auto exposure
+      1: Manual exposure
+      2: Auto bracket
+WhiteBalance:
+  display: map
+  mapping:
+      0: Auto white balance
+      1: Manual white balance
+SceneCaptureType:
+  display: map
+  mapping:
+      0: Standard
+      1: Landscape
+      2: Portrait
+      3: Night scene
+      4: Other
+GainControl:
+  display: map
+  mapping:
+      0: None
+      1: Low gain up
+      2: High gain up
+      3: Low gain down
+      4: High gain down
+Contrast:
+  display: map
+  mapping:
+      0: Normal
+      1: Low
+      2: High
+Saturation:
+  display: map
+  mapping:
+      0: Normal
+      1: Low saturation
+      2: High saturation
+Sharpness:
+  display: map
+  mapping:
+      0: Normal
+      1: Soft
+      2: Hard
+SubjectDistanceRange:
+  display: map
+  mapping:
+      0: Unknown
+      1: Macro
+      2: Close view
+      3: Distant view
+GPSAltitudeRef:
+  display: map
+  mapping:
+      0: Above sea level
+      1: Below sea level
+GPSStatus:
+  display: map
+  mapping:
+      A: Measurement active
+      V: Measurement void
+GPSMeasureMode:
+  display: map
+  mapping:
+      2: 2-dimensional measurement
+      3: 3-dimensional measurement
+GPSSpeedRef:
+  display: map
+  mapping:
+      K: Kilometers per hour
+      M: Miles per hour
+      N: Knots
+GPSTrackRef:
+  display: map
+  mapping:
+      T: True direction
+      M: Magnetic direction
+GPSImgDirectionRef:
+  display: map
+  mapping:
+      T: True direction
+      M: Magnetic direction

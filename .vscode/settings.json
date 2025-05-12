@@ -1,0 +1,21 @@
+{
+    "cSpell.words": [
+        "BCPS",
+        "birthtime",
+        "DATESTAMP",
+        "EXIF",
+        "fract",
+        "GPSDOP",
+        "GPSIFD",
+        "piexif",
+        "secho",
+        "SRATIONAL",
+        "SUBSEC",
+        "tagkit"
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
