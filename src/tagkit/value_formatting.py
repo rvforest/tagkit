@@ -62,6 +62,7 @@ class TagValueFormatter:
             "coordinates": lambda v, c: self._format_coordinates(v),
             "lens_info": lambda v, c: self._format_lens_info(v),
             "map": lambda v, c: self._format_map(v, c.get("mapping")),
+            "shutter_speed": lambda v, c: self._format_shutter_speed(v),
         }
         return handler_map.get(format_type)
 
@@ -146,3 +147,25 @@ class TagValueFormatter:
 
     def _format_map(self, val: int, mapping: dict[int, str]) -> str:
         return mapping[val]
+
+    def _format_shutter_speed(self, val: tuple[int, int]) -> str:
+        """
+        Format a shutter speed value (Rational) in a photographer-friendly way.
+
+        Args:
+            val (tuple[int, int]): The shutter speed as a rational (numerator, denominator).
+
+        Returns:
+            str: The formatted shutter speed (e.g., '1/250s', '2s').
+        """
+        seconds = val[0] / val[1]
+        if seconds >= 1:
+            # Show as whole seconds, rounded to 1 decimal if needed
+            if seconds == int(seconds):
+                return f"{int(seconds)}s"
+            else:
+                return f"{seconds:.1f}s"
+        else:
+            # Show as a reciprocal fraction, rounded to nearest integer
+            denominator = round(1 / seconds)
+            return f"1/{denominator}s"

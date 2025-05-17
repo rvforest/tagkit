@@ -83,3 +83,24 @@ def test_format_decimal_with_units(formatter: TagValueFormatter):
 
 def test_format_fraction_with_units(formatter: TagValueFormatter):
     assert formatter._format_fraction((3, 2), units="mm") == "3/2 mm"
+
+
+def test_format_shutter_speed_fraction(formatter: TagValueFormatter):
+    # 1/250s
+    assert formatter._format_shutter_speed((1, 250)) == "1/250s"
+    # 1/30s
+    assert formatter._format_shutter_speed((1, 30)) == "1/30s"
+    # 1/2s
+    assert formatter._format_shutter_speed((1, 2)) == "1/2s"
+
+
+def test_format_shutter_speed_whole_seconds(formatter: TagValueFormatter):
+    # 2s
+    assert formatter._format_shutter_speed((2, 1)) == "2s"
+    # 5s
+    assert formatter._format_shutter_speed((5, 1)) == "5s"
+
+
+def test_format_shutter_speed_decimal_seconds(formatter: TagValueFormatter):
+    # 1.5s
+    assert formatter._format_shutter_speed((3, 2)) == "1.5s"

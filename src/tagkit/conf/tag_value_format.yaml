@@ -6,9 +6,8 @@ FNumber:
 CompressedBitsPerPixel:
   display: decimal
   unit: bpp
-ShutterSpeedValue:  #! The fraction needs to be reduced. Maybe a map would work better?
-  display: fraction
-  unit: sec
+ShutterSpeedValue:
+  display: shutter_speed
 ApertureValue:
   display: f-number  # !I'm not sure this is correct
 BrightnessValue:
