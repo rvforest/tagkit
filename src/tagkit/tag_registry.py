@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal, Optional, Self, TypedDict, Union
 
 import yaml
+import warnings
 
 from tagkit.exceptions import InvalidTagId, InvalidTagName
 from tagkit.types import ExifType, IfdName
@@ -77,7 +78,6 @@ class _ExifRegistry:
         """
         return list(self._name_to_id)
 
-    # TODO: Add a warning if a tag is in multiple ifd's.
     def get_ifd(self, tag_key: Union[int, str], thumbnail: bool = False) -> IfdName:
         """
         Get the IFD (Image File Directory) for a tag.
@@ -100,10 +100,15 @@ class _ExifRegistry:
         if thumbnail:
             return "IFD1"
 
+        found_ifds = []
         for ifd_category, tags in self.tags.items():
             if tag_id in tags:
                 ifd = "IFD0" if ifd_category == "Image" else ifd_category
-                return ifd
+                found_ifds.append(ifd)
+        if len(found_ifds) > 1:
+            warnings.warn(f"Tag ID {tag_id} found in multiple IFDs: {found_ifds}")
+        if found_ifds:
+            return found_ifds[0]
 
         # Execution shouldn't make it this far because if tag_id is in self
         # then there should always be a result. However, as a guardrail we

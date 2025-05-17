@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+import warnings
 
 from tagkit.tag_registry import _ExifRegistry, tag_registry
 from tagkit.exceptions import InvalidTagId, InvalidTagName
@@ -166,4 +167,15 @@ def test_get_exif_type_invalid_id(registry):
 def test_get_exif_type_invalid_name(registry):
     """Test getting EXIF type with invalid name"""
     with pytest.raises(InvalidTagName):
-        registry.get_exif_type("NonExistentTag") 
+        registry.get_exif_type("NonExistentTag")
+
+
+def test_get_ifd_warns_on_multiple_ifds():
+    # Create a registry with a tag in multiple IFDs
+    conf = {
+        "Image": {123: {"name": "TestTag", "type": "ASCII"}},
+        "Exif": {123: {"name": "TestTag", "type": "ASCII"}},
+    }  # type: ignore
+    reg = _ExifRegistry(conf)  # type: ignore
+    with pytest.warns(UserWarning, match="multiple IFDs"):
+        reg.get_ifd(123) 
