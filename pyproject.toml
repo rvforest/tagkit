@@ -25,6 +25,9 @@ dependencies = [
     "pytest-cov>=6.1.1",
     "ruff>=0.11.6",
 ]
+docs = [
+    "sphinx>=7.4.7",
+]
 
 [project.scripts]
 tagkit = "tagkit.cli.main:app"
