@@ -95,6 +95,15 @@ class TagValueFormatter:
         return str(tag.value)
 
     def _format_bytes(self, val: bytes) -> str:
+        """
+        Format as a base64-encoded string.
+
+        Args:
+            val (bytes): The bytes to format.
+
+        Returns:
+            str: The formatted base64-encoded string.
+        """
         try:
             return val.decode("utf-8")
         except UnicodeDecodeError:
@@ -102,28 +111,82 @@ class TagValueFormatter:
 
 
     def _show_plus(self, val: str) -> str:
+        """
+        Format as a decimal value with a plus sign.
+
+        Args:
+            val (str): The decimal as a string.
+
+        Returns:
+            str: The formatted decimal with a plus sign (e.g., '+1.5').
+        """
         return f"+{val}"
 
     def _format_decimal(self, val: Rational, units: Optional[str] = None) -> str:
+        """
+        Format as a decimal value.
+
+        Args:
+            val (Rational): The decimal as a rational (numerator, denominator).
+
+        Returns:
+            str: The formatted decimal (e.g., '1.5').
+        """
         result = str(val[0] / val[1])
         if units is not None:
             result += f" {units}"
         return result
 
     def _format_fraction(self, val: Rational, units: Optional[str] = None) -> str:
+        """
+        Format as a fraction value.
+
+        Args:
+            val (Rational): The fraction as a rational (numerator, denominator).
+
+        Returns:
+            str: The formatted fraction (e.g., '3/2').
+        """
         result = f"{val[0]}/{val[1]}"
         if units is not None:
             result += f" {units}"
         return result
 
     def _format_f_number(self, val: Rational) -> str:
-        decimal = self._format_decimal(val)
-        return f"f/{decimal}"
+        """
+        Format an f-number value in a photographer-friendly way.
+
+        Args:
+            val (Rational): The f-number as a rational APEX value.
+
+        Returns:
+            str: The formatted f-number (e.g., 'f/2.8').
+        """
+        f_number = 2 ** ((val[0] / val[1]) / 2)
+        return f"f/{f_number:.1f}"
 
     def _format_percent(self, val: Rational) -> str:
+        """
+        Format as a percent value.
+
+        Args:
+            val (Rational): The percent as a rational (numerator, denominator).
+
+        Returns:
+            str: The formatted percent (e.g., '50%').
+        """
         return f"{val[0] / val[1]:.0%}"
 
     def _format_coordinates(self, val: Rational3) -> str:
+        """
+        Format as a coordinate value.
+
+        Args:
+            val (Rational3): The coordinate as a tuple of tuples (degrees, minutes, seconds).
+
+        Returns:
+            str: The formatted coordinate (e.g., '1°2.03\'').
+        """
         degrees = val[0][0]
         minutes = val[1][0]
         has_seconds = val[2][1] == 1
@@ -139,6 +202,15 @@ class TagValueFormatter:
         return coords
 
     def _format_lens_info(self, val: Rational4) -> str:
+        """
+        Format as a lens info value.
+
+        Args:
+            val (Rational4): The lens info as a tuple of tuples (min_focal_len, max_focal_len, min_f_num, max_f_num).
+
+        Returns:
+            str: The formatted lens info (e.g., '1.5 mm - 2.0 mm; f/2.8 - f/5.6').
+        """
         min_focal_len = self._format_decimal(val[0])
         max_focal_len = self._format_decimal(val[1])
         min_f_num = self._format_f_number(val[2])
@@ -146,6 +218,16 @@ class TagValueFormatter:
         return f"{min_focal_len} mm - {max_focal_len}; {min_f_num} - {max_f_num}"
 
     def _format_map(self, val: int, mapping: dict[int, str]) -> str:
+        """
+        Map tag values to strings.
+
+        Args:
+            val (int): The value to format.
+            mapping (dict[int, str]): The mapping of values to strings.
+
+        Returns:
+            str: The formatted value (e.g., 'Auto').
+        """
         return mapping[val]
 
     def _format_shutter_speed(self, val: tuple[int, int]) -> str:
