@@ -44,7 +44,7 @@ def print_exif_table(exif_data: dict[str, dict[int, ExifEntry]]) -> None:
     table.add_column("filename", style="cyan")
     table.add_column("id", style="magenta", no_wrap=True)
     table.add_column("name", style="magenta")
-    table.add_column("value", justify="right", style="green")#, no_wrap=True)
+    table.add_column("value", justify="right", style="green")  # , no_wrap=True)
 
     for filename, tags in exif_data.items():
         is_first = True

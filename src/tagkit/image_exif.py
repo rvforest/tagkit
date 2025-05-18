@@ -34,6 +34,7 @@ class ImageExifData:
         >>> exif = ImageExifData('image.jpg')
         >>> exif.get_tag('Make')
     """
+
     def __init__(
         self,
         file_path: FilePath,

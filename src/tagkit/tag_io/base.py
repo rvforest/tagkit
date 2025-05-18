@@ -38,10 +38,9 @@ class ExifTagDict(dict):
         KeyError: If the tag_id is not found or matches multiple IFD entries.
         TypeError: If the key or value types are invalid.
     """
+
     def __init__(
-        self,
-        data: Optional[Mapping[tuple[int, str], ExifEntry]] = None,
-        **kwargs
+        self, data: Optional[Mapping[tuple[int, str], ExifEntry]] = None, **kwargs
     ):
         if kwargs:
             raise AttributeError(kwargs)
@@ -119,10 +118,10 @@ class ExifTagDict(dict):
         Raises:
             NotImplementedError: If called with unsupported arguments.
         """
-        if (len(args) == 0 and not kwargs):
+        if len(args) == 0 and not kwargs:
             # Allow update() with no arguments
             return super().update()
-        elif (len(args) == 1 and isinstance(args[0], dict) and not kwargs):
+        elif len(args) == 1 and isinstance(args[0], dict) and not kwargs:
             # Allow update(dict)
             return super().update(args[0])
         else:
@@ -133,6 +132,7 @@ class ExifIOBackend(ABC):
     """
     Abstract base class for EXIF IO backends.
     """
+
     @abstractmethod
     def load_tags(self, image_path: FilePath) -> ExifTagDict:
         """

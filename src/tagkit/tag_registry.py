@@ -38,7 +38,9 @@ class _ExifRegistry:
             name_to_type.update({tag["name"]: tag["type"] for tag in ifd_tags.values()})
         self._name_to_id = name_to_id
         self._name_to_type = name_to_type
-        self._tag_ids = {tag_id for exif_tags in registry_conf.values() for tag_id in exif_tags}
+        self._tag_ids = {
+            tag_id for exif_tags in registry_conf.values() for tag_id in exif_tags
+        }
 
     @classmethod
     def from_yaml(cls, path: Union[Path, str, None] = None) -> Self:

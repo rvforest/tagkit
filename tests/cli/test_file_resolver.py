@@ -76,7 +76,9 @@ def test_resolve_regex_implicit(temp_files):
 
 def test_resolve_glob_and_regex_error():
     """Test that specifying both glob and regex modes raises an error"""
-    with pytest.raises(typer.BadParameter, match="Cannot specify both --glob and --regex"):
+    with pytest.raises(
+        typer.BadParameter, match="Cannot specify both --glob and --regex"
+    ):
         FileResolver("pattern", glob_mode=True, regex_mode=True)
 
 
@@ -107,4 +109,4 @@ def test_resolve_relative_path(temp_files, monkeypatch):
     monkeypatch.chdir(temp_files)
     resolver = FileResolver("test1.jpg")
     assert len(resolver.files) == 1
-    assert resolver.files[0].name == "test1.jpg" 
+    assert resolver.files[0].name == "test1.jpg"

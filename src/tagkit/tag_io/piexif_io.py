@@ -31,7 +31,11 @@ class PiexifBackend(ExifIOBackend):
         for ifd, ifd_tags in conformed_dict.items():
             for tag_id, val in ifd_tags.items():
                 # Decode if ascii
-                val = cast(bytes, val).decode(STR_ENCODING) if _tag_is_ascii(tag_id) else val
+                val = (
+                    cast(bytes, val).decode(STR_ENCODING)
+                    if _tag_is_ascii(tag_id)
+                    else val
+                )
                 result_dict[tag_id, ifd] = ExifEntry(tag_id, val, ifd)
 
         return ExifTagDict(result_dict)

@@ -20,6 +20,7 @@ class FileResolver:
         >>> resolver = FileResolver('*.jpg', glob_mode=True)
         >>> resolver.files
     """
+
     def __init__(
         self,
         file_or_pattern: str,
@@ -44,7 +45,9 @@ class FileResolver:
             List[Path]: List of resolved file paths.
         """
         if glob_mode and regex_mode:
-            raise typer.BadParameter("Cannot specify both --glob and --regex. Please choose only one.")
+            raise typer.BadParameter(
+                "Cannot specify both --glob and --regex. Please choose only one."
+            )
         if glob_mode:
             return [Path(p) for p in glob.glob(file_or_pattern, recursive=True)]
         if regex_mode:

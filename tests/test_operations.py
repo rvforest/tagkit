@@ -43,21 +43,19 @@ class TestGetExif:
 
         for i in range(n_files_expected):
             assert f"foo_{i}" in result
+
     def test_all_tags_retrieved(self, n_tags_expected, patch_exif_io):
         n_tags_expected = sum(len(d) for d in patch_exif_io.values() if d is not None)
         result = ops.get_exif(["foo"])
         n_tags = len(result["foo"])
         assert n_tags == n_tags_expected
 
-
     def test_get_exif_tag_values_retrieved(self, n_tags_expected, patch_exif_io):
-
         result = ops.get_exif(["foo"])
 
         assert result["foo"][271].value == patch_exif_io["0th"][271].decode("ascii")
         assert result["foo"][272].value == patch_exif_io["0th"][272].decode("ascii")
         assert result["foo"][37385].value == patch_exif_io["Exif"][37385]
-
 
     def test_get_exif_w_id_filter(self, patch_exif_io):
         result = ops.get_exif(["foo"], tag_filter=[271])

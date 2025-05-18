@@ -4,7 +4,6 @@ from tagkit.utils import validate_single_arg_set
 
 
 class TestValidateSingleArgSet:
-    
     def test_allow_none_set_true(self):
         """Test that no exception is raised when args are not set and
         allow_none_set is True

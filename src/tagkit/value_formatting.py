@@ -24,6 +24,7 @@ class TagValueFormatter:
         >>> formatter = TagValueFormatter.from_yaml()
         >>> formatter.format(tag_entry)
     """
+
     def __init__(self, conf: dict[str, dict]) -> None:
         self.conf = conf
 
@@ -67,7 +68,7 @@ class TagValueFormatter:
         }
         return handler_map.get(format_type)
 
-    def format(self, tag: 'ExifEntry') -> str:
+    def format(self, tag: "ExifEntry") -> str:
         """
         Format the tag value according to its configuration.
 
@@ -108,8 +109,7 @@ class TagValueFormatter:
         try:
             return val.decode("utf-8")
         except UnicodeDecodeError:
-            return base64.b64encode(val).decode('ascii')
-
+            return base64.b64encode(val).decode("ascii")
 
     def _show_plus(self, val: str) -> str:
         """
@@ -202,7 +202,7 @@ class TagValueFormatter:
         SEC = '"'
         if has_seconds:
             seconds = val[2][0]
-            coords += f'{MIN}{seconds}{SEC}'
+            coords += f"{MIN}{seconds}{SEC}"
         else:
             fractional_min = str(val[2][0] / val[2][1]).lstrip("0")
             coords += f"{fractional_min}{MIN}"
@@ -261,6 +261,6 @@ class TagValueFormatter:
                 if abs(round(num) - num) < 1e-3:
                     return self._format_fraction((int(round(num)), denom), unit="s")
 
-            # Fallback 
+            # Fallback
             denominator = round(1 / seconds)
             return f"1/{denominator}s"

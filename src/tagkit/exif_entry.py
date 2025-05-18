@@ -33,4 +33,3 @@ class ExifEntry:
             "value": self.formatted_value,
             "ifd": self.ifd,
         }
-        

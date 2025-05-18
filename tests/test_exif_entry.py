@@ -30,5 +30,5 @@ def test_exifentry_properties_bytes():
     # Now with non-utf8 bytes
     value = b"\xff\xfe\xfd\xfc"
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
-    expected_b64 = base64.b64encode(value).decode('ascii')
-    assert entry.formatted_value == expected_b64 
+    expected_b64 = base64.b64encode(value).decode("ascii")
+    assert entry.formatted_value == expected_b64

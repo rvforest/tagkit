@@ -27,4 +27,3 @@ def validate_single_arg_set(
 
 def _quoted_comma_sep_list(items: Iterable[str]) -> str:
     return ", ".join([f"'{item}'" for item in items])
-

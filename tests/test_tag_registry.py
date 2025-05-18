@@ -74,7 +74,9 @@ def test_get_ifd_by_id(registry):
     """Test getting IFD by tag ID"""
     assert registry.get_ifd(271) == "IFD0"  # Image tag -> IFD0
     assert registry.get_ifd(33434) == "Exif"  # Exif tag -> Exif
-    assert registry.get_ifd(1, thumbnail=True) == "IFD1"  # Any tag with thumbnail=True -> IFD1
+    assert (
+        registry.get_ifd(1, thumbnail=True) == "IFD1"
+    )  # Any tag with thumbnail=True -> IFD1
 
 
 def test_get_ifd_by_name(registry):
@@ -178,4 +180,4 @@ def test_get_ifd_warns_on_multiple_ifds():
     }  # type: ignore
     reg = _ExifRegistry(conf)  # type: ignore
     with pytest.warns(UserWarning, match="multiple IFDs"):
-        reg.get_ifd(123) 
+        reg.get_ifd(123)

@@ -9,19 +9,20 @@ from tagkit.cli.main import app
 runner = CliRunner()
 test_dir = Path(__file__).parents[1]
 
+
 # Use fixture for metadata
 @pytest.fixture
 def img_metadata():
     """Get the metadata from the metadata.json file"""
     metadata_path = test_dir / "io/test_images/metadata.json"
-    
+
     with open(metadata_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 class TestViewCommand:
     def test_view(self, test_images):
-        """ Make sure view command runs and prints something in table view.
+        """Make sure view command runs and prints something in table view.
         Don't check exact number of lines to make maintainability easier.
         """
         min_number_lines = 19
@@ -48,7 +49,10 @@ class TestViewCommand:
         # This test assumes get_exif or file resolver will raise an error for an invalid regex
         result = runner.invoke(app, ["view", "[", "--regex"])
         assert result.exit_code != 0
-        assert "Failed to extract EXIF data" in result.output or "error" in result.output.lower()
+        assert (
+            "Failed to extract EXIF data" in result.output
+            or "error" in result.output.lower()
+        )
 
     def test_view_json(self, test_images):
         """Test that --json outputs valid JSON and includes expected EXIF data keys."""
@@ -69,7 +73,10 @@ class TestViewCommand:
         dummy_file.write_text("not an image")
 
         # Patch get_exif to raise an Exception
-        monkeypatch.setattr("tagkit.operations.get_exif", lambda *a, **kw: (_ for _ in ()).throw(Exception("fail!")))
+        monkeypatch.setattr(
+            "tagkit.operations.get_exif",
+            lambda *a, **kw: (_ for _ in ()).throw(Exception("fail!")),
+        )
 
         result = runner.invoke(app, ["view", str(dummy_file)])
         assert result.exit_code == 2

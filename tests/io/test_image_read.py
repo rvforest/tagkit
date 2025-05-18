@@ -6,13 +6,14 @@ import pytest
 
 from tagkit.image_exif import ImageExifData
 
+
 # Change to use the fixture instead of a hardcoded path
 @pytest.fixture
 def img_metadata():
     """Get the metadata from the metadata.json file"""
     here = Path(__file__).parent.resolve()
     metadata_path = here / "test_images/metadata.json"
-    
+
     with open(metadata_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -47,7 +48,7 @@ def test_get_tags_no_filter(test_images, img_metadata):
         # Skip corrupt images or entries without tags
         if not expected.get("tags") or expected.get("corrupt", False):
             continue
-            
+
         path = test_images / filename
         exif_handler = ImageExifData(path)
         actual_tags = exif_handler.get_tags()
@@ -55,4 +56,6 @@ def test_get_tags_no_filter(test_images, img_metadata):
         expected_tags = list_to_tuple(expected["tags"])
         for expected_tag in expected_tags:
             actual_val = actual_tags[expected_tag["id"]].value
-            assert actual_val == expected_tag["value"], f"Failed for {filename}, tag {expected_tag['name']}"
+            assert actual_val == expected_tag["value"], (
+                f"Failed for {filename}, tag {expected_tag['name']}"
+            )

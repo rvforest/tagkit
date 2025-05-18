@@ -44,10 +44,12 @@ def test_getitem_tag_id_unique(sample_exif_entry):
 
 def test_getitem_tag_id_ambiguous():
     """Test getting item with just tag_id when it's ambiguous"""
-    exif_dict = ExifTagDict({
-        (256, "IFD0"): ExifEntry(256, 1024, "IFD0"),
-        (256, "Exif"): ExifEntry(256, 2048, "Exif")
-    })
+    exif_dict = ExifTagDict(
+        {
+            (256, "IFD0"): ExifEntry(256, 1024, "IFD0"),
+            (256, "Exif"): ExifEntry(256, 2048, "Exif"),
+        }
+    )
     with pytest.raises(KeyError, match="Ambiguous tag_id 256"):
         exif_dict[256]
 
@@ -99,4 +101,4 @@ def test_update_raises_not_implemented():
     # Cast to Any to test runtime type checking
     data = cast(Any, {(9999, "IFD0"): 1024})
     # with pytest.raises(InvalidTag):
-    exif_dict.update(data) 
+    exif_dict.update(data)

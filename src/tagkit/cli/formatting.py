@@ -17,7 +17,7 @@ def to_serializable(val):
         try:
             return val.decode("utf-8")
         except UnicodeDecodeError:
-            return base64.b64encode(val).decode('ascii')
+            return base64.b64encode(val).decode("ascii")
     elif isinstance(val, dict):
         return {k: to_serializable(v) for k, v in val.items()}
     elif isinstance(val, list):
@@ -40,4 +40,4 @@ def print_exif_json(exif_data):
         >>> print_exif_json({"img.jpg": {256: ExifEntry(...)}})
     """
     data = to_serializable(exif_data)
-    print_json(data=data) 
+    print_json(data=data)
