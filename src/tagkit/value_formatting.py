@@ -139,15 +139,19 @@ class TagValueFormatter:
 
     def _format_fraction(self, val: Rational, units: Optional[str] = None) -> str:
         """
-        Format as a fraction value.
+        Format as a reduced fraction value.
 
         Args:
             val (Rational): The fraction as a rational (numerator, denominator).
 
         Returns:
-            str: The formatted fraction (e.g., '3/2').
+            str: The formatted reduced fraction (e.g., '3/2').
         """
-        result = f"{val[0]}/{val[1]}"
+        num, denom = val
+        gcd = math.gcd(num, denom)
+        num //= gcd
+        denom //= gcd
+        result = f"{num}/{denom}"
         if units is not None:
             result += f" {units}"
         return result
