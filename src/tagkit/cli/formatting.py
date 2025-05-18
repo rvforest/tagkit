@@ -1,3 +1,8 @@
+import base64
+
+from rich import print_json
+
+
 def to_serializable(val):
     """
     Recursively convert objects to types suitable for JSON serialization.

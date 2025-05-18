@@ -1,15 +1,15 @@
 ExposureTime:
   display: fraction
-  unit: sec
+  unit: s
 FNumber:
-  display: f-number
+  display: f_number
 CompressedBitsPerPixel:
   display: decimal
   unit: bpp
 ShutterSpeedValue:
   display: shutter_speed
 ApertureValue:
-  display: f-number  # !I'm not sure this is correct
+  display: f_number
 BrightnessValue:
   show_plus: true
   display: decimal
@@ -19,7 +19,7 @@ ExposureBiasValue:
   display: decimal
   unit: EV
 MaxApertureValue:
-  display: f-number
+  display: f_number
 SubjectDistance:
   display: decimal
   unit: m

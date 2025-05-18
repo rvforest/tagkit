@@ -3,7 +3,7 @@ from tagkit.tag_io.base import ExifTagDict
 from tagkit.exif_entry import ExifEntry
 
 
-def test_exiftagdict_update_notimplemented():
+def test_exif_tagdict_update_notimplemented():
     d = ExifTagDict()
     # Should not raise with no arguments
     d.update()

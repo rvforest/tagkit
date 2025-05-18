@@ -1,6 +1,7 @@
 import base64
 from pathlib import Path
 from typing import Callable, Optional, Self, TYPE_CHECKING, Union
+import math
 
 if TYPE_CHECKING:
     from tagkit.exif_entry import ExifEntry  # pragma: no cover
@@ -55,8 +56,8 @@ class TagValueFormatter:
         """Get the appropriate handler method for the given format type."""
         handler_map = {
             "show_plus": lambda v, c: self._show_plus(str(v)),
-            "decimal": lambda v, c: self._format_decimal(v, c.get("units")),
-            "fraction": lambda v, c: self._format_fraction(v, c.get("units")),
+            "decimal": lambda v, c: self._format_decimal(v, c.get("unit")),
+            "fraction": lambda v, c: self._format_fraction(v, c.get("unit")),
             "f_number": lambda v, c: self._format_f_number(v),
             "percent": lambda v, c: self._format_percent(v),
             "coordinates": lambda v, c: self._format_coordinates(v),
@@ -122,7 +123,7 @@ class TagValueFormatter:
         """
         return f"+{val}"
 
-    def _format_decimal(self, val: Rational, units: Optional[str] = None) -> str:
+    def _format_decimal(self, val: Rational, unit: Optional[str] = None) -> str:
         """
         Format as a decimal value.
 
@@ -133,11 +134,11 @@ class TagValueFormatter:
             str: The formatted decimal (e.g., '1.5').
         """
         result = str(val[0] / val[1])
-        if units is not None:
-            result += f" {units}"
+        if unit is not None:
+            result += f"{unit}"
         return result
 
-    def _format_fraction(self, val: Rational, units: Optional[str] = None) -> str:
+    def _format_fraction(self, val: Rational, unit: Optional[str] = None) -> str:
         """
         Format as a reduced fraction value.
 
@@ -152,8 +153,8 @@ class TagValueFormatter:
         num //= gcd
         denom //= gcd
         result = f"{num}/{denom}"
-        if units is not None:
-            result += f" {units}"
+        if unit is not None:
+            result += f"{unit}"
         return result
 
     def _format_f_number(self, val: Rational) -> str:
@@ -166,7 +167,9 @@ class TagValueFormatter:
         Returns:
             str: The formatted f-number (e.g., 'f/2.8').
         """
-        f_number = 2 ** ((val[0] / val[1]) / 2)
+        f_number = math.sqrt(2 ** (val[0] / val[1]))
+        # f_number = 2 ** (-val[0] / val[1])
+        # f_number = 2 ** ((val[0] / val[1]) / 2)
         return f"f/{f_number:.1f}"
 
     def _format_percent(self, val: Rational) -> str:
@@ -236,7 +239,7 @@ class TagValueFormatter:
 
     def _format_shutter_speed(self, val: tuple[int, int]) -> str:
         """
-        Format a shutter speed value (Rational) in a photographer-friendly way.
+        Format a shutter speed value (APEX) in a photographer-friendly way.
 
         Args:
             val (tuple[int, int]): The shutter speed as a rational (numerator, denominator).
@@ -244,7 +247,7 @@ class TagValueFormatter:
         Returns:
             str: The formatted shutter speed (e.g., '1/250s', '2s').
         """
-        seconds = val[0] / val[1]
+        seconds = 2 ** (-val[0] / val[1])
         if seconds >= 1:
             # Show as whole seconds, rounded to 1 decimal if needed
             if seconds == int(seconds):
@@ -252,6 +255,12 @@ class TagValueFormatter:
             else:
                 return f"{seconds:.1f}s"
         else:
-            # Show as a reciprocal fraction, rounded to nearest integer
+            # For small values, try to find a denominator
+            for denom in [8000, 4000, 2000, 1000, 500, 250, 125, 60, 30, 15, 8, 4, 2]:
+                num = seconds * denom
+                if abs(round(num) - num) < 1e-3:
+                    return self._format_fraction((int(round(num)), denom), unit="s")
+
+            # Fallback 
             denominator = round(1 / seconds)
             return f"1/{denominator}s"
