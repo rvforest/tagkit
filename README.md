@@ -20,13 +20,18 @@
 
 ## Installation
 
+Invoke directly with [uvx](https://docs.astral.sh/uv/#tools)
+
 ```bash
-uv tool install tagkit
+uvx tagkit [command] 
 ```
 
-or try without installing
+or install with uv, pipx, or pip
+
 ```bash
-uvx tagkit [command]
+uv tool install tagkit
+pipx install tagkit
+pip install tagkit
 ```
 
 ---
