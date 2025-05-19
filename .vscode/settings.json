@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "automodule",
         "BCPS",
         "birthtime",
         "DATESTAMP",
@@ -11,7 +12,8 @@
         "secho",
         "SRATIONAL",
         "SUBSEC",
-        "tagkit"
+        "tagkit",
+        "toctree"
     ],
     "python.testing.pytestArgs": [
         "tests"
