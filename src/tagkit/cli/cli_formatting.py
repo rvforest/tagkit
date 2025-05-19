@@ -6,6 +6,13 @@ from tagkit.exif_entry import ExifEntry
 
 
 def to_serializable(val):
+    """
+    Recursively convert objects to types suitable for JSON serialization.
+
+    - Any object with a to_dict() method is converted using that method.
+    - Bytes values are displayed as base64-encoded strings if they cannot be decoded as UTF-8.
+    - Lists and dicts are processed recursively.
+    """
     if hasattr(val, "to_dict") and callable(val.to_dict):
         return to_serializable(val.to_dict())
     elif isinstance(val, dict):
@@ -22,6 +29,9 @@ def print_exif_json(exif_data):
 
     Args:
         exif_data (dict): EXIF data to print.
+
+    Notes:
+        - Any bytes values in the EXIF data will be displayed as base64-encoded strings if they cannot be decoded as UTF-8.
 
     Example:
         >>> print_exif_json({"img.jpg": {256: ExifEntry(...)}})
