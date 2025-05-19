@@ -68,12 +68,14 @@ class TagValueFormatter:
         }
         return handler_map.get(format_type)
 
-    def format(self, tag: "ExifEntry") -> str:
+    def format(self, tag: "ExifEntry", render_bytes: bool = True) -> str:
         """
         Format the tag value according to its configuration.
 
         Args:
             tag (ExifEntry): The EXIF entry to format.
+            render_bytes (bool): Render bytes as base 64 string if True, or use
+                '<bytes>' as placeholder if False.
 
         Returns:
             str: The formatted value as a string.
@@ -92,11 +94,11 @@ class TagValueFormatter:
                 return handler(tag.value, conf)
 
         if isinstance(tag.value, bytes):
-            tag.value = self._format_bytes(tag.value)
+            tag.value = self._format_bytes(tag.value, render_bytes)
 
         return str(tag.value)
 
-    def _format_bytes(self, val: bytes) -> str:
+    def _format_bytes(self, val: bytes, render_bytes: bool) -> str:
         """
         Format as a base64-encoded string.
 
@@ -106,10 +108,13 @@ class TagValueFormatter:
         Returns:
             str: The formatted base64-encoded string.
         """
-        try:
-            return val.decode("utf-8")
-        except UnicodeDecodeError:
-            return base64.b64encode(val).decode("ascii")
+        if render_bytes:
+            try:
+                return val.decode("utf-8")
+            except UnicodeDecodeError:
+                return base64.b64encode(val).decode("ascii")
+        else:
+            return "<bytes>"
 
     def _show_plus(self, val: str) -> str:
         """

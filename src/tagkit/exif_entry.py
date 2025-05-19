@@ -22,14 +22,13 @@ class ExifEntry:
     def exif_type(self) -> ExifType:
         return tag_registry.get_exif_type(self.id)
 
-    @property
-    def formatted_value(self) -> str:
-        return self.formatter.format(self)
+    def format(self, render_bytes: bool = True) -> str:
+        return self.formatter.format(self, render_bytes)
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
             "name": self.name,
-            "value": self.formatted_value,
+            "value": self.format(render_bytes=True),
             "ifd": self.ifd,
         }
