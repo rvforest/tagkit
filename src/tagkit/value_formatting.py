@@ -94,7 +94,7 @@ class TagValueFormatter:
                 return handler(tag.value, conf)
 
         if isinstance(tag.value, bytes):
-            tag.value = self._format_bytes(tag.value, render_bytes)
+            return self._format_bytes(tag.value, render_bytes)
 
         return str(tag.value)
 
@@ -108,13 +108,13 @@ class TagValueFormatter:
         Returns:
             str: The formatted base64-encoded string.
         """
-        if render_bytes:
-            try:
-                return val.decode("utf-8")
-            except UnicodeDecodeError:
+        try:
+            return val.decode("utf-8")
+        except UnicodeDecodeError:
+            if render_bytes:
                 return base64.b64encode(val).decode("ascii")
-        else:
-            return "<bytes>"
+            else:
+                return "<bytes>"
 
     def _show_plus(self, val: str) -> str:
         """
