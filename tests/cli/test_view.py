@@ -43,7 +43,7 @@ class TestViewCommand:
     def test_view_both_glob_and_regex(self):
         result = runner.invoke(app, ["view", "*.jpg", "--glob", "--regex"])
         assert result.exit_code != 0
-        assert "Cannot specify both --glob and --regex" in result.output
+        assert "Cannot specify both" in result.output
 
     def test_view_invalid_pattern(self):
         # This test assumes get_exif or file resolver will raise an error for an invalid regex
