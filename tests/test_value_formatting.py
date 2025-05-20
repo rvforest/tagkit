@@ -44,7 +44,7 @@ def test_exif_entry_formatted_value_b64():
     import base64
 
     expected_b64 = base64.b64encode(raw_bytes).decode("ascii")
-    assert entry.formatted_value == expected_b64
+    assert entry.format() == expected_b64
 
 
 def test_show_plus(formatter: TagValueFormatter):
@@ -68,7 +68,7 @@ def test_format_map(formatter: TagValueFormatter):
 
 def test_format_bytes_utf8(formatter: TagValueFormatter):
     val = b"hello"
-    assert formatter._format_bytes(val) == "hello"
+    assert formatter._format_bytes(val, render_bytes=True) == "hello"
 
 
 def test_format_bytes_non_utf8(formatter: TagValueFormatter):
@@ -76,7 +76,12 @@ def test_format_bytes_non_utf8(formatter: TagValueFormatter):
     import base64
 
     expected = base64.b64encode(val).decode("ascii")
-    assert formatter._format_bytes(val) == expected
+    assert formatter._format_bytes(val, render_bytes=True) == expected
+
+
+def test_format_bytes_no_render(formatter: TagValueFormatter):
+    val = b"hello"
+    assert formatter._format_bytes(val, render_bytes=False) == "<bytes>"
 
 
 def test_format_decimal_with_units(formatter: TagValueFormatter):

@@ -11,7 +11,7 @@ def test_exifentry_properties_ascii():
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
     assert entry.name == "Make"
     assert entry.exif_type == "ASCII"
-    assert entry.formatted_value == value
+    assert entry.format() == value
     d = entry.to_dict()
     assert d["id"] == tag_id
     assert d["name"] == "Make"
@@ -25,10 +25,10 @@ def test_exifentry_properties_bytes():
     value = b"Canon"
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
     # Should decode as utf-8
-    assert entry.formatted_value == "Canon"
+    assert entry.format() == "Canon"
 
     # Now with non-utf8 bytes
     value = b"\xff\xfe\xfd\xfc"
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
     expected_b64 = base64.b64encode(value).decode("ascii")
-    assert entry.formatted_value == expected_b64
+    assert entry.format() == expected_b64
