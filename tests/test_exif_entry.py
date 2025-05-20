@@ -19,16 +19,23 @@ def test_exifentry_properties_ascii():
     assert d["ifd"] == ifd
 
 
-def test_exifentry_properties_bytes():
+def test_exifentry_properties_bytes_utf8():
+    """Test that UTF-8 decodable bytes are properly formatted."""
     tag_id = 271  # 'Make', type 'ASCII'
     ifd: IfdName = "IFD0"
     value = b"Canon"
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
-    # Should decode as utf-8
     assert entry.format() == "Canon"
+    assert entry.format(render_bytes=True) == "Canon"
+    assert entry.format(render_bytes=False) == "Canon"
 
-    # Now with non-utf8 bytes
+
+def test_exifentry_properties_non_utf8_bytes():
+    """Test that non-UTF-8 bytes are properly formatted with base64 or placeholder."""
+    tag_id = 271  # 'Make', type 'ASCII'
+    ifd: IfdName = "IFD0"
     value = b"\xff\xfe\xfd\xfc"
     entry = ExifEntry(id=tag_id, value=value, ifd=ifd)
     expected_b64 = base64.b64encode(value).decode("ascii")
-    assert entry.format() == expected_b64
+    assert entry.format(render_bytes=True) == expected_b64
+    assert entry.format(render_bytes=False) == "<bytes>"
