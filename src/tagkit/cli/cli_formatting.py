@@ -67,7 +67,11 @@ def print_exif_table(exif_data: dict[str, dict[int, ExifEntry]]) -> None:
                 is_last = True
             filename_val = filename if is_first else ""
             is_first = False
-            row_data = [filename_val] + [tag.id, tag.name, tag.format(render_bytes=False)]
+            row_data = [filename_val] + [
+                tag.id,
+                tag.name,
+                tag.format(render_bytes=False),
+            ]
             row_data = [str(d) for d in row_data]
             table.add_row(*row_data, end_section=is_last)
 
