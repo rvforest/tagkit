@@ -41,7 +41,7 @@ class TestViewCommand:
         assert "No files matched the given pattern" in result.output
 
     def test_view_both_glob_and_regex(self):
-        result = runner.invoke(app, ["view", "*.jpg", "--glob", "--regex"], env={"CLICOLOR": "0"})
+        result = runner.invoke(app, ["view", "*.jpg", "--glob", "--regex"])
         assert result.exit_code != 0
         assert "Cannot specify both --glob and --regex" in result.output
 
