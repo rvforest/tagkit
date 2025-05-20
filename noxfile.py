@@ -57,6 +57,5 @@ def _run_install(session: nox.Session, only_dev: bool) -> None:
         cmd.append("--only-dev")
     session.run_install(
         *cmd,
-        "--only-dev",
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
