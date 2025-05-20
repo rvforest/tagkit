@@ -14,7 +14,7 @@ def to_serializable(val, binary_format: Optional[str] = None):
     - Any object with a to_dict() method is converted using that method.
     - Bytes values are formatted according to binary_format if they cannot be decoded as UTF-8.
     - Lists and dicts are processed recursively.
-    
+
     Args:
         val: The value to convert
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
@@ -41,7 +41,9 @@ def print_exif_json(exif_data, binary_format: Optional[str] = None):
     print_json(data=data)
 
 
-def print_exif_table(exif_data: dict[str, dict[int, ExifEntry]], binary_format: Optional[str] = None) -> None:
+def print_exif_table(
+    exif_data: dict[str, dict[int, ExifEntry]], binary_format: Optional[str] = None
+) -> None:
     """
     Print EXIF data as a formatted table using rich.
 

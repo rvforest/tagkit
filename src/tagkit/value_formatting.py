@@ -68,7 +68,12 @@ class TagValueFormatter:
         }
         return handler_map.get(format_type)
 
-    def format(self, tag: "ExifEntry", render_bytes: bool = True, binary_format: Optional[str] = None) -> str:
+    def format(
+        self,
+        tag: "ExifEntry",
+        render_bytes: bool = True,
+        binary_format: Optional[str] = None,
+    ) -> str:
         """
         Format the tag value according to its configuration.
 
@@ -93,25 +98,22 @@ class TagValueFormatter:
         return str(tag.value)
 
     def _format_bytes(
-        self, 
-        val: bytes, 
-        render_bytes: bool, 
-        binary_format: Optional[str] = None
+        self, val: bytes, render_bytes: bool, binary_format: Optional[str] = None
     ) -> str:
         """
         Format bytes as a string.
-        
+
         Args:
             val: The bytes to format
             render_bytes: If False, return a placeholder instead of the actual bytes
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'
-            
+
         Returns:
             Formatted string representation of the bytes
         """
         if not render_bytes:
             return f"<bytes: {len(val)}>"
-            
+
         if binary_format == "hex":
             return f"hex:{val.hex()}"
         elif binary_format == "base64":
