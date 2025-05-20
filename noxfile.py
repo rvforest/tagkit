@@ -40,7 +40,7 @@ def fix(session: nox.Session) -> None:
 def test(session: nox.Session) -> None:
     """Run tests"""
     _install_all_deps(session)
-    session.run("pytest")
+    session.run("pytest", "-vv")
 
 
 def _install_dev_deps(session: nox.Session) -> None:
