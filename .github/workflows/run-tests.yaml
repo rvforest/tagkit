@@ -2,8 +2,8 @@ on: [push]
 
 
 jobs:
-  uv-example:
-    name: Run checks
+  run-tests:
+    name: Run tests
     runs-on: ubuntu-latest
 
     steps:

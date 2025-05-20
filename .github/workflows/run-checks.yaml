@@ -4,7 +4,7 @@ on: [push]
 
 
 jobs:
-  uv-example:
+  run-checks:
     name: Run checks
     runs-on: ubuntu-latest
 
