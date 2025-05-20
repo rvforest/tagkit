@@ -38,8 +38,8 @@ class ExifEntry:
             >>> entry = ExifEntry(0x010f, b'Canon', 'IFD0')
             >>> entry.format()  # Returns: "Canon" (UTF-8 decodable)
             
-            >>> entry = ExifEntry(0x9286, b'\x89PNG\r\n', 'Exif')
-            >>> entry.format()  # Returns: b'\x89PNG\r\n' (bytes format)
+            >>> entry = ExifEntry(0x9286, b'\\x89PNG\\r\\n', 'Exif')
+            >>> entry.format()  # Returns: b'\\x89PNG\\r\\n' (bytes format)
             >>> entry.format(binary_format="hex")  # Returns: "hex:89504e470d0a"
             >>> entry.format(binary_format="base64")  # Returns: "base64:iVBORw0K"
             >>> entry.format(render_bytes=False)  # Returns: "<bytes: 6>"
@@ -67,7 +67,7 @@ class ExifEntry:
             >>> entry.to_dict()
             {'id': 271, 'name': 'Make', 'value': 'Canon', 'ifd': 'IFD0'}
             
-            >>> entry = ExifEntry(0x9286, b'\x89PNG\r\n', 'Exif')
+            >>> entry = ExifEntry(0x9286, b'\\x89PNG\\r\\n', 'Exif')
             >>> entry.to_dict(binary_format="hex")
             {'id': 37510, 'name': 'UserComment', 'value': 'hex:89504e470d0a', 'ifd': 'Exif'}
             

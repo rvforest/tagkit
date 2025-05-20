@@ -1,5 +1,5 @@
 tagkit.utils
-===========
+=============
 
 The ``tagkit.utils`` module provides utility functions for EXIF data processing and general helper routines used throughout tagkit.
 

@@ -13,15 +13,15 @@ The ``tagkit.types`` module defines type aliases and data structures used throug
 .. autosummary::
    :toctree: _autosummary
 
-   FilePath
-   IntCollection
-   FloatCollection
-   Rational
-   RationalCollection
-   ExifTag
-   ExifIfdCollection
-   ExifType
-   IfdName
+   .. FilePath
+   .. IntCollection
+   .. FloatCollection
+   .. Rational
+   .. RationalCollection
+   .. ExifTag
+   .. ExifIfdCollection
+   .. ExifType
+   .. IfdName
    ExifTagInfo
 
 .. automodule:: tagkit.types
