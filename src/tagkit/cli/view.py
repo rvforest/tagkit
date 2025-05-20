@@ -28,12 +28,15 @@ def view(
     json: bool = typer.Option(
         False, "--json", help="Output EXIF data as JSON instead of a table."
     ),
+    binary_format: Optional[str] = typer.Option(
+        None,
+        "--binary-format",
+        help="How to format binary data: 'bytes' (default), 'hex', or 'base64'.",
+        case_sensitive=False,
+    ),
 ):
     """
     View EXIF data for one or more image files. Supports filtering by tag and output as table or JSON.
-
-    Notes:
-        - Any bytes values in EXIF data will be displayed as base64-encoded strings if they cannot be decoded as UTF-8, both in table and JSON output.
     """
     tag_filter = tag_ids_to_int(tags)
     try:
@@ -67,6 +70,6 @@ def view(
             fg=typer.colors.YELLOW,
         )
     if json:
-        print_exif_json(exif_data)
+        print_exif_json(exif_data, binary_format=binary_format)
     else:
-        print_exif_table(exif_data)
+        print_exif_table(exif_data, binary_format=binary_format)

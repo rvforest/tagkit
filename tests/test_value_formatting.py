@@ -1,3 +1,4 @@
+import base64
 import pytest
 
 from tagkit.exif_entry import ExifEntry
@@ -41,10 +42,9 @@ def test_exif_entry_formatted_value_b64():
     ifd: IfdName = "IFD0"
     raw_bytes = b"\xff\xfe\xfd\xfc"
     entry = ExifEntry(id=tag_id, value=raw_bytes, ifd=ifd)
-    import base64
 
-    expected_b64 = base64.b64encode(raw_bytes).decode("ascii")
-    assert entry.format() == expected_b64
+    expected_b64 = f"base64:{base64.b64encode(raw_bytes).decode('ascii')}"
+    assert entry.format(render_bytes=True, binary_format="base64") == expected_b64
 
 
 def test_show_plus(formatter: TagValueFormatter):
@@ -68,20 +68,18 @@ def test_format_map(formatter: TagValueFormatter):
 
 def test_format_bytes_utf8(formatter: TagValueFormatter):
     val = b"hello"
-    assert formatter._format_bytes(val, render_bytes=True) == "hello"
+    assert formatter._format_bytes(val, render_bytes=True) == "b'hello'"
 
 
 def test_format_bytes_non_utf8(formatter: TagValueFormatter):
     val = b"\xff\xfe\xfd\xfc"
-    import base64
-
     expected = base64.b64encode(val).decode("ascii")
-    assert formatter._format_bytes(val, render_bytes=True) == expected
+    assert formatter._format_bytes(val, render_bytes=True, binary_format="base64") == f"base64:{expected}"
 
 
 def test_format_bytes_no_render(formatter: TagValueFormatter):
     val = b"hello"
-    assert formatter._format_bytes(val, render_bytes=False) == "<bytes>"
+    assert formatter._format_bytes(val, render_bytes=False) == "<bytes: 5>"
 
 
 def test_format_decimal_with_units(formatter: TagValueFormatter):

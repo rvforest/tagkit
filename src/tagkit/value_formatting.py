@@ -68,23 +68,17 @@ class TagValueFormatter:
         }
         return handler_map.get(format_type)
 
-    def format(self, tag: "ExifEntry", render_bytes: bool = True) -> str:
+    def format(self, tag: "ExifEntry", render_bytes: bool = True, binary_format: Optional[str] = None) -> str:
         """
         Format the tag value according to its configuration.
 
         Args:
-            tag (ExifEntry): The EXIF entry to format.
-            render_bytes (bool): Render bytes as base 64 string if True, or use
-                '<bytes>' as placeholder if False.
+            tag: The EXIF entry to format.
+            render_bytes: If False, binary data will be shown as a placeholder.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
 
         Returns:
-            str: The formatted value as a string.
-
-        Notes:
-            - If the tag value is bytes, it will be displayed as a base64-encoded string if it cannot be decoded as UTF-8.
-
-        Example:
-            >>> formatter.format(tag_entry)
+            The formatted value as a string.
         """
         conf = self.conf.get(tag.name)
 
@@ -94,27 +88,38 @@ class TagValueFormatter:
                 return handler(tag.value, conf)
 
         if isinstance(tag.value, bytes):
-            return self._format_bytes(tag.value, render_bytes)
+            return self._format_bytes(tag.value, render_bytes, binary_format)
 
         return str(tag.value)
 
-    def _format_bytes(self, val: bytes, render_bytes: bool) -> str:
+    def _format_bytes(
+        self, 
+        val: bytes, 
+        render_bytes: bool, 
+        binary_format: Optional[str] = None
+    ) -> str:
         """
-        Format as a base64-encoded string.
-
+        Format bytes as a string.
+        
         Args:
-            val (bytes): The bytes to format.
-
+            val: The bytes to format
+            render_bytes: If False, return a placeholder instead of the actual bytes
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'
+            
         Returns:
-            str: The formatted base64-encoded string.
+            Formatted string representation of the bytes
         """
-        try:
-            return val.decode("utf-8")
-        except UnicodeDecodeError:
-            if render_bytes:
-                return base64.b64encode(val).decode("ascii")
-            else:
-                return "<bytes>"
+        if not render_bytes:
+            return f"<bytes: {len(val)}>"
+            
+        if binary_format == "hex":
+            return f"hex:{val.hex()}"
+        elif binary_format == "base64":
+            return f"base64:{base64.b64encode(val).decode('ascii')}"
+        elif binary_format is None or binary_format == "bytes":
+            return repr(val)  # This will give b'...' or b"..." syntax
+        else:
+            raise ValueError(f"Unsupported binary format: {binary_format}")
 
     def _show_plus(self, val: str) -> str:
         """
