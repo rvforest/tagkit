@@ -1,3 +1,10 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/source/_static/logo/tagkit-logo-dark.png" width="500">
+    <img alt="Tagkit Logo" src="docs/source/_static/logo/tagkit-logo-light.png" width="500">
+  </picture>
+</div>
+
 # Tagkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

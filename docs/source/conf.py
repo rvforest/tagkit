@@ -36,6 +36,13 @@ source_suffix = {
 # html_theme = 'sphinx_rtd_theme'
 html_theme = "furo"
 html_static_path = ["_static"]
+html_theme_options = {
+    "light_logo": "logo/tagkit-logo-light.png",
+    "dark_logo": "logo/tagkit-logo-dark.png",
+}
+
+# Favicon configuration
+html_favicon = "_static/logo/favicon.png"
 
 autodoc_member_order = "bysource"
 autodoc_class_content = "both"
