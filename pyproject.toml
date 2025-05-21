@@ -20,8 +20,9 @@ dependencies = [
 
 [dependency-groups]
     dev = [
+    "mypy>=1.15.0",
     "nox>=2025.2.9",
-    "pillow>=11.2.1",  # For dynamically generating test jpg files
+    "pillow>=11.2.1", # For dynamically generating test jpg files
     "pytest>=8.3.5",
     "pytest-cov>=6.1.1",
     "ruff>=0.11.6",
@@ -63,3 +64,7 @@ omit = [
     "noxfile.py",
     "tests/*"
 ]
+
+[[tool.mypy.overrides]]
+module = ["piexif.*"]
+follow_untyped_imports = true
