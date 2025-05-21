@@ -1,6 +1,6 @@
 name: Run Checks
 
-on: [push]
+on: [push, pull_request]
 
 env:
   FORCE_COLOR: 1
@@ -24,7 +24,7 @@ jobs:
         run: nox -s lint
 
       - name: Check Formatting
-        run: nox -s check_format
+        run: nox -s format -- --check
 
   run-tests:
     name: Run tests
@@ -40,5 +40,5 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Test
+      - name: Run tests
         run: nox -s test -- -vv

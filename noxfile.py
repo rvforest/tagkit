@@ -1,60 +1,163 @@
+import glob
+import os
+import shutil
+from typing import Literal
+
 import nox
 
+# Define common tags for session organization
+TEST_TAG = "test"
+LINT_TAG = "lint"
+FORMAT_TAG = "format"
+DOCS_TAG = "docs"
+CLEAN_TAG = "clean"
 
-@nox.session(venv_backend="uv")
+nox.options.sessions = ["lint", "format", "mypy", "test"]
+
+
+@nox.session(venv_backend="uv", tags=[LINT_TAG])
 def lint(session: nox.Session) -> None:
-    """
-    Run the unit and regular tests.
-    """
-    _install_dev_deps(session)
+    """Check code with ruff linter."""
+    _run_install(session, groups=["dev"])
     session.run("ruff", "check", *session.posargs)
 
 
-@nox.session(venv_backend="uv")
-def check_format(session: nox.Session) -> None:
+@nox.session(venv_backend="uv", tags=[FORMAT_TAG])
+def format(session: nox.Session, check: bool = False) -> None:
+    """Format code with ruff.
+
+    Args:
+        check: If True, only check formatting without making changes.
     """
-    Run the unit and regular tests.
-    """
-    _install_dev_deps(session)
-    session.run("ruff", "format", "--check", *session.posargs)
+    _run_install(session, groups=["dev"])
+    args = list(session.posargs)
+    if check or "--check" in args:
+        args = [a for a in args if a != "--check"]
+        session.run("ruff", "format", "--check", *args)
+    else:
+        session.run("ruff", "format", *args)
 
 
-@nox.session(venv_backend="uv")
-def format(session: nox.Session) -> None:
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def mypy(session: nox.Session) -> None:
+    """Run static type checking with mypy."""
+    _run_install(session, groups=["dev"])
+    session.run("mypy", "src", *session.posargs)
+
+
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def test(session: nox.Session) -> None:
+    """Run tests with pytest."""
+    _run_install(session)
+    session.run("pytest", *session.posargs)
+
+
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def doctest(session: nox.Session) -> None:
+    """Run doctests in Python modules and documentation.
+
+    This checks both:
+    - Python docstrings (using --doctest-modules)
+    - Documentation .rst files (using --doctest-glob)
     """
-    Run the unit and regular tests.
-    """
-    _install_dev_deps(session)
-    session.run("ruff", "format", *session.posargs)
+    _run_install(session, groups=["main", "dev", "docs"])
+
+    # Test Python docstrings
+    session.run("pytest", "--doctest-modules", "src/tagkit/", *session.posargs)
+
+    # Test documentation examples
+    # session.run(
+    #     "pytest",
+    #     "--doctest-glob", "*.rst",
+    #     "docs/source/",
+    #     *session.posargs
+    # )
 
 
 @nox.session(venv_backend="uv")
 def fix(session: nox.Session) -> None:
     """Fix formatting and linting"""
-    _install_dev_deps(session)
+    _run_install(session, groups=["dev"])
     session.run("ruff", "check", "--fix")
     session.run("ruff", "format")
 
 
-@nox.session(venv_backend="uv")
-def test(session: nox.Session) -> None:
-    """Run tests"""
-    _install_all_deps(session)
-    session.run("pytest", *session.posargs)
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def coverage(session: nox.Session) -> None:
+    """Run tests with coverage reporting."""
+    _run_install(session)
+    session.install("coverage[toml]")
+    session.run("coverage", "run", "-m", "pytest", *session.posargs)
+    session.run("coverage", "report", "-m")
+    session.run("coverage", "html")
+    print("Coverage HTML report: file://htmlcov/index.html")
 
 
-def _install_dev_deps(session: nox.Session) -> None:
-    _run_install(session, only_dev=True)
+@nox.session(venv_backend="uv", tags=[LINT_TAG, FORMAT_TAG, TEST_TAG])
+def check(session: nox.Session) -> None:
+    """Run all checks (lint, formatting, type checking, tests, doctests)."""
+    session.notify("lint")
+    session.notify("format", ["--check"])
+    session.notify("mypy")
+    session.notify("test")
+    session.notify("doctest")
 
 
-def _install_all_deps(session: nox.Session) -> None:
-    _run_install(session, only_dev=False)
+@nox.session(venv_backend="uv", python=False, tags=[CLEAN_TAG])
+def clean(session: nox.Session) -> None:
+    """Clean up build artifacts."""
+    patterns = [
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        "htmlcov",
+        "*.egg-info",
+        "dist",
+        "build",
+        ".coverage",
+        "coverage.xml",
+    ]
+
+    for pattern in patterns:
+        for path in (
+            p
+            for p in [*glob.glob(pattern), *glob.glob(f"**/{pattern}", recursive=True)]
+            if os.path.exists(p)
+        ):
+            try:
+                if os.path.isfile(path):
+                    os.unlink(path)
+                else:
+                    shutil.rmtree(path)
+                session.log(f"Removed: {path}")
+            except Exception as e:
+                session.error(f"Error removing {path}: {e}")
+
+    # Clean docs build directory
+    docs_build = os.path.join("docs", "build")
+    if os.path.exists(docs_build):
+        shutil.rmtree(docs_build)
+        session.log(f"Removed: {docs_build}")
 
 
-def _run_install(session: nox.Session, only_dev: bool) -> None:
+@nox.session(venv_backend="uv", tags=[DOCS_TAG])
+def docs(session: nox.Session) -> None:
+    """Build the documentation."""
+    _run_install(session, groups=["docs"])
+    session.chdir("docs")
+    session.run("sphinx-build", "-b", "html", "source", "build/html", *session.posargs)
+    print("Documentation built.")
+
+
+def _run_install(
+    session: nox.Session, groups: list[Literal["main", "dev", "docs"]] = ["main", "dev"]
+) -> None:
     cmd = ["uv", "sync"]
-    if only_dev:
-        cmd.append("--only-dev")
+    group_arg = "--group" if "main" in groups else "--only-group"
+    if "dev" in groups:
+        cmd.append(f"{group_arg}=dev")
+    if "docs" in groups:
+        cmd.append(f"{group_arg}=docs")
     session.run_install(
         *cmd,
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
