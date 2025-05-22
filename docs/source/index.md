@@ -8,7 +8,6 @@ Welcome to the documentation for **tagkit**, a Python library for working with i
 
 installation.md
 quickstart.md
-usage.md
 
 ```
 
