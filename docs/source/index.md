@@ -15,7 +15,6 @@ quickstart.md
 :maxdepth: 1
 :caption: User Guide:
 
-tutorials/index.md
 cli/index.md
 configuration.md
 tag_io/index.md
