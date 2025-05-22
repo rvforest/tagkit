@@ -29,7 +29,7 @@ def to_serializable(val, binary_format: Optional[str] = None):
         return str(val)
 
 
-def print_exif_json(exif_data, binary_format: Optional[str] = None):
+def print_exif_json(exif_data: dict[str, dict[int, ExifEntry]], binary_format: Optional[str] = None):
     """
     Print EXIF data as JSON using rich formatting.
 
@@ -37,8 +37,7 @@ def print_exif_json(exif_data, binary_format: Optional[str] = None):
         exif_data: EXIF data to print.
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
     """
-    data = to_serializable(exif_data, binary_format)
-    print_json(data=data)
+    print_json(data=exif_data)
 
 
 def print_exif_table(
