@@ -23,7 +23,7 @@ def test_images(tmp_path):
     """Create test images in a temporary directory based on metadata.json"""
     # Path to the metadata.json file
     here = Path(__file__).parent.resolve()
-    metadata_path = here / "io/test_images/metadata.json"
+    metadata_path = here / "tag_io/test_images/metadata.json"
 
     # Read the metadata.json file
     with open(metadata_path, "r", encoding="utf-8") as f:
