@@ -29,14 +29,14 @@ def n_tags_expected(mock_exif_data):
 
 
 @pytest.fixture
-def patch_exif_io(mock_exif_data):
+def mock_exif_w_patch(mock_exif_data):
     with mock.patch("tagkit.tag_io.piexif_io.piexif.load") as mocked_fn:
         mocked_fn.return_value = mock_exif_data
         yield mock_exif_data
 
 
 class TestGetExif:
-    def test_get_exif_files_loaded(self, patch_exif_io):
+    def test_get_exif_files_loaded(self, mock_exif_w_patch):
         n_files_expected = 3
 
         result = ops.get_exif([f"foo_{i}" for i in range(n_files_expected)])
@@ -44,19 +44,19 @@ class TestGetExif:
         for i in range(n_files_expected):
             assert f"foo_{i}" in result
 
-    def test_all_tags_retrieved(self, n_tags_expected, patch_exif_io):
-        n_tags_expected = sum(len(d) for d in patch_exif_io.values() if d is not None)
+    def test_all_tags_retrieved(self, n_tags_expected, mock_exif_w_patch):
+        n_tags_expected = sum(len(d) for d in mock_exif_w_patch.values() if d is not None)
         result = ops.get_exif(["foo"])
         n_tags = len(result["foo"])
         assert n_tags == n_tags_expected
 
-    def test_get_exif_tag_values_retrieved(self, n_tags_expected, patch_exif_io):
+    def test_get_exif_tag_values_retrieved(self, mock_exif_w_patch):
         result = ops.get_exif(["foo"])
 
-        assert result["foo"][271].value == patch_exif_io["0th"][271].decode("ascii")
-        assert result["foo"][272].value == patch_exif_io["0th"][272].decode("ascii")
-        assert result["foo"][37385].value == patch_exif_io["Exif"][37385]
+        assert result["foo"][271].value == mock_exif_w_patch["0th"][271].decode("ascii")
+        assert result["foo"][272].value == mock_exif_w_patch["0th"][272].decode("ascii")
+        assert result["foo"][37385].value == mock_exif_w_patch["Exif"][37385]
 
-    def test_get_exif_w_id_filter(self, patch_exif_io):
+    def test_get_exif_w_id_filter(self, mock_exif_w_patch):
         result = ops.get_exif(["foo"], tag_filter=[271])
         assert len(result["foo"]) == 1
