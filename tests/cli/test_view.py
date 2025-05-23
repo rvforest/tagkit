@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 
@@ -64,6 +65,7 @@ class TestViewCommand:
 
     def test_view_json(self, test_images):
         """Test that --json outputs valid JSON and includes expected EXIF data keys."""
+        os.environ.pop("FORCE_COLOR", None)
         result = runner.invoke(app, ["view", str(test_images) + "/*.jpg", "--json"])
         assert result.exit_code == 0, result.output
         # The output should be valid JSON
