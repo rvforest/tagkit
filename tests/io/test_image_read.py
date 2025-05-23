@@ -51,11 +51,11 @@ def test_get_tags_no_filter(test_images, img_metadata):
 
         path = test_images / filename
         exif_handler = ImageExifData(path)
-        actual_tags = exif_handler.get_tags()
+        actual_tags = exif_handler.tags
 
         expected_tags = list_to_tuple(expected["tags"])
         for expected_tag in expected_tags:
-            actual_val = actual_tags[expected_tag["id"]].value
+            actual_val = actual_tags[expected_tag["name"]].value
             assert actual_val == expected_tag["value"], (
                 f"Failed for {filename}, tag {expected_tag['name']}"
             )

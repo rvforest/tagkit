@@ -10,6 +10,14 @@ runner = CliRunner()
 test_dir = Path(__file__).parents[1]
 
 
+def always_fail(*args, **kwargs):
+    raise Exception("fail!")
+
+
+def always_empty(*args, **kwargs):
+    return {}
+
+
 # Use fixture for metadata
 @pytest.fixture
 def img_metadata():
@@ -30,7 +38,7 @@ class TestViewCommand:
         result = runner.invoke(app, ["view", str(test_images) + "/*.jpg"])
         output_lines = result.output.splitlines()
 
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "Exif Data" in output_lines[0]
 
         assert len(output_lines) >= min_number_lines
@@ -57,7 +65,7 @@ class TestViewCommand:
     def test_view_json(self, test_images):
         """Test that --json outputs valid JSON and includes expected EXIF data keys."""
         result = runner.invoke(app, ["view", str(test_images) + "/*.jpg", "--json"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         # The output should be valid JSON
         try:
             data = json.loads(result.output)
@@ -72,10 +80,10 @@ class TestViewCommand:
         dummy_file = tmp_path / "dummy.txt"
         dummy_file.write_text("not an image")
 
-        # Patch get_exif to raise an Exception
+        # Patch ExifImageCollection to raise an Exception
         monkeypatch.setattr(
-            "tagkit.operations.get_exif",
-            lambda *a, **kw: (_ for _ in ()).throw(Exception("fail!")),
+            "tagkit.image_exif.ExifImageCollection",
+            always_fail,
         )
 
         result = runner.invoke(app, ["view", str(dummy_file)])
@@ -87,9 +95,9 @@ class TestViewCommand:
         dummy_file = tmp_path / "dummy.jpg"
         dummy_file.write_bytes(b"\xff\xd8\xff\xd9")  # minimal JPEG
 
-        # Patch get_exif to return an empty dict
-        monkeypatch.setattr("tagkit.operations.get_exif", lambda *a, **kw: {})
+        # Patch ExifImageCollection to return an empty dict
+        monkeypatch.setattr("tagkit.image_exif.ExifImageCollection", always_empty)
 
         result = runner.invoke(app, ["view", str(dummy_file)])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "No EXIF data found for the selected files" in result.output

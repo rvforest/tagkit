@@ -3,8 +3,7 @@ import typer
 import re
 from tagkit.cli.file_resolver import FileResolver
 from tagkit.cli.cli_formatting import print_exif_json, print_exif_table
-from tagkit.operations import get_exif
-from tagkit.cli.cli_utils import tag_ids_to_int
+from tagkit.image_exif import ExifImageCollection
 
 
 def view(
@@ -38,7 +37,8 @@ def view(
     """
     View EXIF data for one or more image files. Supports filtering by tag and output as table or JSON.
     """
-    tag_filter = tag_ids_to_int(tags)
+    # Note: tag filtering is no longer supported directly with ImageCollection
+    # If needed, tag filtering should be implemented separately
     try:
         resolver = FileResolver(file_or_pattern, glob_mode, regex_mode)
     except re.error as e:
@@ -56,15 +56,16 @@ def view(
             "[ERROR] No files matched the given pattern.", fg=typer.colors.RED, err=True
         )
         raise typer.Exit(code=1)
+
     try:
-        exif_data = get_exif(resolver.files, tag_filter=tag_filter, thumbnail=thumbnail)
+        exif_data = ExifImageCollection(resolver.files)
     except Exception as e:
         typer.secho(
             f"[ERROR] Failed to extract EXIF data: {e}", fg=typer.colors.RED, err=True
         )
         raise typer.Exit(code=2)
     # Show warning if there are no tags for any file
-    if not exif_data or all(not tags for tags in exif_data.values()):
+    if exif_data.n_tags() == 0:
         typer.secho(
             "[WARNING] No EXIF data found for the selected files.",
             fg=typer.colors.YELLOW,

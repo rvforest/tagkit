@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-import tagkit.operations as ops
+from tagkit.image_exif import ExifImageCollection
 
 
 @pytest.fixture
@@ -35,28 +35,23 @@ def mock_exif_w_patch(mock_exif_data):
         yield mock_exif_data
 
 
-class TestGetExif:
-    def test_get_exif_files_loaded(self, mock_exif_w_patch):
+class TestImageCollection:
+    def test_image_collection_files_loaded(self, mock_exif_w_patch):
         n_files_expected = 3
 
-        result = ops.get_exif([f"foo_{i}" for i in range(n_files_expected)])
+        result = ExifImageCollection([f"foo_{i}" for i in range(n_files_expected)])
 
         for i in range(n_files_expected):
-            assert f"foo_{i}" in result
+            assert f"foo_{i}" in result.files
 
     def test_all_tags_retrieved(self, n_tags_expected, mock_exif_w_patch):
-        n_tags_expected = sum(len(d) for d in mock_exif_w_patch.values() if d is not None)
-        result = ops.get_exif(["foo"])
-        n_tags = len(result["foo"])
+        result = ExifImageCollection(["foo"])
+        n_tags = len(result.files["foo"])
         assert n_tags == n_tags_expected
 
-    def test_get_exif_tag_values_retrieved(self, mock_exif_w_patch):
-        result = ops.get_exif(["foo"])
+    def test_image_collection_tag_values_retrieved(self, mock_exif_w_patch):
+        result = ExifImageCollection(["foo"])
 
-        assert result["foo"][271].value == mock_exif_w_patch["0th"][271].decode("ascii")
-        assert result["foo"][272].value == mock_exif_w_patch["0th"][272].decode("ascii")
-        assert result["foo"][37385].value == mock_exif_w_patch["Exif"][37385]
-
-    def test_get_exif_w_id_filter(self, mock_exif_w_patch):
-        result = ops.get_exif(["foo"], tag_filter=[271])
-        assert len(result["foo"]) == 1
+        assert result.files["foo"].tags["Make"].value == mock_exif_w_patch["0th"][271].decode("ascii")
+        assert result.files["foo"].tags["Model"].value == mock_exif_w_patch["0th"][272].decode("ascii")
+        assert result.files["foo"].tags["Flash"].value == mock_exif_w_patch["Exif"][37385]

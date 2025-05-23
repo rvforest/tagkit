@@ -4,7 +4,7 @@ from rich import print_json
 from rich.console import Console
 from rich.table import Table
 
-from tagkit.exif_entry import ExifEntry
+from tagkit.image_exif import ExifImageCollection
 
 
 def to_serializable(val, binary_format: Optional[str] = None):
@@ -29,7 +29,9 @@ def to_serializable(val, binary_format: Optional[str] = None):
         return str(val)
 
 
-def print_exif_json(exif_data: dict[str, dict[int, ExifEntry]], binary_format: Optional[str] = None):
+def print_exif_json(
+    exif_data: ExifImageCollection, binary_format: Optional[str] = None
+):
     """
     Print EXIF data as JSON using rich formatting.
 
@@ -37,11 +39,11 @@ def print_exif_json(exif_data: dict[str, dict[int, ExifEntry]], binary_format: O
         exif_data: EXIF data to print.
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
     """
-    print_json(data=exif_data)
+    print_json(data=exif_data.to_dict(binary_format=binary_format))
 
 
 def print_exif_table(
-    exif_data: dict[str, dict[int, ExifEntry]], binary_format: Optional[str] = None
+    exif_data: ExifImageCollection, binary_format: Optional[str] = None
 ) -> None:
     """
     Print EXIF data as a formatted table using rich.
@@ -58,19 +60,19 @@ def print_exif_table(
     table.add_column("name", style="magenta")
     table.add_column("value")
 
-    for filename, tags in exif_data.items():
+    for filename, tags in exif_data.files.items():
         is_first = True
         is_last = False
-        for i, tag in enumerate(tags.values()):
-            if i == len(tags) - 1:
+        for i, tag in enumerate(tags.tags.items()):
+            if i == len(tags.tags.items()) - 1:
                 is_last = True
             filename_val = filename if is_first else ""
             is_first = False
             row_data = [
                 filename_val,
-                tag.id,
-                tag.name,
-                tag.format(render_bytes=render_bytes, binary_format=binary_format),
+                tag[1].id,
+                tag[1].name,
+                tag[1].format(render_bytes=render_bytes, binary_format=binary_format),
             ]
             table.add_row(*[str(d) for d in row_data], end_section=is_last)
 
