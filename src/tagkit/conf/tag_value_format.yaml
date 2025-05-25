@@ -49,8 +49,6 @@ XPosition:
   display: decimal
 YPosition:
   display: decimal
-ReferenceBlackWhite:
-  display: fraction
 Temperature:
   display: decimal
   unit: °C
