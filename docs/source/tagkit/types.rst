@@ -47,4 +47,4 @@ Type Aliases
 TypedDicts
 ----------
 
-- **ExifTagInfo**: ``{ id: int, name: str, val: ExifTag }`` — Information about an EXIF tag. 
+- **ExifTagInfo**: ``{ id: int, name: str, val: ExifTag }`` — Information about an EXIF tag.

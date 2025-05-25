@@ -108,7 +108,7 @@ To add support for a new tag type:
        """Format the new tag type for display."""
        # Custom formatting logic
        return formatted_value
-   
+
    # Register the formatter
    register_formatter("new_tag_type", format_new_tag_type)
    ```
@@ -121,12 +121,12 @@ To add support for a new file format:
    ```python
    class NewFormatReader(BaseTagReader):
        """Reader for the new format."""
-       
+
        def read_all(self):
            """Read all tags from the source."""
            # Implementation
            return tags
-       
+
        def read_tags(self, tag_names):
            """Read specific tags from the source."""
            # Implementation
@@ -137,11 +137,11 @@ To add support for a new file format:
    ```python
    class NewFormatWriter(BaseTagWriter):
        """Writer for the new format."""
-       
+
        def write_tags(self, tags):
            """Write tags to the target."""
            # Implementation
-           
+
        def write_tags_to_new_file(self, tags, output_file):
            """Write tags to a new file."""
            # Implementation
@@ -160,7 +160,7 @@ Tagkit supports plugins for extending functionality:
 1. Create a plugin module:
    ```python
    # my_tagkit_plugin.py
-   
+
    def initialize_plugin(registry):
        """Initialize the plugin."""
        # Register custom tags, formatters, etc.
@@ -184,7 +184,7 @@ When working with large image files:
    ```python
    # Instead of reading all tags
    tags = read_exif(image_path)
-   
+
    # Read only the tags you need
    tags = read_exif(image_path, tags=["Make", "Model", "DateTimeOriginal"])
    ```
@@ -192,11 +192,11 @@ When working with large image files:
 2. Use batch processing for multiple files:
    ```python
    from tagkit.operations import batch_process
-   
+
    def process_image(image_path):
        # Process a single image
        return result
-   
+
    results = batch_process(image_paths, process_image, max_workers=4)
    ```
 
@@ -232,7 +232,7 @@ Write unit tests for individual components:
 def test_register_tag():
     registry = TagRegistry()
     registry.register_tag("TestTag", 0x9999, "string", "Test description")
-    
+
     tag_info = registry.get_tag_info("TestTag")
     assert tag_info is not None
     assert tag_info.tag_id == 0x9999
@@ -249,10 +249,10 @@ def test_read_write_roundtrip():
     # Write tags to a test image
     test_tags = {"Artist": "Test Artist", "Copyright": "Test Copyright"}
     write_exif("test_image.jpg", test_tags)
-    
+
     # Read tags back
     read_tags = read_exif("test_image.jpg")
-    
+
     # Verify tags were preserved
     assert read_tags["Artist"] == "Test Artist"
     assert read_tags["Copyright"] == "Test Copyright"
@@ -293,7 +293,7 @@ For debugging complex issues:
 1. Enable verbose output:
    ```python
    from tagkit.conf import config
-   
+
    config.set("general.verbose", True)
    ```
 
@@ -315,7 +315,7 @@ For debugging complex issues:
 1. Mark deprecated features with warnings:
    ```python
    import warnings
-   
+
    def deprecated_function():
        warnings.warn(
            "deprecated_function is deprecated and will be removed in version 2.0. "
@@ -338,14 +338,14 @@ Use Google-style docstrings for all public APIs:
 ```python
 def example_function(param1: str, param2: int) -> bool:
     """Example function with Google style docstring.
-    
+
     Args:
         param1: Description of param1
         param2: Description of param2
-        
+
     Returns:
         Description of return value
-        
+
     Raises:
         ValueError: When param1 is empty
     """

@@ -50,7 +50,7 @@ def test_len_method(test_images):
     """Test the __len__ method"""
     exif = ImageExifData(test_images / "minimal.jpg")
     assert len(exif) == len(exif.tags)
-    
+
     # With filter
     filtered_exif = ImageExifData(test_images / "minimal.jpg", tag_filter=["Make"])
     assert len(filtered_exif) == 1
@@ -90,7 +90,7 @@ def test_set_tag_with_thumbnail(test_images):
     exif = ImageExifData(test_images / "minimal.jpg")
     # First check if we can set a tag with thumbnail flag
     exif.set_tag(271, "NewMake", thumbnail=True)
-    
+
     # Directly verify the tag was set in the internal _tag_dict
     # This avoids relying on the tags property which filters by thumbnail
     tag_id = 271  # Make tag ID
@@ -143,18 +143,18 @@ def test_remove_tag_with_ifd(test_images):
 def test_remove_tag_with_thumbnail(test_images):
     """Test removing a tag with thumbnail flag"""
     exif = ImageExifData(test_images / "minimal.jpg")
-    
+
     # Set a tag in thumbnail IFD
     tag_id = 271  # Make tag ID
     thumbnail_ifd = "IFD1"  # The library uses IFD1 for thumbnail tags
     exif.set_tag(tag_id, "NewMake", thumbnail=True)
-    
+
     # Verify the tag exists in the internal _tag_dict
     assert (tag_id, thumbnail_ifd) in exif._tag_dict
-    
+
     # Remove it
     exif.remove_tag(tag_id, thumbnail=True)
-    
+
     # Verify it's gone from the internal _tag_dict
     assert (tag_id, thumbnail_ifd) not in exif._tag_dict
 

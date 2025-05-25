@@ -96,7 +96,7 @@ exif = ImageExifData("path/to/your/image.jpg")
 try:
     project_name = exif.get_tag("ProjectName").value
     scene_id = exif.get_tag("SceneID").value
-    
+
     print(f"Project: {project_name}")
     print(f"Scene ID: {scene_id}")
 except KeyError as e:
@@ -143,13 +143,13 @@ def register_project_tags():
         tag_id=0x9C9C,
         tag_type="string"
     )
-    
+
     tag_registry.register_custom_tag(
         name="SceneID",
         tag_id=0x9C9D,
         tag_type="integer"
     )
-    
+
     tag_registry.register_custom_tag(
         name="LocationCode",
         tag_id=0x9C9E,
@@ -167,20 +167,20 @@ def process_directory(directory_path, project_name):
     """Process all images in a directory with custom tags."""
     # Supported image extensions
     image_extensions = ('.jpg', '.jpeg', '.tiff', '.tif')
-    
+
     # Process all images
     for filename in os.listdir(directory_path):
         if filename.lower().endswith(image_extensions):
             file_path = os.path.join(directory_path, filename)
-            
+
             # Create exif instance
             exif = ImageExifData(file_path)
-            
+
             # Add custom tags
             exif.set_tag("ProjectName", project_name)
             exif.set_tag("SceneID", get_scene_id(filename))
             exif.set_tag("LocationCode", "LOC-" + filename[:3])
-            
+
             print(f"Tagged {filename}")
 
 def get_scene_id(filename):
@@ -219,7 +219,7 @@ try:
     print(f"Project name found: {project_tag.value}")
 except KeyError:
     print("No project name tag found in this image")
-    
+
 # You can also check all available tags
 all_tags = exif.get_tags()
 for tag_id, tag in all_tags.items():

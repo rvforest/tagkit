@@ -12,7 +12,7 @@ Before installing tagkit, ensure you have the following:
 Invoke directly with [uvx](https://docs.astral.sh/uv/#tools)
 
 ```bash
-uvx tagkit [command] 
+uvx tagkit [command]
 ```
 
 or install with uv, pipx, or pip

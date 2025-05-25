@@ -84,7 +84,7 @@ class MyCustomBackend(ExifIOBackend):
         # Implement loading tags from the image
         # Return an ExifTagDict
         pass
-        
+
     def save_tags(self, image_path: FilePath, tags: ExifTagDict) -> None:
         # Implement saving tags to the image
         pass

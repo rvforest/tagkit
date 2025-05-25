@@ -19,4 +19,4 @@ The ``tagkit.image_exif`` module provides classes and functions for extracting a
 .. automodule:: tagkit.image_exif
    :members:
    :undoc-members:
-   :show-inheritance: 
+   :show-inheritance:

@@ -40,4 +40,4 @@ Returns:
 
 Example::
 
-   get_exif(['img1.jpg', 'img2.jpg'], tag_filter=['Make', 'Model']) 
+   get_exif(['img1.jpg', 'img2.jpg'], tag_filter=['Make', 'Model'])

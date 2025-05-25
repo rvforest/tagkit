@@ -7,7 +7,7 @@ Tagkit provides a command-line interface (CLI) for viewing EXIF metadata in imag
 Invoke directly with [uvx](https://docs.astral.sh/uv/#tools):
 
 ```bash
-uvx tagkit [command] 
+uvx tagkit [command]
 ```
 
 Or install with uv, pipx, or pip:

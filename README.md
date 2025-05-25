@@ -32,7 +32,7 @@
 Invoke directly with [uvx](https://docs.astral.sh/uv/#tools)
 
 ```bash
-uvx tagkit [command] 
+uvx tagkit [command]
 ```
 
 or install with uv, pipx, or pip
@@ -63,19 +63,19 @@ tagkit view [OPTIONS] FILE_OR_PATTERN
 
 #### Options
 
-- `--glob`  
+- `--glob`
   Use glob pattern matching for file selection.
 
-- `--regex`  
+- `--regex`
   Use regex pattern matching for file selection.
 
-- `--tags TAGS`  
+- `--tags TAGS`
   Comma-separated list of EXIF tag names or IDs to filter.
 
-- `--thumbnail`  
+- `--thumbnail`
   Show EXIF tags from image thumbnails instead of the main image.
 
-- `--json`  
+- `--json`
   Output EXIF data as JSON instead of a table.
 
 #### Examples

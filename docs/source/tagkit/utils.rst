@@ -18,4 +18,4 @@ The ``tagkit.utils`` module provides utility functions for EXIF data processing 
 .. automodule:: tagkit.utils
    :members:
    :undoc-members:
-   :show-inheritance: 
+   :show-inheritance:

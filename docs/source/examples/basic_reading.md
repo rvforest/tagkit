@@ -36,13 +36,13 @@ try:
     camera_make = exif.get_tag("Make").value
     camera_model = exif.get_tag("Model").value
     print(f"Camera: {camera_make} {camera_model}")
-    
+
     # Extract photo information
     date_taken = exif.get_tag("DateTimeOriginal").value
     exposure = exif.get_tag("ExposureTime").value
     aperture = exif.get_tag("FNumber").value
     iso = exif.get_tag("ISOSpeedRatings").value
-    
+
     print(f"Date Taken: {date_taken}")
     print(f"Exposure: {exposure} sec, f/{aperture}, ISO {iso}")
 except KeyError as e:
@@ -105,7 +105,7 @@ from tagkit.image_exif import read_exif
 
 def process_directory(directory):
     results = {}
-    
+
     for filename in os.listdir(directory):
         if filename.lower().endswith(('.jpg', '.jpeg', '.tiff', '.png')):
             file_path = os.path.join(directory, filename)
@@ -114,7 +114,7 @@ def process_directory(directory):
                 results[filename] = tags
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
-    
+
     return results
 
 # Process all images in a directory

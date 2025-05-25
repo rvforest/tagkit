@@ -18,4 +18,4 @@ The ``tagkit.tag_registry`` module manages the registry of EXIF tags and their m
 .. automodule:: tagkit.tag_registry
    :members:
    :undoc-members:
-   :show-inheritance: 
+   :show-inheritance:

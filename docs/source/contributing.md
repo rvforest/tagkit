@@ -121,14 +121,14 @@ All public functions, classes, and methods should have docstrings following the 
 ```python
 def example_function(param1: str, param2: int) -> bool:
     """Example function with Google style docstring.
-    
+
     Args:
         param1: Description of param1
         param2: Description of param2
-        
+
     Returns:
         Description of return value
-        
+
     Raises:
         ValueError: When param1 is empty
     """
@@ -154,10 +154,10 @@ def test_read_exif():
     """Test reading EXIF data from an image."""
     # Setup
     test_image = "tests/data/test_image.jpg"
-    
+
     # Execute
     tags = read_exif(test_image)
-    
+
     # Assert
     assert "Make" in tags
     assert "Model" in tags

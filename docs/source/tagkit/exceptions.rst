@@ -22,4 +22,4 @@ The ``tagkit.exceptions`` module defines custom exceptions used throughout tagki
 .. automodule:: tagkit.exceptions
    :members:
    :undoc-members:
-   :show-inheritance: 
+   :show-inheritance:

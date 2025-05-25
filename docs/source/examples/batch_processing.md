@@ -14,34 +14,34 @@ def process_directory(directory_path):
     """Process all image files in a directory."""
     # Supported image extensions
     image_extensions = ('.jpg', '.jpeg', '.tiff', '.tif', '.png')
-    
+
     # Count of processed files
     processed_count = 0
-    
+
     # Iterate through all files in the directory
     for filename in os.listdir(directory_path):
         # Check if the file is an image
         if filename.lower().endswith(image_extensions):
             file_path = os.path.join(directory_path, filename)
-            
+
             try:
                 # Process the image file
                 process_image(file_path)
                 processed_count += 1
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
-    
+
     print(f"Processed {processed_count} image files")
 
 def process_image(image_path):
     """Process a single image file."""
     # Read existing tags
     tags = read_exif(image_path)
-    
+
     # Perform your processing here
     # For example, add a copyright tag
     tags_to_write = {"Copyright": "© 2025 Your Name"}
-    
+
     # Write tags back to the image
     write_exif(image_path, tags_to_write)
     print(f"Processed: {image_path}")
@@ -65,11 +65,11 @@ def process_image(image_path):
     try:
         # Read existing tags
         tags = read_exif(image_path)
-        
+
         # Perform your processing here
         # For example, add a copyright tag
         tags_to_write = {"Copyright": "© 2025 Your Name"}
-        
+
         # Write tags back to the image
         write_exif(image_path, tags_to_write)
         return f"Processed: {image_path}"
@@ -80,22 +80,22 @@ def batch_process_images(directory_path, max_workers=4):
     """Process all image files in a directory using parallel execution."""
     # Supported image extensions
     image_extensions = ('.jpg', '.jpeg', '.tiff', '.tif', '.png')
-    
+
     # Collect all image files
     image_files = []
     for root, _, files in os.walk(directory_path):
         for filename in files:
             if filename.lower().endswith(image_extensions):
                 image_files.append(os.path.join(root, filename))
-    
+
     # Process files in parallel
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         results = list(executor.map(process_image, image_files))
-    
+
     # Print results
     for result in results:
         print(result)
-    
+
     print(f"Processed {len(image_files)} image files")
 
 # Example usage
@@ -117,32 +117,32 @@ def process_directory_with_progress(directory_path):
     """Process all image files in a directory with progress tracking."""
     # Supported image extensions
     image_extensions = ('.jpg', '.jpeg', '.tiff', '.tif', '.png')
-    
+
     # Collect all image files
     image_files = []
     for root, _, files in os.walk(directory_path):
         for filename in files:
             if filename.lower().endswith(image_extensions):
                 image_files.append(os.path.join(root, filename))
-    
+
     # Process files with progress bar
     for image_path in tqdm(image_files, desc="Processing images"):
         try:
             # Read existing tags
             tags = read_exif(image_path)
-            
+
             # Perform your processing here
             # For example, add a copyright tag
             tags_to_write = {"Copyright": "© 2025 Your Name"}
-            
+
             # Write tags back to the image
             write_exif(image_path, tags_to_write)
-            
+
             # Small delay to avoid overwhelming the filesystem
             time.sleep(0.01)
         except Exception as e:
             print(f"\nError processing {image_path}: {e}")
-    
+
     print(f"Processed {len(image_files)} image files")
 
 # Example usage
@@ -162,21 +162,21 @@ def process_directory_with_filter(directory_path, filter_func):
     """Process image files that match a filter criteria."""
     # Supported image extensions
     image_extensions = ('.jpg', '.jpeg', '.tiff', '.tif', '.png')
-    
+
     # Count of processed files
     processed_count = 0
     skipped_count = 0
-    
+
     # Iterate through all files in the directory
     for filename in os.listdir(directory_path):
         # Check if the file is an image
         if filename.lower().endswith(image_extensions):
             file_path = os.path.join(directory_path, filename)
-            
+
             try:
                 # Read existing tags
                 tags = read_exif(file_path)
-                
+
                 # Apply filter
                 if filter_func(tags):
                     # Process the image file
@@ -189,7 +189,7 @@ def process_directory_with_filter(directory_path, filter_func):
                     print(f"Skipped: {filename} (didn't match filter criteria)")
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
-    
+
     print(f"Processed {processed_count} image files, skipped {skipped_count}")
 
 # Example filter function: only process images taken with a specific camera

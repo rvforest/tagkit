@@ -38,7 +38,7 @@ tags_to_write = {
 # Set each tag
 for tag_name, tag_value in tags_to_write.items():
     exif.set_tag(tag_name, tag_value)
-    
+
 print(f"Multiple tags written to {exif.file_path}")
 ```
 

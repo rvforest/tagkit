@@ -17,23 +17,23 @@ When working with binary data in EXIF tags, you can choose how to represent the 
 
    from tagkit.value_formatting import TagValueFormatter
    from tagkit.exif_entry import ExifEntry
-   
+
    # Create a formatter with default configuration
    formatter = TagValueFormatter.from_yaml()
-   
+
    # Create an entry with binary data
    binary_data = b'\x89PNG\r\n'
    entry = ExifEntry(id=37510, value=binary_data, ifd='Exif')
-   
+
    # Format binary data in different ways
    print(formatter.format(entry, binary_format="bytes"))  # b'\x89PNG\r\n'
    print(formatter.format(entry, binary_format="hex"))    # hex:89504e470d0a
    print(formatter.format(entry, binary_format="base64")) # base64:iVBORw0K
-   
+
    # Control binary data rendering
    print(formatter.format(entry, render_bytes=False))     # <bytes: 6>
 
-   
+
 .. note::
    When ``render_bytes`` is ``False``, binary data will be shown as a placeholder (e.g., ``<bytes: 6>``) regardless of the ``binary_format`` setting.
 
@@ -44,4 +44,4 @@ When working with binary data in EXIF tags, you can choose how to represent the 
 .. automodule:: tagkit.value_formatting
    :members:
    :undoc-members:
-   :show-inheritance: 
+   :show-inheritance:
