@@ -40,8 +40,11 @@ docs = [
 tagkit = "tagkit.cli.main:app"
 
 [tool.ruff]
-per-file-ignores = { "__init__.py" = ["F401"] }
 exclude = ["tests/*"]
+
+[tool.ruff.lint]
+per-file-ignores = { "__init__.py" = ["F401"] }
+select = ["T100"]
 
 [tool.hatch.version]
 source = "versioningit"
