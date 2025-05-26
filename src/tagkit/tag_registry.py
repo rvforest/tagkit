@@ -102,10 +102,11 @@ class _ExifRegistry:
         if thumbnail:
             return "IFD1"
 
-        found_ifds = []
+        found_ifds: list[Literal["IFD0", "Exif", "GPS", "Interop"]] = []
+        ifd0: Literal["IFD0"] = "IFD0"
         for ifd_category, tags in self.tags.items():
             if tag_id in tags:
-                ifd = "IFD0" if ifd_category == "Image" else ifd_category
+                ifd = ifd0 if ifd_category == "Image" else ifd_category
                 found_ifds.append(ifd)
         if len(found_ifds) > 1:
             warnings.warn(f"Tag ID {tag_id} found in multiple IFDs: {found_ifds}")
@@ -169,8 +170,9 @@ class _ExifRegistry:
         self._validate_tag_id(tag_key)
 
         ifd_key = "Image" if ifd in ("IFD0", "IFD1") else ifd
+
         if ifd_key is not None:
-            return self.tags[ifd_key][tag_key]["name"]
+            return self.tags[ifd_key][tag_key]["name"]  # type: ignore
 
         # If IFD not given then try all IFD's
         for ifd_tags in self.tags.values():

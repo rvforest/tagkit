@@ -74,7 +74,10 @@ def test_format_bytes_utf8(formatter: TagValueFormatter):
 def test_format_bytes_non_utf8(formatter: TagValueFormatter):
     val = b"\xff\xfe\xfd\xfc"
     expected = base64.b64encode(val).decode("ascii")
-    assert formatter._format_bytes(val, render_bytes=True, binary_format="base64") == f"base64:{expected}"
+    assert (
+        formatter._format_bytes(val, render_bytes=True, binary_format="base64")
+        == f"base64:{expected}"
+    )
 
 
 def test_format_bytes_no_render(formatter: TagValueFormatter):

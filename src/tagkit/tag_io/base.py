@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Mapping, Optional, Union, overload
 
 from tagkit.exif_entry import ExifEntry
-from tagkit.types import FilePath
+from tagkit.types import FilePath, IfdName
 
 
 class ExifTagDict(dict):
@@ -40,7 +40,7 @@ class ExifTagDict(dict):
     """
 
     def __init__(
-        self, data: Optional[Mapping[tuple[int, str], ExifEntry]] = None, **kwargs
+        self, data: Optional[Mapping[tuple[int, IfdName], ExifEntry]] = None, **kwargs
     ):
         if kwargs:
             raise AttributeError(kwargs)
@@ -49,17 +49,17 @@ class ExifTagDict(dict):
             self.update(data)
 
     @overload
-    def __getitem__(self, key: tuple[int, str]) -> ExifEntry: ...
+    def __getitem__(self, key: tuple[int, IfdName]) -> ExifEntry: ...
 
     @overload
     def __getitem__(self, key: int) -> ExifEntry: ...
 
-    def __getitem__(self, key: Union[int, tuple[int, str]]) -> ExifEntry:
+    def __getitem__(self, key: Union[int, tuple[int, IfdName]]) -> ExifEntry:
         """
         Retrieve an EXIF entry by (tag_id, ifd_name) tuple or by tag_id only.
 
         Args:
-            key (Union[int, tuple[int, str]]): The key to look up. If int, must be unique.
+            key (Union[int, tuple[int, IfdName]]): The key to look up. If int, must be unique.
 
         Returns:
             ExifEntry: The EXIF entry for the given key.
@@ -85,12 +85,12 @@ class ExifTagDict(dict):
 
         return matches[0][1]
 
-    def __setitem__(self, key: tuple[int, str], value: ExifEntry):
+    def __setitem__(self, key: tuple[int, IfdName], value: ExifEntry):
         """
         Set an EXIF entry for a (tag_id, ifd_name) tuple.
 
         Args:
-            key (tuple[int, str]): The key tuple.
+            key (tuple[int, IfdName]): The key tuple.
             value (ExifEntry): The EXIF entry to set.
 
         Raises:

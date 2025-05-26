@@ -42,7 +42,9 @@ class PiexifBackend(ExifIOBackend):
 
     def save_tags(self, image_path: FilePath, tags: ExifTagDict) -> None:
         # Organize tags back into the piexif structure
-        exif_dict = {ifd: {} for ifd in tagkit_to_piexif_ifd_map.values()}
+        exif_dict: dict[PiexifIfdName, dict[int, ExifTag]] = {
+            ifd: {} for ifd in tagkit_to_piexif_ifd_map.values()
+        }
         for tag in tags.values():
             if tag.ifd in exif_dict:
                 # Encode if ascii

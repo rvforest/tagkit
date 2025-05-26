@@ -52,6 +52,12 @@ class TestImageCollection:
     def test_image_collection_tag_values_retrieved(self, mock_exif_w_patch):
         result = ExifImageCollection(["foo"])
 
-        assert result.files["foo"].tags["Make"].value == mock_exif_w_patch["0th"][271].decode("ascii")
-        assert result.files["foo"].tags["Model"].value == mock_exif_w_patch["0th"][272].decode("ascii")
-        assert result.files["foo"].tags["Flash"].value == mock_exif_w_patch["Exif"][37385]
+        assert result.files["foo"].tags["Make"].value == mock_exif_w_patch["0th"][
+            271
+        ].decode("ascii")
+        assert result.files["foo"].tags["Model"].value == mock_exif_w_patch["0th"][
+            272
+        ].decode("ascii")
+        assert (
+            result.files["foo"].tags["Flash"].value == mock_exif_w_patch["Exif"][37385]
+        )
