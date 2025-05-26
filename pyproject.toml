@@ -23,6 +23,7 @@ dependencies = [
     "mypy>=1.15.0",
     "nox>=2025.2.9",
     "pillow>=11.2.1", # For dynamically generating test jpg files
+    "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-cov>=6.1.1",
     "ruff>=0.11.6",
@@ -37,7 +38,7 @@ docs = [
 
 [project.scripts]
 tagkit = "tagkit.cli.main:app"
-    
+
 [tool.ruff]
 per-file-ignores = { "__init__.py" = ["F401"] }
 exclude = ["tests/*"]
@@ -46,7 +47,7 @@ exclude = ["tests/*"]
 source = "versioningit"
 
 [tool.versioningit.vcs]
-method = "git" 
+method = "git"
 match = ["v*"]
 default-tag = "0.1.0"
 
@@ -66,6 +67,9 @@ omit = [
     "noxfile.py",
     "tests/*"
 ]
+
+[tool.mypy]
+exclude = ['^docs/']
 
 [[tool.mypy.overrides]]
 module = ["piexif.*"]

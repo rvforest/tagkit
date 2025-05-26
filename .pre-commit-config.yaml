@@ -6,6 +6,7 @@ repos:
         entry: uv run ruff check
         language: system
         types: [python]
+        pass_filenames: false  # ruff is fast enough to check everything
       - id: format
         name: format
         entry: uv run ruff format
@@ -13,8 +14,7 @@ repos:
         types: [python]
       - id: check-types
         name: check types
-        entry: echo
-          #entry: uv run mypy
+        entry: uv run mypy
         language: system
         types: [python]
 

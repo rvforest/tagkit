@@ -20,11 +20,8 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Lint
-        run: nox -s lint
-
-      - name: Check Formatting
-        run: nox -s format -- --check
+      - name: Run checks
+        run: uv run pre-commit run --all-files --show-diff-on-failure
 
   run-tests:
     name: Run tests
