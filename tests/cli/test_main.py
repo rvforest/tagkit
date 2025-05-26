@@ -5,7 +5,6 @@ import pytest
 from typer.testing import CliRunner
 
 from tagkit.cli.main import app
-from tagkit.cli.cli_utils import tag_ids_to_int
 from tagkit import __version__
 
 runner = CliRunner()
@@ -27,14 +26,3 @@ class TestMain:
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
         assert result.output.strip() == __version__
-
-
-class TestTagIdsToInt:
-    def test_with_none(self):
-        assert tag_ids_to_int(None) is None
-
-    def test_with_ints(self):
-        assert tag_ids_to_int("1,2,3") == [1, 2, 3]
-
-    def test_with_mix(self):
-        assert tag_ids_to_int("1,a,2") == [1, "a", 2]
