@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Mapping, Optional, Union, overload
 
 from tagkit.core.tag import ExifTag
-from tagkit.core.types import FilePath
+from tagkit.core.types import FilePath, IfdName
 
 
 class ExifTagDict(dict):
@@ -49,17 +49,17 @@ class ExifTagDict(dict):
             self.update(data)
 
     @overload
-    def __getitem__(self, key: tuple[int, str]) -> ExifTag: ...
+    def __getitem__(self, key: tuple[int, IfdName]) -> ExifTag: ...
 
     @overload
     def __getitem__(self, key: int) -> ExifTag: ...
 
-    def __getitem__(self, key: Union[int, tuple[int, str]]) -> ExifTag:
+    def __getitem__(self, key: Union[int, tuple[int, IfdName]]) -> ExifTag:
         """
         Retrieve an EXIF entry by (tag_id, ifd_name) tuple or by tag_id only.
 
         Args:
-            key (Union[int, tuple[int, str]]): The key to look up. If int, must be unique.
+            key (Union[int, tuple[int, IfdName]]): The key to look up. If int, must be unique.
 
         Returns:
             ExifTag: The EXIF entry for the given key.
@@ -85,12 +85,12 @@ class ExifTagDict(dict):
 
         return matches[0][1]
 
-    def __setitem__(self, key: tuple[int, str], value: ExifTag):
+    def __setitem__(self, key: tuple[int, IfdName], value: ExifTag):
         """
         Set an EXIF entry for a (tag_id, ifd_name) tuple.
 
         Args:
-            key (tuple[int, str]): The key tuple.
+            key (tuple[int, IfdName]): The key tuple.
             value (ExifTag): The EXIF entry to set.
 
         Raises:
