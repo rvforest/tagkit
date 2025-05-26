@@ -12,7 +12,7 @@ FORMAT_TAG = "format"
 DOCS_TAG = "docs"
 CLEAN_TAG = "clean"
 
-nox.options.sessions = ["lint", "format", "mypy", "test"]
+nox.options.sessions = ["lint", "format", "types", "test"]
 
 
 @nox.session(venv_backend="uv", tags=[LINT_TAG])
@@ -39,8 +39,8 @@ def format(session: nox.Session, check: bool = False) -> None:
 
 
 @nox.session(venv_backend="uv", tags=[TEST_TAG])
-def mypy(session: nox.Session) -> None:
-    """Run static type checking with mypy."""
+def types(session: nox.Session) -> None:
+    """Run static type checking."""
     _run_install(session, groups=["dev"])
     session.run("mypy", "src", *session.posargs)
 
@@ -100,7 +100,7 @@ def check(session: nox.Session) -> None:
     """Run all checks (lint, formatting, type checking, tests, doctests)."""
     session.notify("lint")
     session.notify("format", ["--check"])
-    session.notify("mypy")
+    session.notify("types")
     session.notify("test")
     session.notify("doctest")
 
