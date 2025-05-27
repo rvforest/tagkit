@@ -101,28 +101,28 @@ tagkit view image.jpg --json
 ### Extract EXIF Data
 
 ```python
-from tagkit.operations import get_exif
+from tagkit import ExifImageCollection
 
 # Get EXIF data for one or more images
-exif_data = get_exif(['image1.jpg', 'image2.jpg'], tag_filter=['Make', 'Model'])
+exif_collection = ExifImageCollection(['image1.jpg', 'image2.jpg'], tag_filter=['Make', 'Model'])
 
-# exif_data is a dict: {filename: {tag_id: ExifEntry, ...}, ...}
-for filename, tags in exif_data.items():
-    print(f"File: {filename}")
-    for tag_id, entry in tags.items():
-        print(f"  {entry.name}: {entry.formatted_value}")
+# Access EXIF data for each file
+for file_path, exif_image in exif_collection.files.items():
+    print(f"File: {file_path}")
+    for tag in exif_image.tags.values():
+        print(f"  {tag.name}: {tag.formatted_value}")
 ```
 
-### Working with ExifEntry
+### Working with ExifTag
 
 ```python
-from tagkit.exif_entry import ExifEntry
+from tagkit.core.tag import ExifTag
 
-entry = ExifEntry(id=271, value="Canon", ifd="IFD0")
-print(entry.name)             # e.g., "Make"
-print(entry.exif_type)        # e.g., "ASCII"
-print(entry.formatted_value)  # e.g., "Canon"
-print(entry.to_dict())        # Dict representation
+tag = ExifTag(id=271, value="Canon", ifd="IFD0")
+print(tag.name)             # e.g., "Make"
+print(tag.exif_type)        # e.g., "ASCII"
+print(tag.formatted_value)  # e.g., "Canon"
+print(tag.as_dict())        # Dict representation
 ```
 
 ---

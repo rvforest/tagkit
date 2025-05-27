@@ -15,7 +15,10 @@ EXIF has standard tags defined in the specification, but you can also create and
 Before using custom tags, you need to register them with the tag registry:
 
 ```python
-from tagkit.tag_registry import tag_registry
+from tagkit.core.registry import ExifRegistry
+
+# Get the registry instance
+tag_registry = ExifRegistry()
 
 # Register a custom tag
 tag_registry.register_custom_tag(
@@ -32,8 +35,8 @@ tag_registry.register_custom_tag(
 )
 
 # Verify the tags were registered
-print(f"ProjectName tag ID: 0x{tag_registry.get_tag_id('ProjectName'):X}")
-print(f"SceneID tag ID: 0x{tag_registry.get_tag_id('SceneID'):X}")
+print(f"ProjectName tag ID: 0x{tag_registry.resolve_tag_id('ProjectName'):X}")
+print(f"SceneID tag ID: 0x{tag_registry.resolve_tag_id('SceneID'):X}")
 print(f"ProjectName tag type: {tag_registry.get_tag_type('ProjectName')}")
 ```
 
@@ -42,8 +45,11 @@ print(f"ProjectName tag type: {tag_registry.get_tag_type('ProjectName')}")
 Once registered, you can write custom tags just like standard tags:
 
 ```python
-from tagkit.image_exif import ImageExifData
-from tagkit.tag_registry import tag_registry
+from tagkit.image.exif import ExifImage
+from tagkit.core.registry import ExifRegistry
+
+# Get the registry instance
+tag_registry = ExifRegistry()
 
 # Register custom tags
 tag_registry.register_custom_tag(
@@ -58,25 +64,30 @@ tag_registry.register_custom_tag(
     tag_type="integer"
 )
 
-# Now write the custom tags to an image
-exif = ImageExifData("path/to/your/image.jpg")
+# Create an image instance
+exif = ExifImage("path/to/your/image.jpg")
 
-# Set the custom tags
+# Set custom tags
 exif.set_tag("ProjectName", "Mountain Landscape Series")
 exif.set_tag("SceneID", 42)
 
+# Save the image with custom tags
+exif.save()
 print(f"Custom tags written to {exif.file_path}")
 ```
 
 ## Reading Custom Tags
 
-To read custom tags, they must be registered before reading:
+To read custom tags, you need to register them first, then read them like standard tags:
 
 ```python
-from tagkit.image_exif import ImageExifData
-from tagkit.tag_registry import tag_registry
+from tagkit.image.exif import ExifImage
+from tagkit.core.registry import ExifRegistry
 
-# First, register the custom tags
+# Get the registry instance
+tag_registry = ExifRegistry()
+
+# Register the custom tags before reading
 tag_registry.register_custom_tag(
     name="ProjectName",
     tag_id=0x9C9C,
@@ -89,43 +100,18 @@ tag_registry.register_custom_tag(
     tag_type="integer"
 )
 
-# Now read the image including custom tags
-exif = ImageExifData("path/to/your/image.jpg")
+# Create an image instance
+exif = ExifImage("path/to/your/image.jpg")
 
-# Access the custom tags
+# Read custom tags
 try:
     project_name = exif.get_tag("ProjectName").value
     scene_id = exif.get_tag("SceneID").value
 
     print(f"Project: {project_name}")
     print(f"Scene ID: {scene_id}")
-except KeyError as e:
-    print(f"Tag not found: {e}")
-```
-
-## Working with Vendor-Specific Tags
-
-You can also register vendor-specific tags that are not part of the standard EXIF specification:
-
-```python
-from tagkit.image_exif import ImageExifData
-from tagkit.tag_registry import tag_registry
-
-# Register a vendor-specific tag
-tag_registry.register_custom_tag(
-    name="CanonImageType",
-    tag_id=0x0083,  # Canon-specific tag ID
-    tag_type="string"
-)
-
-# Read the tag from a Canon image
-exif = ImageExifData("path/to/canon_image.jpg")
-
-try:
-    image_type = exif.get_tag("CanonImageType").value
-    print(f"Canon Image Type: {image_type}")
 except KeyError:
-    print("Canon Image Type tag not found")
+    print("Custom tags not found in this image")
 ```
 
 ## Batch Processing with Custom Tags
@@ -221,47 +207,49 @@ except KeyError:
     print("No project name tag found in this image")
 
 # You can also check all available tags
-all_tags = exif.get_tags()
+all_tags = exif.tags
 for tag_id, tag in all_tags.items():
     print(f"{tag.name}: {tag.value}")
 ```
 
 ## Custom Tag Namespaces
 
-You can organize custom tags into namespaces to avoid conflicts:
+For organization, you can use namespaces for your custom tags:
 
 ```python
-from tagkit.tag_registry import tag_registry
+from tagkit.image.exif import ExifImage
+from tagkit.core.registry import ExifRegistry
 
-# Register tags with namespace prefixes
+# Get the registry instance
+tag_registry = ExifRegistry()
+
+# Register custom tags with namespaces
 tag_registry.register_custom_tag(
-    name="MyCompany:ProjectID",
-    tag_id=0x9D01,
-    tag_type="string",
-    description="Project identifier",
-    category="MyCompany"
+    name="MyCompany:ProjectName",
+    tag_id=0x9C9C,
+    tag_type="string"
 )
 
 tag_registry.register_custom_tag(
     name="MyCompany:ClientName",
-    tag_id=0x9D02,
-    tag_type="string",
-    description="Client name",
-    category="MyCompany"
+    tag_id=0x9C9D,
+    tag_type="string"
 )
 
-# Write tags with namespaces
-from tagkit.image_exif import write_exif
+# Create an image instance
+exif = ExifImage("path/to/your/image.jpg")
 
-write_exif("image.jpg", {
-    "MyCompany:ProjectID": "PROJ-123",
-    "MyCompany:ClientName": "Acme Corp"
-})
+# Set custom tags
+exif.set_tag("MyCompany:ProjectName", "Mountain Landscape Series")
+exif.set_tag("MyCompany:ClientName", "Nature Magazine")
+
+# Save the image
+exif.save()
+
+# Read back the tags
+project = exif.get_tag("MyCompany:ProjectName").value
+client = exif.get_tag("MyCompany:ClientName").value
+
+print(f"Project: {project}")
+print(f"Client: {client}")
 ```
-
-## Next Steps
-
-Now that you've learned how to work with custom tags, check out:
-
-- [Metadata Analysis Example](metadata_analysis.md) for analyzing image collections
-- [GPS Mapping Example](gps_mapping.md) for working with location data

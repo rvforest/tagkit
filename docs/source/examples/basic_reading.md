@@ -7,13 +7,13 @@ This example demonstrates how to read EXIF metadata from image files using tagki
 The simplest way to read all EXIF tags from an image:
 
 ```python
-from tagkit.image_exif import ImageExifData
+from tagkit.image.exif import ExifImage
 
 # Create an instance for an image
-exif = ImageExifData("path/to/your/image.jpg")
+exif = ExifImage("path/to/your/image.jpg")
 
 # Get all tags
-tags = exif.get_tags()
+tags = exif.tags
 
 # Print all tags
 for tag_id, tag in tags.items():
@@ -25,10 +25,10 @@ for tag_id, tag in tags.items():
 If you're only interested in certain tags, you can get them directly:
 
 ```python
-from tagkit.image_exif import ImageExifData
+from tagkit.image.exif import ExifImage
 
 # Create an instance for an image
-exif = ImageExifData("path/to/your/image.jpg")
+exif = ExifImage("path/to/your/image.jpg")
 
 # Get specific tags with error handling
 try:

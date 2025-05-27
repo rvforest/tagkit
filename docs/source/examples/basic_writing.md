@@ -7,10 +7,10 @@ This example demonstrates how to write EXIF metadata to image files using tagkit
 The simplest way to write a single tag to an image:
 
 ```python
-from tagkit.image_exif import ImageExifData
+from tagkit.image.exif import ExifImage
 
 # Create an instance for an image
-exif = ImageExifData("path/to/your/image.jpg")
+exif = ExifImage("path/to/your/image.jpg")
 
 # Set a single tag
 exif.set_tag("Artist", "Jane Doe")
@@ -22,10 +22,10 @@ print(f"Artist tag written to {exif.file_path}")
 You can write multiple tags one after another:
 
 ```python
-from tagkit.image_exif import ImageExifData
+from tagkit.image.exif import ExifImage
 
 # Create an instance for an image
-exif = ImageExifData("path/to/your/image.jpg")
+exif = ExifImage("path/to/your/image.jpg")
 
 # Define multiple tags to write
 tags_to_write = {
@@ -47,7 +47,7 @@ print(f"Multiple tags written to {exif.file_path}")
 It's a good practice to create a backup before modifying EXIF data:
 
 ```python
-from tagkit.image_exif import ImageExifData
+from tagkit.image.exif import ExifImage
 import shutil
 
 # Create an instance with backup enabled

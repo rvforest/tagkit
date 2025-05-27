@@ -16,19 +16,18 @@ This section provides the API reference for **tagkit**.
 ```{toctree}
 :maxdepth: 1
 
-tagkit/image_exif
+tagkit/image/collection
+tagkit/image/exif
 
-tagkit/tag_registry
+tagkit/core/registry
+tagkit/core/tag
+tagkit/core/types
+tagkit/core/utils
+tagkit/core/formatting
+tagkit/core/exceptions
 
-tagkit/utils
-
-tagkit/exif_entry
-
-tagkit/value_formatting
-
-tagkit/exceptions
-
-tagkit/operations
+tagkit/tag_io/base
+tagkit/tag_io/piexif_io
 
 tagkit/types
 ```
