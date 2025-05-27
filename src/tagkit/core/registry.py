@@ -1,11 +1,18 @@
+"""
+Registry of EXIF tags and their metadata.
+
+This module provides the ExifRegistry class which maintains information about
+all supported EXIF tags, their IDs, names, and types.
+"""
+
 from pathlib import Path
 from typing import Literal, Optional, Self, TypedDict, Union
 
 import yaml
 import warnings
 
-from tagkit.exceptions import InvalidTagId, InvalidTagName
-from tagkit.types import ExifType, IfdName
+from tagkit.core.exceptions import InvalidTagId, InvalidTagName
+from tagkit.core.types import ExifType, IfdName
 
 
 class RegistryConfValue(TypedDict):
@@ -17,12 +24,9 @@ RegistryConfKey = Literal["Image", "Exif", "GPS", "Interop"]
 RegistryConf = dict[RegistryConfKey, dict[int, RegistryConfValue]]
 
 
-class _ExifRegistry:
+class ExifRegistry:
     """
     Registry of all EXIF tags compatible with tagkit.
-
-    Do not directly instantiate this class. Instead, use:
-        from tagkit import tag_registry
 
     Args:
         registry_conf (RegistryConf): The EXIF tag registry configuration.
@@ -51,18 +55,19 @@ class _ExifRegistry:
             path (Union[Path, str, None]): Path to the YAML file. If None, uses default.
 
         Returns:
-            _ExifRegistry: The loaded registry instance.
+            ExifRegistry: The loaded registry instance.
 
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
 
         Example:
-            >>> _ExifRegistry.from_yaml('conf.yaml')
+            >>> ExifRegistry.from_yaml('conf.yaml')
+            >>> TagRegistry.from_yaml('conf.yaml')
         """
         if path is None:
-            here = Path(__file__).parents[0]
-            path = here / "conf/tag_registry.yaml"
+            here = Path(__file__).parents[1]  # Go up to tagkit package root
+            path = here / "conf/registry.yaml"
         with open(path, "r") as f:
             conf = yaml.safe_load(f)
         return cls(conf)
@@ -97,7 +102,7 @@ class _ExifRegistry:
         Example:
             >>> tag_registry.get_ifd('Make')
         """
-        tag_id = self.get_tag_id(tag_key)
+        tag_id = self.resolve_tag_id(tag_key)
 
         if thumbnail:
             return "IFD1"
@@ -116,9 +121,9 @@ class _ExifRegistry:
         # Execution shouldn't make it this far because if tag_id is in self
         # then there should always be a result. However, as a guardrail we
         # raise here anyway.
-        raise ValueError(f"Could not find ifd for tag '{tag_key}'")  # pragma: no cover
+        raise ValueError(f"Could not find ifd for tag '{tag_key}'")
 
-    def get_tag_id(self, tag_key: Union[int, str]) -> int:
+    def resolve_tag_id(self, tag_key: Union[int, str]) -> int:
         """
         Get tag ID for a given tag name or return the ID unchanged if already an int.
 
@@ -142,7 +147,7 @@ class _ExifRegistry:
         self._validate_tag_name(tag_key)
         return self._name_to_id[tag_key]
 
-    def get_tag_name(
+    def resolve_tag_name(
         self, tag_key: Union[int, str], ifd: Optional[IfdName] = None
     ) -> str:
         """
@@ -182,7 +187,7 @@ class _ExifRegistry:
         # Execution shouldn't make it this far because if tag_id is in self
         # then there should always be a result. However, as a guardrail we
         # raise here anyway.
-        raise ValueError(f"Could not find ifd for tag '{tag_key}'")  # pragma: no cover
+        raise ValueError(f"Could not find ifd for tag '{tag_key}'")
 
     def _validate_tag_id(self, tag_id: int) -> None:
         if tag_id not in self._tag_ids:
@@ -209,8 +214,22 @@ class _ExifRegistry:
         Example:
             >>> tag_registry.get_exif_type('Make')
         """
-        tag_name = self.get_tag_name(tag_key)
-        return self._name_to_type[tag_name]
+        if isinstance(tag_key, str):
+            self._validate_tag_name(tag_key)
+            return self._name_to_type[tag_key]
+
+        self._validate_tag_id(tag_key)
+
+        # Find the tag in any IFD
+        for ifd_tags in self.tags.values():
+            if tag_key in ifd_tags:
+                return ifd_tags[tag_key]["type"]
+
+        # Execution shouldn't make it this far because if tag_id is in self
+        # then there should always be a result. However, as a guardrail we
+        # raise here anyway.
+        raise ValueError(f"Could not find type for tag '{tag_key}'")
 
 
-tag_registry = _ExifRegistry.from_yaml()
+# Create a singleton instance
+tag_registry = ExifRegistry.from_yaml()

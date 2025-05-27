@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from tagkit.image_exif import ExifImageCollection
+from tagkit import ExifImageCollection
 
 
 @pytest.fixture

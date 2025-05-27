@@ -2,7 +2,7 @@
     "minimal.jpg": {
         "tags": [
             {"id": 271, "name": "Make", "value": "TestMake", "ifd": "0th"},
-            {"id": 272, "name": "Model", "value": "TestModel", "ifd": "0th"},
+            {"id": 272, "name": "Model", "value": "TestModel", "ifd": "0th"}
         ]
     },
     "datetime_software.jpg": {
@@ -12,8 +12,8 @@
                 "id": 36867,
                 "name": "DateTimeOriginal",
                 "value": "2025:05:01 14:30:00",
-                "ifd": "Exif",
-            },
+                "ifd": "Exif"
+            }
         ]
     },
     "with_gps.jpg": {
@@ -23,19 +23,19 @@
                 "id": 2,
                 "name": "GPSLatitude",
                 "value": [[37, 1], [48, 1], [30, 1]],
-                "ifd": "GPS",
+                "ifd": "GPS"
             },
             {"id": 3, "name": "GPSLongitudeRef", "value": "W", "ifd": "GPS"},
             {
                 "id": 4,
                 "name": "GPSLongitude",
                 "value": [[122, 1], [25, 1], [0, 1]],
-                "ifd": "GPS",
-            },
+                "ifd": "GPS"
+            }
         ]
     },
     "unicode.jpg": {
         "tags": [{"id": 315, "name": "Artist", "value": "测试用户", "ifd": "0th"}]
     },
-    "corrupt.jpg": {"corrupt": true},
+    "corrupt.jpg": {"corrupt": true}
 }

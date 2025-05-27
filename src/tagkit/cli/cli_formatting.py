@@ -4,14 +4,14 @@ from rich import print_json
 from rich.console import Console
 from rich.table import Table
 
-from tagkit.image_exif import ExifImageCollection
+from tagkit import ExifImageCollection
 
 
 def to_serializable(val, binary_format: Optional[str] = None):
     """
     Recursively convert objects to types suitable for JSON serialization.
 
-    - Any object with a to_dict() method is converted using that method.
+    - Any object with an as_dict() method is converted using that method.
     - Bytes values are formatted according to binary_format if they cannot be decoded as UTF-8.
     - Lists and dicts are processed recursively.
 
@@ -19,8 +19,8 @@ def to_serializable(val, binary_format: Optional[str] = None):
         val: The value to convert
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
     """
-    if hasattr(val, "to_dict") and callable(val.to_dict):
-        return to_serializable(val.to_dict(binary_format), binary_format)
+    if hasattr(val, "as_dict") and callable(val.as_dict):
+        return to_serializable(val.as_dict(binary_format=binary_format), binary_format)
     elif isinstance(val, dict):
         return {k: to_serializable(v, binary_format) for k, v in val.items()}
     elif isinstance(val, list):
@@ -39,7 +39,7 @@ def print_exif_json(
         exif_data: EXIF data to print.
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
     """
-    print_json(data=exif_data.to_dict(binary_format=binary_format))
+    print_json(data=exif_data.as_dict(binary_format=binary_format))
 
 
 def print_exif_table(

@@ -1,3 +1,10 @@
+"""
+Exception classes for tagkit.
+
+This module contains all custom exceptions used throughout the tagkit package.
+"""
+
+
 class TagkitError(Exception):
     """
     Base exception for all custom tagkit errors.

@@ -2,9 +2,9 @@ import pytest
 from pathlib import Path
 import warnings
 
-from tagkit.tag_registry import _ExifRegistry, tag_registry
-from tagkit.exceptions import InvalidTagId, InvalidTagName
-from tagkit.types import ExifType
+from tagkit.core.registry import ExifRegistry, tag_registry
+from tagkit.core.exceptions import InvalidTagId, InvalidTagName
+from tagkit.core.types import ExifType
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def sample_registry_conf():
 
 @pytest.fixture
 def registry(sample_registry_conf):
-    return _ExifRegistry(sample_registry_conf)
+    return ExifRegistry(sample_registry_conf)
 
 
 def test_init(registry, sample_registry_conf):
@@ -42,7 +42,7 @@ def test_init(registry, sample_registry_conf):
 
 def test_from_yaml():
     """Test loading registry from default YAML file"""
-    registry = _ExifRegistry.from_yaml()
+    registry = ExifRegistry.from_yaml()
     assert len(registry.tags) > 0
     assert all(key in registry.tags for key in ["Image", "Exif", "GPS", "Interop"])
 
@@ -57,7 +57,7 @@ def test_from_yaml_custom_path(tmp_path):
     """
     yaml_path = tmp_path / "test_registry.yaml"
     yaml_path.write_text(yaml_content)
-    registry = _ExifRegistry.from_yaml(yaml_path)
+    registry = ExifRegistry.from_yaml(yaml_path)
     assert len(registry.tags) == 1
     assert registry.tags["Image"][271]["name"] == "Make"
 
@@ -92,58 +92,58 @@ def test_get_ifd_invalid_tag():
         tag_registry.get_ifd(99999)
 
 
-def test_get_tag_id_by_id(registry):
+def test_resolve_tag_id_by_id(registry):
     """Test getting tag ID when input is already an ID"""
-    assert registry.get_tag_id(271) == 271
-    assert registry.get_tag_id(33434) == 33434
+    assert registry.resolve_tag_id(271) == 271
+    assert registry.resolve_tag_id(33434) == 33434
 
 
-def test_get_tag_id_by_name(registry):
+def test_resolve_tag_id_by_name(registry):
     """Test getting tag ID from tag name"""
-    assert registry.get_tag_id("Make") == 271
-    assert registry.get_tag_id("ExposureTime") == 33434
+    assert registry.resolve_tag_id("Make") == 271
+    assert registry.resolve_tag_id("ExposureTime") == 33434
 
 
-def test_get_tag_id_invalid_id(registry):
+def test_resolve_tag_id_invalid_id(registry):
     """Test getting tag ID with invalid ID"""
     with pytest.raises(InvalidTagId):
-        registry.get_tag_id(99999)
+        registry.resolve_tag_id(99999)
 
 
-def test_get_tag_id_invalid_name(registry):
+def test_resolve_tag_id_invalid_name(registry):
     """Test getting tag ID with invalid name"""
     with pytest.raises(InvalidTagName):
-        registry.get_tag_id("NonExistentTag")
+        registry.resolve_tag_id("NonExistentTag")
 
 
-def test_get_tag_name_by_name(registry):
+def test_resolve_tag_name_by_name(registry):
     """Test getting tag name when input is already a name"""
-    assert registry.get_tag_name("Make") == "Make"
-    assert registry.get_tag_name("ExposureTime") == "ExposureTime"
+    assert registry.resolve_tag_name("Make") == "Make"
+    assert registry.resolve_tag_name("ExposureTime") == "ExposureTime"
 
 
-def test_get_tag_name_by_id(registry):
+def test_resolve_tag_name_by_id(registry):
     """Test getting tag name from ID"""
-    assert registry.get_tag_name(271) == "Make"
-    assert registry.get_tag_name(33434) == "ExposureTime"
+    assert registry.resolve_tag_name(271) == "Make"
+    assert registry.resolve_tag_name(33434) == "ExposureTime"
 
 
-def test_get_tag_name_by_id_with_ifd(registry):
+def test_resolve_tag_name_by_id_with_ifd(registry):
     """Test getting tag name from ID with specific IFD"""
-    assert registry.get_tag_name(271, ifd="IFD0") == "Make"
-    assert registry.get_tag_name(33434, ifd="Exif") == "ExposureTime"
+    assert registry.resolve_tag_name(271, ifd="IFD0") == "Make"
+    assert registry.resolve_tag_name(33434, ifd="Exif") == "ExposureTime"
 
 
-def test_get_tag_name_invalid_id(registry):
+def test_resolve_tag_name_invalid_id(registry):
     """Test getting tag name with invalid ID"""
     with pytest.raises(InvalidTagId):
-        registry.get_tag_name(99999)
+        registry.resolve_tag_name(99999)
 
 
-def test_get_tag_name_invalid_name(registry):
+def test_resolve_tag_name_invalid_name(registry):
     """Test getting tag name with invalid name"""
     with pytest.raises(InvalidTagName):
-        registry.get_tag_name("NonExistentTag")
+        registry.resolve_tag_name("NonExistentTag")
 
 
 def test_get_exif_type_by_id(registry):
@@ -178,6 +178,6 @@ def test_get_ifd_warns_on_multiple_ifds():
         "Image": {123: {"name": "TestTag", "type": "ASCII"}},
         "Exif": {123: {"name": "TestTag", "type": "ASCII"}},
     }  # type: ignore
-    reg = _ExifRegistry(conf)  # type: ignore
+    reg = ExifRegistry(conf)  # type: ignore
     with pytest.warns(UserWarning, match="multiple IFDs"):
         reg.get_ifd(123)

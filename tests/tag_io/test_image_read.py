@@ -4,7 +4,7 @@ from typing import Any, overload
 
 import pytest
 
-from tagkit.image_exif import ImageExifData
+from tagkit import ExifImage
 
 
 # Change to use the fixture instead of a hardcoded path
@@ -34,12 +34,12 @@ def list_to_tuple(obj):
 
 def test_initialize_from_str(test_images, img_metadata):
     str_path = str(test_images / next(iter(img_metadata)))
-    ImageExifData(str_path)
+    ExifImage(str_path)
 
 
 def test_initialize_from_path(test_images, img_metadata):
     pathlib_path = test_images / next(iter(img_metadata))
-    ImageExifData(pathlib_path)
+    ExifImage(pathlib_path)
 
 
 def test_get_tags_no_filter(test_images, img_metadata):
@@ -50,7 +50,7 @@ def test_get_tags_no_filter(test_images, img_metadata):
             continue
 
         path = test_images / filename
-        exif_handler = ImageExifData(path)
+        exif_handler = ExifImage(path)
         actual_tags = exif_handler.tags
 
         expected_tags = list_to_tuple(expected["tags"])

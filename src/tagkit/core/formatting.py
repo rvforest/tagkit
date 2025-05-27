@@ -1,10 +1,17 @@
+"""
+Tag value formatting utilities.
+
+This module provides the ValueFormatter class for formatting EXIF tag values
+according to configuration rules.
+"""
+
 import base64
 from pathlib import Path
 from typing import Callable, Optional, Self, TYPE_CHECKING, Union
 import math
 
 if TYPE_CHECKING:
-    from tagkit.exif_entry import ExifEntry  # pragma: no cover
+    from tagkit.core.tag import ExifTag  # pragma: no cover  # noqa: F401
 
 import yaml
 
@@ -13,7 +20,7 @@ Rational3 = tuple[Rational, Rational, Rational]
 Rational4 = tuple[Rational, Rational, Rational, Rational]
 
 
-class TagValueFormatter:
+class ValueFormatter:
     """
     Formats EXIF tag values according to configuration rules.
 
@@ -21,7 +28,7 @@ class TagValueFormatter:
         conf (dict[str, dict]): Formatting configuration for tag values.
 
     Example:
-        >>> formatter = TagValueFormatter.from_yaml()
+        >>> formatter = ValueFormatter.from_yaml()
         >>> formatter.format(tag_entry)
     """
 
@@ -37,18 +44,18 @@ class TagValueFormatter:
             file (Union[Path, str, None]): Path to the YAML config file. If None, uses default.
 
         Returns:
-            TagValueFormatter: Formatter instance with loaded config.
+            ValueFormatter: Formatter instance with loaded config.
 
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
 
         Example:
-            >>> TagValueFormatter.from_yaml('conf.yaml')
+            >>> ValueFormatter.from_yaml('conf.yaml')
         """
         if file is None:
-            prj_root = Path(__file__).parents[1]
-            file = prj_root / "tagkit/conf/tag_value_format.yaml"
+            prj_root = Path(__file__).parents[2]
+            file = prj_root / "tagkit/conf/formatting.yaml"
         with open(file, "r") as f:
             conf = yaml.safe_load(f)
         return cls(conf)
@@ -68,34 +75,37 @@ class TagValueFormatter:
         }
         return handler_map.get(format_type)
 
-    def format(
+    def format_value(
         self,
-        tag: "ExifEntry",
+        value,
+        exif_type: str,
         render_bytes: bool = True,
         binary_format: Optional[str] = None,
     ) -> str:
         """
-        Format the tag value according to its configuration.
+        Format a tag value according to its type and configuration.
 
         Args:
-            tag: The EXIF entry to format.
+            value: The value to format.
+            exif_type: The EXIF type of the value.
             render_bytes: If False, binary data will be shown as a placeholder.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
 
         Returns:
             The formatted value as a string.
         """
-        conf = self.conf.get(tag.name)
+        tag_name = exif_type
+        conf = self.conf.get(tag_name)
 
         if conf is not None:
             handler = self._get_format_handler(conf["display"])
             if handler:
-                return handler(tag.value, conf)
+                return handler(value, conf)
 
-        if isinstance(tag.value, bytes):
-            return self._format_bytes(tag.value, render_bytes, binary_format)
+        if isinstance(value, bytes):
+            return self._format_bytes(value, render_bytes, binary_format)
 
-        return str(tag.value)
+        return str(value)
 
     def _format_bytes(
         self, val: bytes, render_bytes: bool, binary_format: Optional[str] = None
@@ -180,8 +190,6 @@ class TagValueFormatter:
             str: The formatted f-number (e.g., 'f/2.8').
         """
         f_number = math.sqrt(2 ** (val[0] / val[1]))
-        # f_number = 2 ** (-val[0] / val[1])
-        # f_number = 2 ** ((val[0] / val[1]) / 2)
         return f"f/{f_number:.1f}"
 
     def _format_percent(self, val: Rational) -> str:

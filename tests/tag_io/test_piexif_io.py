@@ -5,8 +5,8 @@ from tagkit.tag_io.piexif_io import (
     PiexifBackend,
     tagkit_to_piexif_ifd_map,
 )
-from tagkit.exif_entry import ExifEntry
-from tagkit.types import IfdName
+from tagkit.core.tag import ExifTag
+from tagkit.core.types import IfdName
 from unittest.mock import patch, MagicMock
 
 
@@ -24,7 +24,7 @@ def test_conform_ifd_names():
 def test_tag_is_ascii():
     # 271 is 'Make', which is ASCII in the registry
     assert _tag_is_ascii(271) is True
-    entry = ExifEntry(271, "Canon", "IFD0")
+    entry = ExifTag(271, "Canon", "IFD0")
     assert _tag_is_ascii(entry) is True
     # 33434 is 'ExposureTime', which is RATIONAL
     assert _tag_is_ascii(33434) is False

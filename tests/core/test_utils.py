@@ -1,6 +1,6 @@
 import pytest
 
-from tagkit.utils import validate_single_arg_set
+from tagkit.core.utils import validate_single_arg_set
 
 
 class TestValidateSingleArgSet:

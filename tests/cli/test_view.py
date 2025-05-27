@@ -84,7 +84,7 @@ class TestViewCommand:
 
         # Patch ExifImageCollection to raise an Exception
         monkeypatch.setattr(
-            "tagkit.image_exif.ExifImageCollection",
+            "tagkit.ExifImageCollection",
             always_fail,
         )
 
@@ -98,7 +98,7 @@ class TestViewCommand:
         dummy_file.write_bytes(b"\xff\xd8\xff\xd9")  # minimal JPEG
 
         # Patch ExifImageCollection to return an empty dict
-        monkeypatch.setattr("tagkit.image_exif.ExifImageCollection", always_empty)
+        monkeypatch.setattr("tagkit.ExifImageCollection", always_empty)
 
         result = runner.invoke(app, ["view", str(dummy_file)])
         assert result.exit_code == 0, result.output

@@ -1,3 +1,9 @@
+"""
+Type definitions for tagkit.
+
+This module contains type definitions used throughout the tagkit package.
+"""
+
 from pathlib import Path
 from typing import Literal, TypedDict, Union
 
@@ -8,7 +14,7 @@ IntCollection = tuple[int, ...]
 FloatCollection = tuple[float, ...]
 Rational = tuple[int, int]
 RationalCollection = tuple[Rational]
-ExifTag = Union[
+TagValue = Union[
     bytes,
     float,
     int,
@@ -18,12 +24,14 @@ ExifTag = Union[
     Rational,
     RationalCollection,
 ]
-ExifIfdCollection = dict[str, dict[int, ExifTag]]
+ExifIfdCollection = dict[str, dict[int, TagValue]]
 ExifType = Literal["ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "UNDEFINED"]
 IfdName = Literal["IFD0", "IFD1", "Exif", "GPS", "Interop"]
 
 
-class ExifTagInfo(TypedDict):
+class TagValueInfo(TypedDict):
+    """Information about an EXIF tag."""
+
     id: int
     name: str
-    val: ExifTag
+    val: TagValue

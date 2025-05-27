@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Mapping, Optional, Union, overload
 
-from tagkit.exif_entry import ExifEntry
-from tagkit.types import FilePath, IfdName
+from tagkit.core.tag import ExifTag
+from tagkit.core.types import FilePath
 
 
 class ExifTagDict(dict):
@@ -17,19 +17,19 @@ class ExifTagDict(dict):
 
     Key Format:
         Keys must be tuples of the form (tag_id: int, ifd_name: str).
-        Values must be ExifEntry instances representing the associated tag value.
+        Values must be ExifTag instances representing the associated tag value.
 
     Examples:
         >>> exif = ExifTagDict()
-        >>> exif[(256, '0th')] = ExifEntry(256, 1024, '0th')
-        >>> exif[(256, 'Exif')] = ExifEntry(256, 2048, 'Exif')
-        >>> exif[(257, '0th')] = ExifEntry(257, 768, '0th')
+        >>> exif[(256, '0th')] = ExifTag(256, 1024, '0th')
+        >>> exif[(256, 'Exif')] = ExifTag(256, 2048, 'Exif')
+        >>> exif[(257, '0th')] = ExifTag(257, 768, '0th')
 
         >>> exif[256, '0th']
-        ExifEntry(...)
+        ExifTag(...)
 
         >>> exif[257]
-        ExifEntry(...)
+        ExifTag(...)
 
         >>> exif[256]
         KeyError: "Ambiguous tag_id 256; multiple matches: [(256, '0th'), (256, 'Exif')]"
@@ -40,7 +40,7 @@ class ExifTagDict(dict):
     """
 
     def __init__(
-        self, data: Optional[Mapping[tuple[int, IfdName], ExifEntry]] = None, **kwargs
+        self, data: Optional[Mapping[tuple[int, str], ExifTag]] = None, **kwargs
     ):
         if kwargs:
             raise AttributeError(kwargs)
@@ -49,20 +49,20 @@ class ExifTagDict(dict):
             self.update(data)
 
     @overload
-    def __getitem__(self, key: tuple[int, IfdName]) -> ExifEntry: ...
+    def __getitem__(self, key: tuple[int, str]) -> ExifTag: ...
 
     @overload
-    def __getitem__(self, key: int) -> ExifEntry: ...
+    def __getitem__(self, key: int) -> ExifTag: ...
 
-    def __getitem__(self, key: Union[int, tuple[int, IfdName]]) -> ExifEntry:
+    def __getitem__(self, key: Union[int, tuple[int, str]]) -> ExifTag:
         """
         Retrieve an EXIF entry by (tag_id, ifd_name) tuple or by tag_id only.
 
         Args:
-            key (Union[int, tuple[int, IfdName]]): The key to look up. If int, must be unique.
+            key (Union[int, tuple[int, str]]): The key to look up. If int, must be unique.
 
         Returns:
-            ExifEntry: The EXIF entry for the given key.
+            ExifTag: The EXIF entry for the given key.
 
         Raises:
             KeyError: If the tag_id is not found or is ambiguous.
@@ -85,20 +85,20 @@ class ExifTagDict(dict):
 
         return matches[0][1]
 
-    def __setitem__(self, key: tuple[int, IfdName], value: ExifEntry):
+    def __setitem__(self, key: tuple[int, str], value: ExifTag):
         """
         Set an EXIF entry for a (tag_id, ifd_name) tuple.
 
         Args:
-            key (tuple[int, IfdName]): The key tuple.
-            value (ExifEntry): The EXIF entry to set.
+            key (tuple[int, str]): The key tuple.
+            value (ExifTag): The EXIF entry to set.
 
         Raises:
             TypeError: If the key or value types are invalid.
         """
-        if not isinstance(value, ExifEntry):
+        if not isinstance(value, ExifTag):
             raise TypeError(
-                f"Value must be an ExifEntry instance, got {type(value).__name__}"
+                f"Value must be an ExifTag instance, got {type(value).__name__}"
             )
         if not (
             isinstance(key, tuple)

@@ -3,7 +3,7 @@ import typer
 import re
 from tagkit.cli.file_resolver import FileResolver
 from tagkit.cli.cli_formatting import print_exif_json, print_exif_table
-from tagkit.image_exif import ExifImageCollection
+from tagkit import ExifImageCollection
 
 
 def view(
@@ -65,7 +65,7 @@ def view(
         )
         raise typer.Exit(code=2)
     # Show warning if there are no tags for any file
-    if exif_data.n_tags() == 0:
+    if exif_data.n_tags == 0:
         typer.secho(
             "[WARNING] No EXIF data found for the selected files.",
             fg=typer.colors.YELLOW,
