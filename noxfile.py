@@ -45,9 +45,11 @@ def mypy(session: nox.Session) -> None:
     session.run("mypy", "src", *session.posargs)
 
 
-@nox.session(venv_backend="uv", tags=[TEST_TAG])
+@nox.session(
+    venv_backend="uv", tags=[TEST_TAG], python=["3.9", "3.10", "3.11", "3.12", "3.13"]
+)
 def test(session: nox.Session) -> None:
-    """Run tests with pytest."""
+    """Run tests with pytest across multiple Python versions (3.9-3.13)."""
     _run_install(session)
     session.run("pytest", *session.posargs)
 
