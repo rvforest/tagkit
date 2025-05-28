@@ -15,34 +15,28 @@ CLEAN_TAG = "clean"
 nox.options.sessions = ["lint", "format", "types", "test"]
 
 
+@nox.session(venv_backend="uv", tags=[LINT_TAG, FORMAT_TAG, TEST_TAG])
+def check(session: nox.Session) -> None:
+    """Run all checks (lint, formatting, type checking, tests, doctests)."""
+    session.run("uv", "run", "pre-commit", "run", "--all-files", *session.posargs)
+
+
 @nox.session(venv_backend="uv", tags=[LINT_TAG])
 def lint(session: nox.Session) -> None:
     """Check code with ruff linter."""
-    _run_install(session, groups=["dev"])
-    session.run("ruff", "check", *session.posargs)
+    session.notify("check", posargs=["lint"])
 
 
 @nox.session(venv_backend="uv", tags=[FORMAT_TAG])
-def format(session: nox.Session, check: bool = False) -> None:
-    """Format code with ruff.
-
-    Args:
-        check: If True, only check formatting without making changes.
-    """
-    _run_install(session, groups=["dev"])
-    args = list(session.posargs)
-    if check or "--check" in args:
-        args = [a for a in args if a != "--check"]
-        session.run("ruff", "format", "--check", *args)
-    else:
-        session.run("ruff", "format", *args)
+def format(session: nox.Session) -> None:
+    """Format code with ruff."""
+    session.notify("check", posargs=["format"])
 
 
 @nox.session(venv_backend="uv", tags=[TEST_TAG])
 def types(session: nox.Session) -> None:
     """Run static type checking."""
-    _run_install(session, groups=["dev"])
-    session.run("mypy", "src", *session.posargs)
+    session.notify("check", posargs=["types"])
 
 
 @nox.session(
@@ -93,16 +87,6 @@ def coverage(session: nox.Session) -> None:
     session.run("coverage", "report", "-m")
     session.run("coverage", "html")
     print("Coverage HTML report: file://htmlcov/index.html")
-
-
-@nox.session(venv_backend="uv", tags=[LINT_TAG, FORMAT_TAG, TEST_TAG])
-def check(session: nox.Session) -> None:
-    """Run all checks (lint, formatting, type checking, tests, doctests)."""
-    session.notify("lint")
-    session.notify("format", ["--check"])
-    session.notify("types")
-    session.notify("test")
-    session.notify("doctest")
 
 
 @nox.session(venv_backend="uv", python=False, tags=[CLEAN_TAG])
