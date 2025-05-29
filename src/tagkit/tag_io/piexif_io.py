@@ -41,22 +41,44 @@ class PiexifBackend(ExifIOBackend):
         return ExifTagDict(result_dict)
 
     def save_tags(self, image_path: FilePath, tags: ExifTagDict) -> None:
-        # Organize tags back into the piexif structure
-        exif_dict: dict[PiexifIfdName, dict[int, ExifTag]] = {
-            ifd: {} for ifd in tagkit_to_piexif_ifd_map.values()
-        }
-        for tag in tags.values():
-            if tag.ifd in exif_dict:
-                # Encode if ascii
-                val = (
-                    cast(str, tag.value).encode(STR_ENCODING)
-                    if _tag_is_ascii(tag) and isinstance(tag.value, str)
-                    else tag.value
-                )
-                piexif_ifd = tagkit_to_piexif_ifd_map[tag.ifd]
-                exif_dict[piexif_ifd][tag.id] = val
+        """
+        Save EXIF tags to an image file using the piexif library.
 
-        exif_bytes = piexif.dump(exif_dict)
+        This method converts tagkit's internal tag representation to the format
+        expected by piexif, then writes the tags to the specified image file.
+
+        Args:
+            image_path: Path to the image file
+            tags: Dictionary of EXIF tags to save
+        """
+        # Initialize the piexif data structure (nested dictionaries by IFD)
+        piexif_data: dict[PiexifIfdName, dict[int, TagValue]] = {
+            piexif_ifd: {} for piexif_ifd in tagkit_to_piexif_ifd_map.values()
+        }
+
+        # Process each tag from the tagkit dictionary
+        for tag in tags.values():
+            # Get the corresponding piexif IFD name (e.g., "IFD0" -> "0th")
+            if tag.ifd not in tagkit_to_piexif_ifd_map:
+                raise ValueError(
+                    f"Unknown IFD '{tag.ifd}' for tag ID {tag.id}. "
+                    f"Known IFDs: {', '.join(tagkit_to_piexif_ifd_map.keys())}"
+                )
+
+            piexif_ifd = tagkit_to_piexif_ifd_map[tag.ifd]
+
+            # Prepare the tag value - encode strings for ASCII tags
+            tag_value = tag.value
+            if _tag_is_ascii(tag.id) and isinstance(tag_value, str):
+                tag_value = cast(str, tag_value).encode(STR_ENCODING)
+
+            # Add the tag to the piexif data structure
+            piexif_data[piexif_ifd][tag.id] = tag_value
+
+        # Convert the structured data to EXIF bytes
+        exif_bytes = piexif.dump(piexif_data)
+
+        # Write the EXIF data to the image file
         piexif.insert(exif_bytes, str(image_path))
 
 
