@@ -17,9 +17,6 @@ from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
 
-# The ExifImageCollection class has been moved to collection.py
-
-
 class ExifImage:
     """
     Handler for reading, modifying, and removing EXIF tags from a single image file.
@@ -167,8 +164,11 @@ class ExifImage:
         Returns:
             dict: A nested dictionary containing the EXIF data for the image.
         """
-        result = {}
-        for tag_name, tag in self.tags.items():
-            formatted_value = tag.format(render_bytes, binary_format)
-            result[tag_name] = {"id": tag.id, "value": formatted_value, "ifd": tag.ifd}
-        return result
+        return {
+            tag_name: {
+                "id": tag.id,
+                "value": tag.format(render_bytes, binary_format),
+                "ifd": tag.ifd,
+            }
+            for tag_name, tag in self.tags.items()
+        }
