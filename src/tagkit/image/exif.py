@@ -156,7 +156,7 @@ class ExifImage:
 
     def as_dict(
         self, render_bytes: bool = True, binary_format: Optional[str] = None
-    ) -> dict[str, dict[str, dict]]:
+    ) -> dict[str, dict[str, Union[str, int]]]:
         """
         Convert the image data to a nested dictionary structure.
 
