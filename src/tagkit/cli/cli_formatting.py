@@ -72,7 +72,7 @@ def print_exif_table(
                 filename_val,
                 tag[1].id,
                 tag[1].name,
-                tag[1].format(render_bytes=render_bytes, binary_format=binary_format),
+                tag[1].format(binary_format=binary_format),
             ]
             table.add_row(*[str(d) for d in row_data], end_section=is_last)
 

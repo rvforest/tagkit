@@ -77,8 +77,7 @@ class ValueFormatter:
 
     def format_value(
         self,
-        tag: 'ExifTag',
-        render_bytes: bool = True,
+        tag: "ExifTag",
         binary_format: Optional[str] = None,
     ) -> str:
         """
@@ -86,8 +85,8 @@ class ValueFormatter:
 
         Args:
             tag: The tag to format.
-            render_bytes: If False, binary data will be shown as a placeholder.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
+                If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
             The formatted value as a string.
@@ -100,32 +99,29 @@ class ValueFormatter:
                 return handler(tag.value, conf)
 
         if isinstance(tag.value, bytes):
-            return self._format_bytes(tag.value, render_bytes, binary_format)
+            return self._format_bytes(tag.value, binary_format)
 
         return str(tag.value)
 
-    def _format_bytes(
-        self, val: bytes, render_bytes: bool, binary_format: Optional[str] = None
-    ) -> str:
+    def _format_bytes(self, val: bytes, binary_format: Optional[str] = None) -> str:
         """
         Format bytes as a string.
 
         Args:
             val: The bytes to format
-            render_bytes: If False, return a placeholder instead of the actual bytes
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'
 
         Returns:
             Formatted string representation of the bytes
         """
-        if not render_bytes:
+        if binary_format is None:
             return f"<bytes: {len(val)}>"
 
         if binary_format == "hex":
             return f"hex:{val.hex()}"
         elif binary_format == "base64":
             return f"base64:{base64.b64encode(val).decode('ascii')}"
-        elif binary_format is None or binary_format == "bytes":
+        elif binary_format == "bytes":
             return repr(val)  # This will give b'...' or b"..." syntax
         else:
             raise ValueError(f"Unsupported binary format: {binary_format}")

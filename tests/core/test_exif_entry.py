@@ -42,12 +42,12 @@ def test_non_utf8_bytes_formatting(binary_format, expected_output):
     assert entry.as_dict(binary_format=binary_format)["value"] == expected_output
 
 
-def test_render_bytes_false():
-    """Test that render_bytes=False shows a placeholder for binary data."""
+def test_binary_format_none():
+    """Test that binary_format=None shows a placeholder for binary data."""
     entry = ExifTag(id=37510, value=NON_UTF8_BYTES, ifd="Exif")
-    assert entry.format(render_bytes=False) == f"<bytes: {len(NON_UTF8_BYTES)}>"
+    assert entry.format(binary_format=None) == f"<bytes: {len(NON_UTF8_BYTES)}>"
     assert (
-        entry.as_dict(render_bytes=False)["value"] == f"<bytes: {len(NON_UTF8_BYTES)}>"
+        entry.as_dict(binary_format=None)["value"] == f"<bytes: {len(NON_UTF8_BYTES)}>"
     )
 
 

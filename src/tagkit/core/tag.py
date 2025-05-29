@@ -41,15 +41,13 @@ class ExifTag:
         """Get the EXIF data type of this tag."""
         return tag_registry.get_exif_type(self.id)
 
-    def format(
-        self, render_bytes: bool = True, binary_format: Optional[str] = None
-    ) -> str:
+    def format(self, binary_format: Optional[str] = None) -> str:
         """
         Format the tag value as a string.
 
         Args:
-            render_bytes: If False, binary data will be shown as a placeholder.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
+                If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
             The formatted value as a string.
@@ -62,18 +60,15 @@ class ExifTag:
             >>> entry.format()  # Returns: b'\\x89PNG\\r\\n' (bytes format)
             >>> entry.format(binary_format="hex")  # Returns: "hex:89504e470d0a"
             >>> entry.format(binary_format="base64")  # Returns: "base64:iVBORw0K"
-            >>> entry.format(render_bytes=False)  # Returns: "<bytes: 6>"
+            >>> entry.format(binary_format=None)  # Returns: "<bytes: 6>"
         """
-        return self.formatter.format_value(self, render_bytes, binary_format)
+        return self.formatter.format_value(self, binary_format=binary_format)
 
-    def as_dict(
-        self, render_bytes: bool = True, binary_format: Optional[str] = None
-    ) -> dict:
+    def as_dict(self, binary_format: Optional[str] = None) -> dict:
         """
         Convert the EXIF entry to a dictionary.
 
         Args:
-            render_bytes: If True, binary data will be rendered according to binary_format.
             binary_format: How to format binary data. One of:
                 - 'bytes': Python bytes literal (e.g., b'data')
                 - 'hex': Hex-encoded string with 'hex:' prefix
@@ -101,8 +96,6 @@ class ExifTag:
         return {
             "id": self.id,
             "name": self.name,
-            "value": self.format(
-                render_bytes=render_bytes, binary_format=binary_format
-            ),
+            "value": self.format(binary_format=binary_format),
             "ifd": self.ifd,
         }

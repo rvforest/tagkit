@@ -62,9 +62,7 @@ class ExifImageCollection:
                 create_backup_on_mod=create_backup_on_mod,
             )
 
-    def as_dict(
-        self, render_bytes: bool = True, binary_format: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def as_dict(self, binary_format: Optional[str] = None) -> Dict[str, Any]:
         """
         Convert the collection to a dictionary.
 
@@ -90,8 +88,8 @@ class ExifImageCollection:
         }
 
         Args:
-            render_bytes: If True, binary data will be rendered according to binary_format
             binary_format: Format for binary data ('hex', 'base64', or None for default).
+                If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
             Dictionary mapping file paths to their EXIF data dictionaries.
@@ -101,7 +99,7 @@ class ExifImageCollection:
             >>> data = collection.as_dict()  # Get default tags for all images
         """
         return {
-            path: exif.as_dict(render_bytes=render_bytes, binary_format=binary_format)
+            path: exif.as_dict(binary_format=binary_format)
             for path, exif in self.files.items()
         }
 

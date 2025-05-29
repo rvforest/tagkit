@@ -152,14 +152,14 @@ class ExifImage:
         piexif.insert(exif_bytes, self.file_path)
 
     def as_dict(
-        self, render_bytes: bool = True, binary_format: Optional[str] = None
+        self, binary_format: Optional[str] = None
     ) -> dict[str, dict[str, Union[str, int]]]:
         """
         Convert the image data to a nested dictionary structure.
 
         Args:
-            render_bytes: If True, binary data will be rendered according to binary_format
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'
+                If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
             dict: A nested dictionary containing the EXIF data for the image.
@@ -167,7 +167,7 @@ class ExifImage:
         return {
             tag_name: {
                 "id": tag.id,
-                "value": tag.format(render_bytes, binary_format),
+                "value": tag.format(binary_format=binary_format),
                 "ifd": tag.ifd,
             }
             for tag_name, tag in self.tags.items()
