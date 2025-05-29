@@ -77,8 +77,7 @@ class ValueFormatter:
 
     def format_value(
         self,
-        value,
-        exif_type: str,
+        tag: 'ExifTag',
         render_bytes: bool = True,
         binary_format: Optional[str] = None,
     ) -> str:
@@ -86,26 +85,24 @@ class ValueFormatter:
         Format a tag value according to its type and configuration.
 
         Args:
-            value: The value to format.
-            exif_type: The EXIF type of the value.
+            tag: The tag to format.
             render_bytes: If False, binary data will be shown as a placeholder.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
 
         Returns:
             The formatted value as a string.
         """
-        tag_name = exif_type
-        conf = self.conf.get(tag_name)
+        conf = self.conf.get(tag.name)
 
         if conf is not None:
             handler = self._get_format_handler(conf["display"])
             if handler:
-                return handler(value, conf)
+                return handler(tag.value, conf)
 
-        if isinstance(value, bytes):
-            return self._format_bytes(value, render_bytes, binary_format)
+        if isinstance(tag.value, bytes):
+            return self._format_bytes(tag.value, render_bytes, binary_format)
 
-        return str(value)
+        return str(tag.value)
 
     def _format_bytes(
         self, val: bytes, render_bytes: bool, binary_format: Optional[str] = None

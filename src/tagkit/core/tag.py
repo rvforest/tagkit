@@ -64,9 +64,7 @@ class ExifTag:
             >>> entry.format(binary_format="base64")  # Returns: "base64:iVBORw0K"
             >>> entry.format(render_bytes=False)  # Returns: "<bytes: 6>"
         """
-        return self.formatter.format_value(
-            self.value, self.exif_type, render_bytes, binary_format
-        )
+        return self.formatter.format_value(self, render_bytes, binary_format)
 
     def as_dict(
         self, render_bytes: bool = True, binary_format: Optional[str] = None

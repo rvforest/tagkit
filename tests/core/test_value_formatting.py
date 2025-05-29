@@ -113,3 +113,29 @@ def test_format_shutter_speed_whole_seconds(formatter: ValueFormatter):
 def test_format_shutter_speed_decimal_seconds(formatter: ValueFormatter):
     # 1.5s
     assert formatter._format_shutter_speed((-585, 1000)) == "1.5s"
+
+
+# test that formatter.format_value calls the correct handler
+def test_format_value(formatter: ValueFormatter):
+    tag = ExifTag(id=33437, value=(1, 2), ifd="Exif")
+    assert formatter.format_value(tag) == "f/1.2"
+
+
+def test_format_value_with_bytes_base64(formatter: ValueFormatter):
+    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    assert formatter.format_value(tag, binary_format="base64") == "base64://79/A=="
+
+
+def test_format_value_with_bytes_hex(formatter: ValueFormatter):
+    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    assert formatter.format_value(tag, binary_format="hex") == "hex:fffefdfc"
+    
+
+def test_format_value_with_bytes_bytes(formatter: ValueFormatter):
+    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    assert formatter.format_value(tag, binary_format="bytes") == "b'\\xff\\xfe\\xfd\\xfc'"
+
+
+def test_format_value_with_bytes_no_render(formatter: ValueFormatter):
+    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    assert formatter.format_value(tag, render_bytes=False) == "<bytes: 4>"
