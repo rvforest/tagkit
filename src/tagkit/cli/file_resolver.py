@@ -51,8 +51,16 @@ class FileResolver:
         if glob_mode:
             return [Path(p) for p in glob.glob(file_or_pattern, recursive=True)]
         if regex_mode:
-            regex = re.compile(file_or_pattern)
-            return [path for path in Path(".").rglob("*") if regex.match(str(path))]
+            # Extract directory and filename pattern from the input
+            path_obj = Path(file_or_pattern)
+            directory = path_obj.parent if str(path_obj.parent) != "." else Path(".")
+            filename_pattern = path_obj.name
+
+            # Create regex pattern for just the filename part
+            regex = re.compile(filename_pattern)
+
+            # Search in the specified directory
+            return [path for path in directory.glob("*") if regex.match(path.name)]
 
         # Default: try file first
         f = Path(file_or_pattern)
@@ -61,5 +69,13 @@ class FileResolver:
         matches = glob.glob(file_or_pattern, recursive=True)
         if matches:
             return [Path(m) for m in matches]
-        regex = re.compile(file_or_pattern)
-        return [path for path in Path(".").rglob("*") if regex.match(str(path))]
+        # Extract directory and filename pattern as fallback
+        path_obj = Path(file_or_pattern)
+        directory = path_obj.parent if str(path_obj.parent) != "." else Path(".")
+        filename_pattern = path_obj.name
+
+        # Create regex pattern for just the filename part
+        regex = re.compile(filename_pattern)
+
+        # Search in the specified directory
+        return [path for path in directory.glob("*") if regex.match(path.name)]

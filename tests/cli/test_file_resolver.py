@@ -62,7 +62,7 @@ def test_resolve_glob_recursive(temp_files):
 def test_resolve_regex_explicit(temp_files):
     """Test resolving files using explicit regex mode"""
     resolver = FileResolver(r".*\.jpg$", regex_mode=True)
-    assert len(resolver.files) == 3  # 2 in root, 1 in subdir
+    assert len(resolver.files) == 2  # 2 in root. Regex search is not recursive.
     assert all(f.suffix == ".jpg" for f in resolver.files)
 
 
@@ -110,3 +110,40 @@ def test_resolve_relative_path(temp_files, monkeypatch):
     resolver = FileResolver("test1.jpg")
     assert len(resolver.files) == 1
     assert resolver.files[0].name == "test1.jpg"
+
+
+def test_glob_in_other_directory(temp_files, tmp_path):
+    """Test glob mode in a directory other than the current working directory"""
+    # Create a subdirectory with some files
+    other_dir = tmp_path / "other_dir"
+    other_dir.mkdir()
+    (other_dir / "file1.txt").touch()
+    (other_dir / "file2.txt").touch()
+    (other_dir / "image.jpg").touch()
+
+    # Use glob mode with a path to the other directory
+    resolver = FileResolver(str(other_dir / "*.txt"), glob_mode=True)
+
+    # Verify results
+    assert len(resolver.files) == 2
+    assert all(f.suffix == ".txt" for f in resolver.files)
+    assert all(str(f).startswith(str(other_dir)) for f in resolver.files)
+
+
+def test_regex_in_other_directory(temp_files, tmp_path):
+    """Test regex mode in a directory other than the current working directory"""
+    # Create a subdirectory with some files
+    other_dir = tmp_path / "regex_dir"
+    other_dir.mkdir()
+    (other_dir / "test1.jpg").touch()
+    (other_dir / "test2.jpg").touch()
+    (other_dir / "other.png").touch()
+
+    # Use regex mode with a path to the other directory
+    resolver = FileResolver(str(other_dir / r"test[0-9]\.jpg"), regex_mode=True)
+
+    # Verify results
+    assert len(resolver.files) == 2
+    assert all(f.name.startswith("test") for f in resolver.files)
+    assert all(f.suffix == ".jpg" for f in resolver.files)
+    assert all(str(f).startswith(str(other_dir)) for f in resolver.files)
