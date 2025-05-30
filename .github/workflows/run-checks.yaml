@@ -39,3 +39,6 @@ jobs:
 
       - name: Run tests
         run: nox -s test -- -vv
+
+      - name: Run doctest
+        run: nox -s doctest -- -vv
