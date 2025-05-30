@@ -5,6 +5,7 @@ This module provides the ExifImageCollection class for working with EXIF data
 from multiple image files.
 """
 
+from pathlib import Path
 from typing import Dict, Any, Optional, Union, Iterable
 
 from tagkit.core.types import FilePath, IfdName
@@ -53,8 +54,7 @@ class ExifImageCollection:
         self.files: Dict[str, ExifImage] = {}
 
         for path in files:
-            path_str = str(path)
-            self.files[path_str] = ExifImage(
+            self.files[Path(path).name] = ExifImage(
                 path,
                 tag_filter=tag_filter,
                 thumbnail=thumbnail,
@@ -95,8 +95,9 @@ class ExifImageCollection:
             Dictionary mapping file paths to their EXIF data dictionaries.
 
         Example:
-            >>> collection = ExifImageCollection(['image1.jpg', 'image2.jpg'])
-            >>> data = collection.as_dict()  # Get default tags for all images
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.as_dict()
+            {'image1.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}, 'image2.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}}
         """
         return {
             path: exif.as_dict(binary_format=binary_format)
@@ -110,6 +111,11 @@ class ExifImageCollection:
 
         Returns:
             Total number of tags.
+
+        Example:
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.n_tags
+            2
         """
         return sum(len(exif) for exif in self.files.values())
 
@@ -120,5 +126,10 @@ class ExifImageCollection:
 
         Returns:
             Number of files.
+
+        Example:
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.n_files
+            2
         """
         return len(self.files)

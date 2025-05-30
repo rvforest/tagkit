@@ -60,10 +60,6 @@ class ExifRegistry:
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
-
-        Example:
-            >>> ExifRegistry.from_yaml('conf.yaml')
-            >>> TagRegistry.from_yaml('conf.yaml')
         """
         if path is None:
             here = Path(__file__).parents[1]  # Go up to tagkit package root
@@ -81,7 +77,8 @@ class ExifRegistry:
             list[str]: All tag names.
 
         Example:
-            >>> tag_registry.tag_names
+            >>> tag_registry.tag_names[:5]
+            ['ProcessingSoftware', 'NewSubfileType', 'SubfileType', 'ImageWidth', 'ImageLength']
         """
         return list(self._name_to_id)
 
@@ -101,6 +98,7 @@ class ExifRegistry:
 
         Example:
             >>> tag_registry.get_ifd('Make')
+            'IFD0'
         """
         tag_id = self.resolve_tag_id(tag_key)
 
@@ -138,7 +136,8 @@ class ExifRegistry:
             InvalidTagId: If the tag ID is invalid.
 
         Example:
-            >>> tag_registry.get_tag_id('Make')
+            >>> tag_registry.resolve_tag_id('Make')
+            271
         """
         if isinstance(tag_key, int):
             self._validate_tag_id(tag_key)
@@ -166,7 +165,8 @@ class ExifRegistry:
             ValueError: If the tag or IFD is invalid.
 
         Example:
-            >>> tag_registry.get_tag_name(271)
+            >>> tag_registry.resolve_tag_name(271)
+            'Make'
         """
         if isinstance(tag_key, str):
             self._validate_tag_name(tag_key)
@@ -213,6 +213,7 @@ class ExifRegistry:
 
         Example:
             >>> tag_registry.get_exif_type('Make')
+            'ASCII'
         """
         if isinstance(tag_key, str):
             self._validate_tag_name(tag_key)

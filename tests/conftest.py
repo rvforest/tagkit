@@ -7,6 +7,7 @@ Doctest-specific fixtures are in the root conftest.py.
 import json
 import os
 from pathlib import Path
+from typing import Generator
 
 import piexif
 from PIL import Image

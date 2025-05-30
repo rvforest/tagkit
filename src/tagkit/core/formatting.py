@@ -28,8 +28,22 @@ class ValueFormatter:
         conf (dict[str, dict]): Formatting configuration for tag values.
 
     Example:
+        # F-number
+        >>> from tagkit.core.tag import ExifTag
+        >>> tag_entry = ExifTag(33437, (1, 2), 'Exif')
         >>> formatter = ValueFormatter.from_yaml()
-        >>> formatter.format(tag_entry)
+        >>> formatter.format_value(tag_entry)
+        'f/1.2'
+
+        # Bytes
+        >>> tag_entry = ExifTag(1, b'\\xff\\xfe\\xfd\\xfc', 'Exif')
+        >>> formatter.format_value(tag_entry)
+        '<bytes: 4>'
+
+        # Base64
+        >>> formatter.format_value(tag_entry, binary_format='base64')
+        'base64://79/A=='
+
     """
 
     def __init__(self, conf: dict[str, dict]) -> None:
@@ -49,9 +63,6 @@ class ValueFormatter:
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
-
-        Example:
-            >>> ValueFormatter.from_yaml('conf.yaml')
         """
         if file is None:
             prj_root = Path(__file__).parents[2]

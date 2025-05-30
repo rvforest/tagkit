@@ -17,8 +17,22 @@ class FileResolver:
         regex_mode (bool): If True, use regex matching.
 
     Example:
-        >>> resolver = FileResolver('*.jpg', glob_mode=True)
-        >>> resolver.files
+        >>> import os
+        >>> os.listdir(img_dir)
+        ['image1.jpg', 'image2.jpg', 'image10.jpg', 'foo.txt']
+
+        >>> resolver = FileResolver("image1.jpg")
+        >>> [path.name for path in resolver.files]
+        ['image1.jpg']
+
+        >>> resolver = FileResolver("*.jpg", glob_mode=True)
+        >>> [path.name for path in resolver.files]
+        ['image1.jpg', 'image2.jpg', 'image10.jpg']
+
+        >>> resolver = FileResolver("image[12].jpg", regex_mode=True)
+        >>> [path.name for path in resolver.files]
+        ['image1.jpg', 'image2.jpg']
+
     """
 
     def __init__(

@@ -53,14 +53,22 @@ class ExifTag:
             The formatted value as a string.
 
         Examples:
-            >>> entry = TagEntry(0x010f, b'Canon', 'IFD0')
-            >>> entry.format()  # Returns: "Canon" (UTF-8 decodable)
+            >>> entry = ExifTag(id=0x010f, value="Canon", ifd='IFD0')
+            >>> entry.format()
+            'Canon'
 
-            >>> entry = TagEntry(0x9286, b'\\x89PNG\\r\\n', 'Exif')
-            >>> entry.format()  # Returns: b'\\x89PNG\\r\\n' (bytes format)
-            >>> entry.format(binary_format="hex")  # Returns: "hex:89504e470d0a"
-            >>> entry.format(binary_format="base64")  # Returns: "base64:iVBORw0K"
-            >>> entry.format(binary_format=None)  # Returns: "<bytes: 6>"
+            >>> entry = ExifTag(id=0x9286, value=b'\\x89PNG\\r\\n', ifd='Exif')
+            >>> entry.format()
+            '<bytes: 6>'
+
+            >>> entry.format(binary_format="hex")
+            'hex:89504e470d0a'
+
+            >>> entry.format(binary_format="base64")
+            'base64:iVBORw0K'
+
+            >>> entry.format(binary_format=None)
+            '<bytes: 6>'
         """
         return self.formatter.format_value(self, binary_format=binary_format)
 
@@ -82,15 +90,17 @@ class ExifTag:
                 - ifd (str): The Image File Directory containing this tag
 
         Examples:
-            >>> entry = TagEntry(0x010f, b'Canon', 'IFD0')
-            >>> entry.to_dict()
+
+            >>> from tagkit.core.tag import ExifTag
+            >>> entry = ExifTag(id=0x010f, value='Canon', ifd='IFD0')
+            >>> entry.as_dict()
             {'id': 271, 'name': 'Make', 'value': 'Canon', 'ifd': 'IFD0'}
 
-            >>> entry = TagEntry(0x9286, b'\\x89PNG\\r\\n', 'Exif')
-            >>> entry.to_dict(binary_format="hex")
+            >>> entry = ExifTag(id=0x9286, value=b'\\x89PNG\\r\\n', ifd='Exif')
+            >>> entry.as_dict(binary_format="hex")
             {'id': 37510, 'name': 'UserComment', 'value': 'hex:89504e470d0a', 'ifd': 'Exif'}
 
-            >>> entry.to_dict(binary_format="base64")
+            >>> entry.as_dict(binary_format="base64")
             {'id': 37510, 'name': 'UserComment', 'value': 'base64:iVBORw0K', 'ifd': 'Exif'}
         """
         return {

@@ -30,8 +30,9 @@ class ExifImage:
         io_backend: Custom backend for EXIF IO. Defaults to piexif.
 
     Example:
-        >>> exif = ExifImage('image.jpg')
-        >>> exif.get_tag('Make')
+        >>> exif = ExifImage('image1.jpg')
+        >>> exif.tags['Make']
+        ExifTag(id=271, value='Tagkit', ifd='IFD0')
     """
 
     def __init__(
@@ -79,7 +80,8 @@ class ExifImage:
             ValueError: If the tag or IFD is invalid.
 
         Example:
-            >>> exif.set_tag('Artist', 'John Doe')
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.write_tag('Artist', 'John Doe')
         """
         validate_single_arg_set({"thumbnail": thumbnail, "ifd": ifd}, strict_none=False)
         tag_id = tag_registry.resolve_tag_id(tag)
@@ -107,7 +109,8 @@ class ExifImage:
             ValueError: If the tag or IFD is invalid.
 
         Example:
-            >>> exif.remove_tag('Artist')
+            >>> exif = ExifImage('image10.jpg')
+            >>> exif.delete_tag('Make')
         """
         validate_single_arg_set({"thumbnail": thumbnail, "ifd": ifd}, strict_none=False)
         tag_id = tag_registry.resolve_tag_id(tag_key)
@@ -166,6 +169,11 @@ class ExifImage:
 
         Returns:
             dict: A nested dictionary containing the EXIF data for the image.
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.as_dict()
+            {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}
         """
         return {
             tag_name: {
