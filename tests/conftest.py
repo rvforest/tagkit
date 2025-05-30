@@ -1,6 +1,13 @@
+"""Test fixtures for tagkit.
+
+This file contains fixtures that are used by tests.
+Doctest-specific fixtures are in the root conftest.py.
+"""
+
 import json
 import os
 from pathlib import Path
+
 import piexif
 from PIL import Image
 import pytest
@@ -18,20 +25,19 @@ def _format_tag_value(value, tag_id):
     return value
 
 
-@pytest.fixture
-def test_images(tmp_path):
-    """Create test images in a temporary directory based on metadata.json"""
-    # Path to the metadata.json file
-    here = Path(__file__).parent.resolve()
-    metadata_path = here / "tag_io/test_images/metadata.json"
+def create_test_images_from_metadata(img_dir, metadata_path):
+    """Create test images from a metadata file
 
-    # Read the metadata.json file
+    Args:
+        img_dir: Path to the directory where images will be created
+        metadata_path: Path to the metadata JSON file
+    """
+    # Create directory for images
+    os.makedirs(img_dir, exist_ok=True)
+
+    # Read the metadata file
     with open(metadata_path, "r", encoding="utf-8") as f:
         metadata = json.load(f)
-
-    # Create directory for images
-    image_dir = tmp_path / "test_images"
-    os.makedirs(image_dir, exist_ok=True)
 
     # Create images based on metadata
     for filename, img_data in metadata.items():
@@ -70,14 +76,21 @@ def test_images(tmp_path):
         # Create and save the image
         img = Image.new("RGB", (100, 100), color="white")
         exif_bytes = piexif.dump(exif_dict)
-        img_path = image_dir / filename
-        img.save(img_path, "jpeg", exif=exif_bytes)
+        img.save(img_dir / filename, "jpeg", exif=exif_bytes)
 
     # Create a corrupt image if specified in metadata
     if "corrupt.jpg" in metadata and metadata["corrupt.jpg"].get("corrupt", False):
         img = Image.new("RGB", (100, 100), color="white")
-        img_path = image_dir / "corrupt.jpg"
-        img.save(img_path, "jpeg", exif=b"garbage_exif_data")
+        img.save(img_dir / "corrupt.jpg", "jpeg", exif=b"garbage_exif_data")
 
-    # Return the directory containing the images
-    return image_dir
+
+@pytest.fixture
+def test_images(tmp_path: Path) -> Path:
+    """Create test images in a temporary directory based on metadata.json"""
+    here = Path(__file__).parent.resolve()
+    metadata_path = here / "conf/test-img-metadata.json"
+
+    # Create images from metadata
+    img_dir = tmp_path / "test_images"
+    create_test_images_from_metadata(img_dir, metadata_path)
+    return img_dir

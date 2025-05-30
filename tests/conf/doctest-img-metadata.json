@@ -1,0 +1,38 @@
+{
+  "image1.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "Tagkit",
+        "ifd": "0th"
+      }
+    ]
+  },
+  "image2.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "Tagkit",
+        "ifd": "0th"
+      }
+    ]
+  },
+  "image10.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "Tagkit",
+        "ifd": "0th"
+      },
+      {
+        "id": 37386,
+        "name": "FocalLength",
+        "value": [50, 1],
+        "ifd": "Exif"
+      }
+    ]
+  }
+}

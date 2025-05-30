@@ -7,17 +7,6 @@ import pytest
 from tagkit import ExifImage
 
 
-# Change to use the fixture instead of a hardcoded path
-@pytest.fixture
-def img_metadata():
-    """Get the metadata from the metadata.json file"""
-    here = Path(__file__).parent.resolve()
-    metadata_path = here / "test_images/metadata.json"
-
-    with open(metadata_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
 @overload
 def list_to_tuple(obj: dict[str, Any]) -> dict[str, Any]: ...
 @overload
@@ -32,18 +21,24 @@ def list_to_tuple(obj):
     return obj
 
 
-def test_initialize_from_str(test_images, img_metadata):
-    str_path = str(test_images / next(iter(img_metadata)))
-    ExifImage(str_path)
+def test_initialize_from_str(test_images: Path):
+    path = test_images / "minimal.jpg"
+    ExifImage(str(path))
 
 
-def test_initialize_from_path(test_images, img_metadata):
-    pathlib_path = test_images / next(iter(img_metadata))
+def test_initialize_from_path(test_images: Path):
+    pathlib_path = test_images / "minimal.jpg"
     ExifImage(pathlib_path)
 
 
-def test_get_tags_no_filter(test_images, img_metadata):
+def test_get_tags_no_filter(test_images: Path):
     """Test getting tags without filter for all test images"""
+    here = Path(__file__).parents[1].resolve()
+    metadata_path = here / "conf/test-img-metadata.json"
+
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        img_metadata = json.load(f)
+
     for filename, expected in img_metadata.items():
         # Skip corrupt images or entries without tags
         if not expected.get("tags") or expected.get("corrupt", False):
