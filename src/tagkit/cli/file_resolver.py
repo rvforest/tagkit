@@ -52,7 +52,7 @@ class FileResolver:
             return [Path(p) for p in glob.glob(file_or_pattern, recursive=True)]
         if regex_mode:
             regex = re.compile(file_or_pattern)
-            return [f for f in Path(".").rglob("*") if regex.match(str(f))]
+            return [path for path in Path(".").rglob("*") if regex.match(str(path))]
 
         # Default: try file first
         f = Path(file_or_pattern)
@@ -62,4 +62,4 @@ class FileResolver:
         if matches:
             return [Path(m) for m in matches]
         regex = re.compile(file_or_pattern)
-        return [f for f in Path(".").rglob("*") if regex.match(str(f))]
+        return [path for path in Path(".").rglob("*") if regex.match(str(path))]
