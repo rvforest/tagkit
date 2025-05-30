@@ -113,6 +113,9 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag_key)
         ifd = tag_registry.get_ifd(tag_id, thumbnail=thumbnail)
 
+        if (tag_id, ifd) not in self._tag_dict:
+            raise KeyError(f"Tag '{tag_key}' not found in {self.file_path}")
+
         del self._tag_dict[tag_id, ifd]
         self._save()
 
