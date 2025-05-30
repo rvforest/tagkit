@@ -4,6 +4,7 @@ This file contains fixtures that are needed for doctests.
 Test-specific fixtures are in tests/conftest.py.
 """
 
+import os
 from pathlib import Path
 
 import pytest
@@ -24,6 +25,8 @@ def doctest_files(doctest_namespace, tmp_path):
 
     # Create a text file
     (img_dir / "foo.txt").touch()
+
+    os.chdir(img_dir)
 
     # Add to doctest namespace
     doctest_namespace["img_dir"] = str(img_dir)
