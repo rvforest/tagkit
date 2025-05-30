@@ -8,19 +8,22 @@ from tagkit.cli.file_resolver import FileResolver
 @pytest.fixture
 def temp_files(tmp_path):
     """Create temporary test files"""
+    test_path = tmp_path / "file_resolver_test_files"
+    test_path.mkdir()
+
     # Create test files
-    (tmp_path / "test1.jpg").touch()
-    (tmp_path / "test2.jpg").touch()
-    (tmp_path / "test.txt").touch()
+    (test_path / "test1.jpg").touch()
+    (test_path / "test2.jpg").touch()
+    (test_path / "test.txt").touch()
     # Create subdirectory with files
-    subdir = tmp_path / "subdir"
+    subdir = test_path / "subdir"
     subdir.mkdir()
     (subdir / "test3.jpg").touch()
     (subdir / "test4.txt").touch()
 
     cwd = os.getcwd()
-    os.chdir(tmp_path)
-    yield tmp_path
+    os.chdir(test_path)
+    yield test_path
     os.chdir(cwd)
 
 
