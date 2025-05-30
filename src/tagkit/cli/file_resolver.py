@@ -17,9 +17,8 @@ class FileResolver:
         regex_mode (bool): If True, use regex matching.
 
     Example:
-        >>> import os
         >>> os.listdir(img_dir)
-        ['image1.jpg', 'image2.jpg', 'image10.jpg', 'foo.txt']
+        ['foo.txt', 'image1.jpg', 'image10.jpg', 'image2.jpg']
 
         >>> resolver = FileResolver("image1.jpg")
         >>> [path.name for path in resolver.files]

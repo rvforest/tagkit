@@ -6,6 +6,7 @@ Test-specific fixtures are in tests/conftest.py.
 
 import os
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -30,3 +31,11 @@ def doctest_files(doctest_namespace, tmp_path):
 
     # Add to doctest namespace
     doctest_namespace["img_dir"] = str(img_dir)
+
+
+@pytest.fixture(autouse=True)
+def doctest_sorted_os_ls(doctest_namespace):
+    """Sort os.listdir in doctest so output is predictable."""
+    mock_os = MagicMock()
+    mock_os.listdir = lambda x: sorted(os.listdir(x))
+    doctest_namespace["os"] = mock_os
