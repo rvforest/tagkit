@@ -27,7 +27,7 @@ class FileResolver:
 
         >>> resolver = FileResolver("*.jpg", glob_mode=True)
         >>> [path.name for path in resolver.files]
-        ['image1.jpg', 'image2.jpg', 'image10.jpg']
+        ['image1.jpg', 'image10.jpg', 'image2.jpg']
 
         >>> resolver = FileResolver("image[12].jpg", regex_mode=True)
         >>> [path.name for path in resolver.files]
@@ -41,7 +41,7 @@ class FileResolver:
         glob_mode: bool = False,
         regex_mode: bool = False,
     ):
-        self.files = self._resolve(file_or_pattern, glob_mode, regex_mode)
+        self.files = sorted(self._resolve(file_or_pattern, glob_mode, regex_mode))
 
     def _resolve(
         self, file_or_pattern: str, glob_mode: bool, regex_mode: bool
