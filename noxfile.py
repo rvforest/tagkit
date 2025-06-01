@@ -135,6 +135,19 @@ def docs(session: nox.Session) -> None:
     print("Documentation built.")
 
 
+@nox.session(venv_backend="uv", tags=[DOCS_TAG])
+def autobuild_docs(session: nox.Session) -> None:
+    """Sphin autobuild"""
+    _run_install(session, groups=["docs"])
+    session.run(
+        "sphinx-autobuild",
+        "docs/source",
+        "docs/build/html",
+        "build/html",
+        *session.posargs,
+    )
+
+
 def _run_install(
     session: nox.Session, groups: list[Literal["main", "dev", "docs"]] = ["main", "dev"]
 ) -> None:
