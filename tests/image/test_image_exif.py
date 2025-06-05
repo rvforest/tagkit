@@ -5,12 +5,6 @@ from tagkit.core.tag import ExifTag
 from tagkit.core.exceptions import InvalidTagId, InvalidTagName
 
 
-def test_init_with_backup(test_images):
-    """Test initialization with backup enabled"""
-    exif = ExifImage(test_images / "minimal.jpg", create_backup_on_mod=True)
-    assert exif.create_backup is True
-
-
 def test_tags_property_access(test_images):
     """Test accessing tags through the property"""
     exif = ExifImage(test_images / "minimal.jpg")
@@ -70,14 +64,6 @@ def test_set_tag_by_name(test_images):
     assert exif.tags["Make"].value == "NewMake"
 
 
-def test_set_tag_with_backup(test_images):
-    """Test setting a tag with backup enabled"""
-    test_file = test_images / "minimal.jpg"
-    exif = ExifImage(test_file, create_backup_on_mod=True)
-    exif.write_tag(271, "NewMake")
-    assert (test_file.parent / (test_file.name + ".bak")).exists()
-
-
 def test_set_tag_with_ifd(test_images):
     """Test setting a tag with explicit IFD"""
     exif = ExifImage(test_images / "minimal.jpg")
@@ -105,14 +91,6 @@ def test_remove_tag_by_name(test_images):
     exif.delete_tag("Make")
     # Verify it's gone
     assert "Make" not in exif.tags
-
-
-def test_remove_tag_with_backup(test_images):
-    """Test removing a tag with backup enabled"""
-    test_file = test_images / "minimal.jpg"
-    exif = ExifImage(test_file, create_backup_on_mod=True)
-    exif.delete_tag(271)
-    assert (test_file.parent / (test_file.name + ".bak")).exists()
 
 
 def test_remove_tag_with_ifd(test_images):
@@ -157,3 +135,16 @@ def test_as_dict_with_binary_format(test_images):
     exif = ExifImage(test_images / "minimal.jpg")
     dict_data = exif.as_dict(binary_format="hex")
     assert isinstance(dict_data, dict)
+
+
+def test_save_creates_backup(test_images, tmp_path):
+    """Test that save(create_backup=True) creates a backup file."""
+    import shutil
+
+    test_file = tmp_path / "minimal.jpg"
+    # Copy the test image to a temp location to avoid modifying the original
+    shutil.copy(test_images / "minimal.jpg", test_file)
+    exif = ExifImage(test_file)
+    exif.write_tag("Make", "BackupTest")
+    exif.save(create_backup=True)
+    assert (test_file.parent / (test_file.name + ".bak")).exists()
