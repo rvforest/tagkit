@@ -35,7 +35,7 @@ def registry(sample_registry_conf):
 
 def test_init(registry, sample_registry_conf):
     """Test registry initialization"""
-    assert registry.tags == sample_registry_conf
+    assert registry.tags_by_ifd == sample_registry_conf
     assert len(registry._name_to_id) == 7  # Total unique tag names
     assert len(registry._tag_ids) == 6  # Total unique tag IDs
 
@@ -43,8 +43,10 @@ def test_init(registry, sample_registry_conf):
 def test_from_yaml():
     """Test loading registry from default YAML file"""
     registry = ExifRegistry.from_yaml()
-    assert len(registry.tags) > 0
-    assert all(key in registry.tags for key in ["Image", "Exif", "GPS", "Interop"])
+    assert len(registry.tags_by_ifd) > 0
+    assert all(
+        key in registry.tags_by_ifd for key in ["Image", "Exif", "GPS", "Interop"]
+    )
 
 
 def test_from_yaml_custom_path(tmp_path):
@@ -58,8 +60,8 @@ def test_from_yaml_custom_path(tmp_path):
     yaml_path = tmp_path / "test_registry.yaml"
     yaml_path.write_text(yaml_content)
     registry = ExifRegistry.from_yaml(yaml_path)
-    assert len(registry.tags) == 1
-    assert registry.tags["Image"][271]["name"] == "Make"
+    assert len(registry.tags_by_ifd) == 1
+    assert registry.tags_by_ifd["Image"][271]["name"] == "Make"
 
 
 def test_tag_names(registry):

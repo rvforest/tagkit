@@ -33,11 +33,11 @@ class ExifRegistry:
     """
 
     def __init__(self, registry_conf: RegistryConf):
-        self.tags = registry_conf
+        self.tags_by_ifd = registry_conf
 
         name_to_id = {}
         name_to_type = {}
-        for ifd_tags in self.tags.values():
+        for ifd_tags in self.tags_by_ifd.values():
             name_to_id.update({tag["name"]: tag_id for tag_id, tag in ifd_tags.items()})
             name_to_type.update({tag["name"]: tag["type"] for tag in ifd_tags.values()})
         self._name_to_id = name_to_id
@@ -110,7 +110,7 @@ class ExifRegistry:
 
         found_ifds: list[Literal["IFD0", "Exif", "GPS", "Interop"]] = []
         ifd0: Literal["IFD0"] = "IFD0"
-        for ifd_category, tags in self.tags.items():
+        for ifd_category, tags in self.tags_by_ifd.items():
             if tag_id in tags:
                 ifd = ifd0 if ifd_category == "Image" else ifd_category
                 found_ifds.append(ifd)
@@ -180,10 +180,10 @@ class ExifRegistry:
         ifd_key = "Image" if ifd in ("IFD0", "IFD1") else ifd
 
         if ifd_key is not None:
-            return self.tags[ifd_key][tag_key]["name"]  # type: ignore
+            return self.tags_by_ifd[ifd_key][tag_key]["name"]  # type: ignore
 
         # If IFD not given then try all IFD's
-        for ifd_tags in self.tags.values():
+        for ifd_tags in self.tags_by_ifd.values():
             if tag_key in ifd_tags:
                 return ifd_tags[tag_key]["name"]
 
@@ -225,7 +225,7 @@ class ExifRegistry:
         self._validate_tag_id(tag_key)
 
         # Find the tag in any IFD
-        for ifd_tags in self.tags.values():
+        for ifd_tags in self.tags_by_ifd.values():
             if tag_key in ifd_tags:
                 return ifd_tags[tag_key]["type"]
 
