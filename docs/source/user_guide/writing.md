@@ -14,6 +14,13 @@ Use the `write_tag` method to write a single tag to an image. You can specify th
 You may specify an explicit IFD (Image File Directory) using the `ifd` argument. If not specified, the IFD is determined based on the tag name or ID. For tags associated with both the main and thumbnail IFDs, the main IFD is used by default unless the `thumbnail` argument is set to `True`.
 If the tag already exists, it will be updated with the new value.
 
+If a tag id or tag name is provided that is present in both the main and thumbnail IFDs, the tag will be written to the main IFD only unless you specify `ifd='IFD1'`. If a tag id or tag name
+is provided that is present in two other IFDs and the ifd is not specified, the tag
+will be written to the first IFD that contains the tag and a warning is emitted.
+IFD's are searched in the order of IFD0, Exif, GPS, Interop. In general, there is much
+less chance of overlap when specifying tags by name rather than by ID, but explicitly
+specifying the IFD eliminates this issue.
+
 **Note:** Changes are not saved to disk until you call the `save()` method.
 
 ```{testcode}
@@ -61,6 +68,8 @@ print(f"Backup created at {exif.file_path}.bak")
 
 To remove tags from an image, use the `delete_tag` method. You can specify the tag by name or ID, and optionally target a specific IFD (via the `ifd` argument).
 If the tag exists in both the main and thumbnail IFDs and `ifd` is not specified, it will be removed from the main IFD only.
+
+The same rules for overlapping tag ids apply as when writing tags.
 
 **Remember:** Call `save()` to persist deletions to disk.
 

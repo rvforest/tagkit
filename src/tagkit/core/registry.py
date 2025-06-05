@@ -84,11 +84,14 @@ class ExifRegistry:
 
     def get_ifd(self, tag_key: Union[int, str], thumbnail: bool = False) -> IfdName:
         """
-        Get the IFD (Image File Directory) for a tag.
+        Get the IFD (Image File Directory) for a tag. If a tag id is provided that is
+        present in multiple IFDs, a warning is raised and the first found IFD is
+        returned. IFD's are searched in the order of IFD0, Exif, GPS, Interop. If
+        the thumbnail argument is True, IFD1 is always returned.
 
         Args:
             tag_key (Union[int, str]): Tag name or tag ID.
-            thumbnail (bool): If True, return the thumbnail IFD.
+            thumbnail (bool): If True, return the thumbnail IFD (IFD1).
 
         Returns:
             IfdName: The IFD name.
