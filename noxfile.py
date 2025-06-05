@@ -63,18 +63,22 @@ def test(session: nox.Session) -> None:
 
 @nox.session(venv_backend="uv", tags=[TEST_TAG])
 def doctest(session: nox.Session) -> None:
-    """Run doctests in Python modules and documentation.
+    """Run both doctests in Python modules and documentation files."""
+    session.notify("doctest_docstrings")
+    session.notify("doctest_docs")
 
-    This checks both:
-    - Python docstrings (using --doctest-modules)
-    - Documentation .rst files (using --doctest-glob)
-    """
+
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def doctest_docstrings(session: nox.Session) -> None:
+    """Run doctests in Python modules (docstrings)."""
     _run_install(session, groups=["main", "dev", "docs"])
-
-    # Test Python docstrings
     session.run("pytest", "--doctest-modules", "src/tagkit/", *session.posargs)
 
-    # Test documentation examples
+
+@nox.session(venv_backend="uv", tags=[TEST_TAG])
+def doctest_docs(session: nox.Session) -> None:
+    """Run doctests in documentation files."""
+    _run_install(session, groups=["main", "dev", "docs"])
     session.run(
         "sphinx-build",
         "-b",
