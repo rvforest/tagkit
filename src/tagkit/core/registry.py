@@ -103,7 +103,7 @@ class ExifRegistry:
             >>> tag_registry.get_ifd('Make')
             'IFD0'
         """
-        tag_id = self.resolve_tag_id(tag_key)
+        self._validate_tag_key(tag_key)
 
         if thumbnail:
             return "IFD1"
@@ -111,15 +111,16 @@ class ExifRegistry:
         found_ifds: list[Literal["IFD0", "Exif", "GPS", "Interop"]] = []
         ifd0: Literal["IFD0"] = "IFD0"
         for ifd_category, tags in self.tags_by_ifd.items():
-            if tag_id in tags:
+            tag_names = [tag["name"] for tag in tags.values()]
+            if tag_key in tag_names or tag_key in tags:
                 ifd = ifd0 if ifd_category == "Image" else ifd_category
                 found_ifds.append(ifd)
         if len(found_ifds) > 1:
-            warnings.warn(f"Tag ID {tag_id} found in multiple IFDs: {found_ifds}")
+            warnings.warn(f"Tag ID {tag_key} found in multiple IFDs: {found_ifds}")
         if found_ifds:
             return found_ifds[0]
 
-        # Execution shouldn't make it this far because if tag_id is in self
+        # Execution shouldn't make it this far because if tag_key is in self
         # then there should always be a result. However, as a guardrail we
         # raise here anyway.
         raise ValueError(f"Could not find ifd for tag '{tag_key}'")
@@ -191,6 +192,22 @@ class ExifRegistry:
         # then there should always be a result. However, as a guardrail we
         # raise here anyway.
         raise ValueError(f"Could not find ifd for tag '{tag_key}'")
+
+    def _validate_tag_key(self, tag_key: Union[int, str]) -> None:
+        """
+        Validate the tag key (either ID or name).
+
+        Args:
+            tag_key (Union[int, str]): Tag name or tag ID.
+
+        Raises:
+            InvalidTagName: If the tag name is invalid.
+            InvalidTagId: If the tag ID is invalid.
+        """
+        if isinstance(tag_key, int):
+            self._validate_tag_id(tag_key)
+        else:
+            self._validate_tag_name(tag_key)
 
     def _validate_tag_id(self, tag_id: int) -> None:
         if tag_id not in self._tag_ids:

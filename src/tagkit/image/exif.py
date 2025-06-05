@@ -79,7 +79,7 @@ class ExifImage:
             >>> exif.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
         if ifd is None:
-            ifd = tag_registry.get_ifd(tag_registry.resolve_tag_id(tag))
+            ifd = tag_registry.get_ifd(tag)
         tag_id = tag_registry.resolve_tag_id(tag)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
