@@ -14,10 +14,12 @@ CLEAN_TAG = "clean"
 
 nox.options.sessions = ["lint", "format", "types", "test"]
 
+# ==================== CHECKS ====================
+
 
 @nox.session(venv_backend="uv", tags=[LINT_TAG, FORMAT_TAG, TEST_TAG])
 def check(session: nox.Session) -> None:
-    """Run all checks (lint, formatting, type checking, tests, doctests)."""
+    """Run all checks (lint, formatting, type checking)."""
     session.run("uv", "run", "pre-commit", "run", "--all-files", *session.posargs)
 
 
@@ -37,6 +39,17 @@ def format(session: nox.Session) -> None:
 def types(session: nox.Session) -> None:
     """Run static type checking."""
     session.notify("check", posargs=["types"])
+
+
+@nox.session(venv_backend="uv")
+def fix(session: nox.Session) -> None:
+    """Fix formatting and linting"""
+    _run_install(session, groups=["dev"])
+    session.run("ruff", "check", "--fix")
+    session.run("ruff", "format")
+
+
+# ==================== TESTS ====================
 
 
 @nox.session(
@@ -62,20 +75,14 @@ def doctest(session: nox.Session) -> None:
     session.run("pytest", "--doctest-modules", "src/tagkit/", *session.posargs)
 
     # Test documentation examples
-    # session.run(
-    #     "pytest",
-    #     "--doctest-glob", "*.rst",
-    #     "docs/source/",
-    #     *session.posargs
-    # )
-
-
-@nox.session(venv_backend="uv")
-def fix(session: nox.Session) -> None:
-    """Fix formatting and linting"""
-    _run_install(session, groups=["dev"])
-    session.run("ruff", "check", "--fix")
-    session.run("ruff", "format")
+    session.run(
+        "sphinx-build",
+        "-b",
+        "doctest",
+        "docs/source",
+        "docs/build/doctest",
+        *session.posargs,
+    )
 
 
 @nox.session(venv_backend="uv", tags=[TEST_TAG])
@@ -87,6 +94,34 @@ def coverage(session: nox.Session) -> None:
     session.run("coverage", "report", "-m")
     session.run("coverage", "html")
     print("Coverage HTML report: file://htmlcov/index.html")
+
+
+# ---- Documentation ----
+
+
+@nox.session(venv_backend="uv", tags=[DOCS_TAG])
+def docs(session: nox.Session) -> None:
+    """Build the documentation."""
+    _run_install(session, groups=["docs"])
+    session.chdir("docs")
+    session.run("sphinx-build", "-b", "html", "source", "build/html", *session.posargs)
+    print("Documentation built.")
+
+
+@nox.session(venv_backend="uv", tags=[DOCS_TAG])
+def livedocs(session: nox.Session) -> None:
+    """Sphinx autobuild"""
+    _run_install(session, groups=["docs"])
+    session.run(
+        "sphinx-autobuild",
+        "docs/source",
+        "docs/build/html",
+        "build/html",
+        *session.posargs,
+    )
+
+
+# ==================== CLEAN ====================
 
 
 @nox.session(venv_backend="uv", python=False, tags=[CLEAN_TAG])
@@ -124,28 +159,6 @@ def clean(session: nox.Session) -> None:
     if os.path.exists(docs_build):
         shutil.rmtree(docs_build)
         session.log(f"Removed: {docs_build}")
-
-
-@nox.session(venv_backend="uv", tags=[DOCS_TAG])
-def docs(session: nox.Session) -> None:
-    """Build the documentation."""
-    _run_install(session, groups=["docs"])
-    session.chdir("docs")
-    session.run("sphinx-build", "-b", "html", "source", "build/html", *session.posargs)
-    print("Documentation built.")
-
-
-@nox.session(venv_backend="uv", tags=[DOCS_TAG])
-def autobuild_docs(session: nox.Session) -> None:
-    """Sphin autobuild"""
-    _run_install(session, groups=["docs"])
-    session.run(
-        "sphinx-autobuild",
-        "docs/source",
-        "docs/build/html",
-        "build/html",
-        *session.posargs,
-    )
 
 
 def _run_install(
