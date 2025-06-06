@@ -19,6 +19,7 @@
     "EXIF",
     "Exiv",
     "fract",
+    "furo",
     "GPSDOP",
     "GPSIFD",
     "ifds",
@@ -26,6 +27,7 @@
     "livedocs",
     "mypy",
     "noqa",
+    "noxfile",
     "piexif",
     "pipx",
     "posargs",
@@ -41,7 +43,9 @@
     "tagkit",
     "testcode",
     "toctree",
+    "typer",
     "undoc",
+    "VIRTUALENV",
     "wntrblm",
     "yournewword"
   ]
