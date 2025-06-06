@@ -39,7 +39,7 @@ jobs:
         run: uv python install
 
       - name: Run tests
-        run: nox -s coverage-${{ matrix.python-version }} -- -vv
+        run: nox -s "coverage-${{ matrix.python-version }}" -- -vv
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
