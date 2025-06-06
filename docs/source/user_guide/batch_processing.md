@@ -4,7 +4,7 @@ This guide demonstrates how to efficiently process multiple image files using ta
 
 ## Command Line Interface
 
-See [Reading Exif Tags](./reading.md#cli) for examples on using the CLI to read EXIF data from multiple files.
+See [Reading Exif Tags](./reading.md) for examples on using the CLI to read EXIF data from multiple files.
 
 ## API
 
