@@ -39,7 +39,20 @@ jobs:
         run: uv python install
 
       - name: Run tests
-        run: nox -s test -- -vv
+        run: nox -s coverage-${{ matrix.python-version }} -- -vv
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+
+  run-doctests:
+    name: Run doctests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wntrblm/nox@main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Run doctest
         run: nox -s doctest -- -vv
