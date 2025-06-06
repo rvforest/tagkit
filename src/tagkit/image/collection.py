@@ -21,7 +21,6 @@ class ExifImageCollection:
     Args:
         files: List of paths to image files
         tag_filter: Optional list of tag names or IDs to filter by
-        thumbnail: If True, use thumbnail IFD
         ifd: Specific IFD to use
         create_backup_on_mod: If True, create backups before modifying files
 
@@ -34,7 +33,6 @@ class ExifImageCollection:
         files: Iterable[FilePath],
         *,
         tag_filter: Optional[list[Union[int, str]]] = None,
-        thumbnail: Optional[bool] = None,
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -43,12 +41,10 @@ class ExifImageCollection:
         Args:
             files: List of paths to image files
             tag_filter: Optional list of tag names or IDs to filter by
-            thumbnail: If True, use thumbnail IFD
             ifd: Specific IFD to use
             create_backup_on_mod: If True, create backups before modifying files
         """
         self.tag_filter = tag_filter
-        self.thumbnail = thumbnail
         self.ifd = ifd
         self.files: Dict[str, ExifImage] = {}
 
@@ -56,7 +52,6 @@ class ExifImageCollection:
             self.files[Path(path).name] = ExifImage(
                 path,
                 tag_filter=tag_filter,
-                thumbnail=thumbnail,
                 ifd=ifd,
             )
 

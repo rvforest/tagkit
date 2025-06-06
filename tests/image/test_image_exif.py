@@ -85,20 +85,6 @@ def test_set_tag_with_ifd(test_images):
     assert exif.tags["Make"].value == "NewMake"
 
 
-def test_set_tag_with_thumbnail(test_images):
-    """Test setting a tag with thumbnail flag"""
-    exif = ExifImage(test_images / "minimal.jpg")
-    # First check if we can set a tag with thumbnail flag
-    exif.write_tag(271, "NewMake", thumbnail=True)
-
-    # Directly verify the tag was set in the internal _tag_dict
-    # This avoids relying on the tags property which filters by thumbnail
-    tag_id = 271  # Make tag ID
-    thumbnail_ifd = "IFD1"  # The library uses IFD1 for thumbnail tags
-    assert (tag_id, thumbnail_ifd) in exif._tag_dict
-    assert exif._tag_dict[(tag_id, thumbnail_ifd)].value == "NewMake"
-
-
 def test_remove_tag_by_id(test_images):
     """Test removing a tag by ID"""
     exif = ExifImage(test_images / "minimal.jpg")
@@ -138,25 +124,6 @@ def test_remove_tag_with_ifd(test_images):
     exif.delete_tag(271, ifd="IFD0")
     # Verify it's gone
     assert "Make" not in exif.tags
-
-
-def test_remove_tag_with_thumbnail(test_images):
-    """Test removing a tag with thumbnail flag"""
-    exif = ExifImage(test_images / "minimal.jpg")
-
-    # Set a tag in thumbnail IFD
-    tag_id = 271  # Make tag ID
-    thumbnail_ifd = "IFD1"  # The library uses IFD1 for thumbnail tags
-    exif.write_tag(tag_id, "NewMake", thumbnail=True)
-
-    # Verify the tag exists in the internal _tag_dict
-    assert (tag_id, thumbnail_ifd) in exif._tag_dict
-
-    # Remove it
-    exif.delete_tag(tag_id, thumbnail=True)
-
-    # Verify it's gone from the internal _tag_dict
-    assert (tag_id, thumbnail_ifd) not in exif._tag_dict
 
 
 def test_remove_nonexistent_tag(test_images):

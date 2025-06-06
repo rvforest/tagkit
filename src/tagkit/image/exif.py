@@ -60,7 +60,6 @@ class ExifImage:
         self,
         tag: Union[str, int],
         value: TagValue,
-        thumbnail: bool = False,
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -69,7 +68,6 @@ class ExifImage:
         Args:
             tag: Tag name or tag ID.
             value: Value to set.
-            thumbnail: If True, set the tag in the thumbnail IFD.
             ifd: Specific IFD to use.
 
         Raises:
@@ -80,16 +78,14 @@ class ExifImage:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.write_tag('Artist', 'John Doe')
         """
-        validate_single_arg_set({"thumbnail": thumbnail, "ifd": ifd}, strict_none=False)
+        if ifd is None:
+            ifd = tag_registry.get_ifd(tag_registry.resolve_tag_id(tag))
         tag_id = tag_registry.resolve_tag_id(tag)
-        if not ifd:
-            ifd = tag_registry.get_ifd(tag_id, thumbnail=thumbnail)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
     def delete_tag(
         self,
         tag_key: Union[str, int],
-        thumbnail: bool = False,
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -97,7 +93,6 @@ class ExifImage:
 
         Args:
             tag_key: Tag name or tag ID.
-            thumbnail: If True, remove the tag from the thumbnail IFD.
             ifd: Specific IFD to use.
 
         Raises:
@@ -108,10 +103,9 @@ class ExifImage:
             >>> exif = ExifImage('image10.jpg')
             >>> exif.delete_tag('Make')
         """
-        validate_single_arg_set({"thumbnail": thumbnail, "ifd": ifd}, strict_none=False)
         tag_id = tag_registry.resolve_tag_id(tag_key)
-        ifd = tag_registry.get_ifd(tag_id, thumbnail=thumbnail)
-
+        if ifd is None:
+            ifd = tag_registry.get_ifd(tag_id)
         if (tag_id, ifd) not in self._tag_dict:
             raise KeyError(f"Tag '{tag_key}' not found in {self.file_path}")
 
