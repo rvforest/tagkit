@@ -23,4 +23,4 @@ tagkit [global-options] view [options] FILE_OR_PATTERN
 
 ## Commands
 
-- **[view](./basic_reading.md)**: Reads all or selected tags from one or more images.
+- **[view](./reading.md)**: Reads all or selected tags from one or more images.
