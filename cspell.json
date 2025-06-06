@@ -12,6 +12,7 @@
     "conftest",
     "DATESTAMP",
     "docstrings",
+    "doctest",
     "doctests",
     "endfor",
     "endswith",
@@ -41,6 +42,7 @@
     "testcode",
     "toctree",
     "undoc",
+    "wntrblm",
     "yournewword"
   ]
 }
