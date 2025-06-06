@@ -19,10 +19,9 @@ class ExifImageCollection:
     This class provides a convenient way to access EXIF data from multiple files.
 
     Args:
-        files: List of paths to image files
-        tag_filter: Optional list of tag names or IDs to filter by
-        ifd: Specific IFD to use
-        create_backup_on_mod: If True, create backups before modifying files
+        files: List of paths to image files.
+        tag_filter: Optional list of tag names or IDs to filter by.
+        ifd: Specific IFD to use.
 
     Attributes:
         files (Dict[str, ExifImage]): Dictionary mapping file paths to their EXIF data.
@@ -39,10 +38,9 @@ class ExifImageCollection:
         Initialize the collection with a list of file paths.
 
         Args:
-            files: List of paths to image files
-            tag_filter: Optional list of tag names or IDs to filter by
-            ifd: Specific IFD to use
-            create_backup_on_mod: If True, create backups before modifying files
+            files: List of paths to image files.
+            tag_filter: Optional list of tag names or IDs to filter by.
+            ifd: Specific IFD to use.
         """
         self.tag_filter = tag_filter
         self.ifd = ifd
@@ -58,27 +56,6 @@ class ExifImageCollection:
     def as_dict(self, binary_format: Optional[str] = None) -> Dict[str, Any]:
         """
         Convert the collection to a dictionary.
-
-        The structure is:
-        {
-            'file1.jpg': {
-                'Make': {
-                    'value': 'Canon',
-                    'type': 'Ascii',
-                    'display': 'Canon'
-                },
-                'Model': {
-                    'value': 'EOS 5D Mark IV',
-                    'type': 'Ascii',
-                    'display': 'EOS 5D Mark IV'
-                },
-                ...
-            },
-            'file2.jpg': {
-                ...
-            },
-            ...
-        }
 
         Args:
             binary_format: Format for binary data ('hex', 'base64', or None for default).

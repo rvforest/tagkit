@@ -97,7 +97,7 @@ class ValueFormatter:
         Args:
             tag: The tag to format.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
-                If None, <bytes: N> will be shown as a placeholder.
+            If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
             The formatted value as a string.

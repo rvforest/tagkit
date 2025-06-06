@@ -129,5 +129,5 @@ except Exception as e:
 
 Now that you've learned how to read EXIF data, check out:
 
-- [Basic Writing Example](basic_writing.md) to learn how to write EXIF data
+- [Basic Writing Example](./writing.md) to learn how to write EXIF data
 - [Batch Processing Example](batch_processing.md) for handling multiple files efficiently
