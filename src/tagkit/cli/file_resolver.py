@@ -18,7 +18,7 @@ class FileResolver:
 
     Example:
         >>> os.listdir(img_dir)
-        ['foo.txt', 'image1.jpg', 'image10.jpg', 'image2.jpg']
+        ['foo.txt', 'image1.jpg', 'image10.jpg', 'image2.jpg', 'image3.jpg']
 
         >>> resolver = FileResolver("image1.jpg")
         >>> [path.name for path in resolver.files]
@@ -26,7 +26,7 @@ class FileResolver:
 
         >>> resolver = FileResolver("*.jpg", glob_mode=True)
         >>> [path.name for path in resolver.files]
-        ['image1.jpg', 'image10.jpg', 'image2.jpg']
+        ['image1.jpg', 'image10.jpg', 'image2.jpg', 'image3.jpg']
 
         >>> resolver = FileResolver("image[12].jpg", regex_mode=True)
         >>> [path.name for path in resolver.files]

@@ -88,9 +88,9 @@ class ExifImageCollection:
             Dictionary mapping file paths to their EXIF data dictionaries.
 
         Example:
-            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection = ExifImageCollection(["image2.jpg", "image3.jpg"])
             >>> collection.as_dict()
-            {'image1.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}, 'image2.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}}
+            {'image2.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}, 'image3.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}}
         """
         return {
             path: exif.as_dict(binary_format=binary_format)
@@ -108,7 +108,7 @@ class ExifImageCollection:
         Example:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.n_tags
-            2
+            9
         """
         return sum(len(exif) for exif in self.files.values())
 

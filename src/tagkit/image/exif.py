@@ -76,7 +76,7 @@ class ExifImage:
 
         Example:
             >>> exif = ExifImage('image1.jpg')
-            >>> exif.write_tag('Artist', 'John Doe')
+            >>> exif.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_registry.resolve_tag_id(tag))
@@ -101,7 +101,7 @@ class ExifImage:
 
         Example:
             >>> exif = ExifImage('image10.jpg')
-            >>> exif.delete_tag('Make')
+            >>> exif.delete_tag('Make', ifd='IFD0')
         """
         tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:

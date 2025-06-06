@@ -6,10 +6,74 @@
         "name": "Make",
         "value": "Tagkit",
         "ifd": "0th"
+      },
+      {
+        "id": 272,
+        "name": "Model",
+        "value": "Tagkit Camera",
+        "ifd": "0th"
+      },
+      {
+        "id": 37386,
+        "name": "FocalLength",
+        "value": [
+          35,
+          1
+        ],
+        "ifd": "Exif"
+      },
+      {
+        "id": 33434,
+        "name": "ExposureTime",
+        "value": [
+          1,
+          125
+        ],
+        "ifd": "Exif"
+      },
+      {
+        "id": 33434,
+        "name": "FNumber",
+        "value": [
+          28,
+          10
+        ],
+        "ifd": "Exif"
+      },
+      {
+        "id": 34855,
+        "name": "ISOSpeedRatings",
+        "value": 100,
+        "ifd": "Exif"
+      },
+      {
+        "id": 36867,
+        "name": "DateTimeOriginal",
+        "value": "2025:05:01 14:30:00",
+        "ifd": "Exif"
+      },
+      {
+        "id": 37378,
+        "name": "ExposureBiasValue",
+        "value": [
+          0,
+          1
+        ],
+        "ifd": "Exif"
       }
     ]
   },
   "image2.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "Tagkit",
+        "ifd": "0th"
+      }
+    ]
+  },
+  "image3.jpg": {
     "tags": [
       {
         "id": 271,
@@ -30,7 +94,10 @@
       {
         "id": 37386,
         "name": "FocalLength",
-        "value": [50, 1],
+        "value": [
+          50,
+          1
+        ],
         "ifd": "Exif"
       }
     ]
