@@ -223,12 +223,11 @@ This ensures that the word will not be flagged as a typo in future documentation
 If you use the CSpell extension in VS Code, you can quickly add a flagged word to the project's `cspell.json` using the Quick Fix menu:
 
 1. Hover over the underlined word flagged as a spelling error in your Markdown file.
-2. Click the lightbulb icon or right-click and select "Quick Fix...", or press Ctrl+. (Windows/Linux) or Cmd+. (Mac) to open the Quick Fix menu.
-3. Choose  or "Add to cspell.json" from the menu.
+2. Click the lightbulb icon, right-click and select "Quick Fix...", or press Ctrl+. (Windows/Linux) or Cmd+. (Mac) to open the Quick Fix menu.
+3. Choose "Add to cspell.json" from the menu.
 4. The word will be automatically added to the `words` array in `cspell.json` in your project root.
 
-Do not choose "Add to workspace settings" or "Add to user settings" as this will not
-update the project's shared configuration file.
+Do **not** choose "Add to workspace settings" or "Add to user settings" as this will not update the project's shared configuration file.
 
 ## Getting Help
 
