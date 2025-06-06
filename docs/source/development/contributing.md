@@ -191,6 +191,45 @@ uv run nox -s livedocs
 
 Then visit `http://localhost:8000` in your browser.
 
+## Spell Checking Documentation
+
+All Markdown documentation files (`.md`) in the `docs/` directory are automatically spell checked using [cspell](https://cspell.org/) as part of the pre-commit hooks and continuous integration process. This helps ensure that the documentation is clear and free of typographical errors.
+
+**Note:** Only Markdown documentation files are spell checked. Source code files (e.g., `.py`) are not checked for spelling errors.
+
+If you encounter a false positive (a word flagged as a typo that is actually correct, such as a technical term, acronym, or project-specific word), you can add it to the shared `cspell.json` configuration file in the project root. This file contains a list of allowed custom words for the project. To add a new word:
+
+1. Open `cspell.json` in the project root.
+2. Add your word to the `"words"` array, keeping the list in alphabetical order if possible.
+3. Commit the change along with your documentation update.
+
+Example:
+
+```json
+{
+  "version": "0.2",
+  "words": [
+    "apidocs",
+    "autodoc",
+    "yournewword"  // Add your word here
+  ]
+}
+```
+
+This ensures that the word will not be flagged as a typo in future documentation builds or pre-commit checks.
+
+**Tip for VS Code users:**
+
+If you use the CSpell extension in VS Code, you can quickly add a flagged word to the project's `cspell.json` using the Quick Fix menu:
+
+1. Hover over the underlined word flagged as a spelling error in your Markdown file.
+2. Click the lightbulb icon or right-click and select "Quick Fix...", or press Ctrl+. (Windows/Linux) or Cmd+. (Mac) to open the Quick Fix menu.
+3. Choose  or "Add to cspell.json" from the menu.
+4. The word will be automatically added to the `words` array in `cspell.json` in your project root.
+
+Do not choose "Add to workspace settings" or "Add to user settings" as this will not
+update the project's shared configuration file.
+
 ## Getting Help
 
 If you need help with contributing to tagkit, you can:
