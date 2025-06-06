@@ -6,6 +6,22 @@ build-backend = "hatchling.build"
 name = "tagkit"
 description = "A CLI & Python API for editing EXIF data in photos."
 readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["exif", "image", "metadata", "cli", "photo", "python"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
+]
+description-content-type = "text/markdown"
 authors = [
     { name = "Robert Forest", email = "rvforest@gmail.com" }
 ]
@@ -17,6 +33,12 @@ dependencies = [
     "rich>=14.0.0",
     "typer>=0.15.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/rvforest/tagkit"
+Documentation = "https://tagkit.readthedocs.io/"
+Source = "https://github.com/rvforest/tagkit"
+Issues = "https://github.com/rvforest/tagkit/issues"
 
 [dependency-groups]
     dev = [
