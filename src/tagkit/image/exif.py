@@ -26,7 +26,6 @@ class ExifImage:
         tag_filter: Optional list of tag names or IDs to filter by
         thumbnail: If True, use thumbnail IFD
         ifd: Specific IFD to use
-        create_backup_on_mod: If True, creates a backup before modifying the file.
         io_backend: Custom backend for EXIF IO. Defaults to piexif.
 
     Example:
@@ -41,14 +40,12 @@ class ExifImage:
         tag_filter: Optional[Iterable[Union[int, str]]] = None,
         thumbnail: Optional[bool] = None,
         ifd: Optional[IfdName] = None,
-        create_backup_on_mod: bool = False,
         io_backend: Optional[ExifIOBackend] = None,
     ):
         self.file_path = str(file_path)
         self.tag_filter = tag_filter
         self.thumbnail = thumbnail
         self.ifd = ifd
-        self.create_backup = create_backup_on_mod
         if io_backend is None:
             io_backend = PiexifBackend()
         self._io_backend = io_backend
@@ -88,7 +85,6 @@ class ExifImage:
         if not ifd:
             ifd = tag_registry.get_ifd(tag_id, thumbnail=thumbnail)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
-        self._save()
 
     def delete_tag(
         self,
@@ -120,7 +116,6 @@ class ExifImage:
             raise KeyError(f"Tag '{tag_key}' not found in {self.file_path}")
 
         del self._tag_dict[tag_id, ifd]
-        self._save()
 
     @property
     def tags(self) -> dict[str, ExifTag]:
@@ -143,7 +138,7 @@ class ExifImage:
             and (self.ifd is None or ifd == self.ifd)
         }
 
-    def _save(self):
+    def save(self, create_backup: bool = False):
         """
         Write the modified EXIF data back to the image file.
 
@@ -151,7 +146,7 @@ class ExifImage:
             IOError: If writing to the file fails.
         """
         exif_bytes = piexif.dump(self._tag_dict)
-        if self.create_backup:
+        if create_backup:
             import shutil
 
             shutil.copy2(self.file_path, self.file_path + ".bak")
@@ -171,7 +166,7 @@ class ExifImage:
             dict: A nested dictionary containing the EXIF data for the image.
 
         Example:
-            >>> exif = ExifImage('image1.jpg')
+            >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
             {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}
         """

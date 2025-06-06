@@ -36,7 +36,6 @@ class ExifImageCollection:
         tag_filter: Optional[list[Union[int, str]]] = None,
         thumbnail: Optional[bool] = None,
         ifd: Optional[IfdName] = None,
-        create_backup_on_mod: bool = False,
     ):
         """
         Initialize the collection with a list of file paths.
@@ -59,7 +58,6 @@ class ExifImageCollection:
                 tag_filter=tag_filter,
                 thumbnail=thumbnail,
                 ifd=ifd,
-                create_backup_on_mod=create_backup_on_mod,
             )
 
     def as_dict(self, binary_format: Optional[str] = None) -> Dict[str, Any]:
