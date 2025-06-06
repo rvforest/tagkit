@@ -89,7 +89,9 @@ def doctest_docs(session: nox.Session) -> None:
     )
 
 
-@nox.session(venv_backend="uv", tags=[TEST_TAG])
+@nox.session(
+    venv_backend="uv", tags=[TEST_TAG], python=["3.9", "3.10", "3.11", "3.12", "3.13"]
+)
 def coverage(session: nox.Session) -> None:
     """Run tests with coverage reporting."""
     _run_install(session)
