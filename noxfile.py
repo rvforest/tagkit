@@ -120,7 +120,6 @@ def livedocs(session: nox.Session) -> None:
         "sphinx-autobuild",
         "docs/source",
         "docs/build/html",
-        "build/html",
         *session.posargs,
     )
 
