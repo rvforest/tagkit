@@ -96,7 +96,10 @@ def coverage(session: nox.Session) -> None:
     """Run tests with coverage reporting."""
     _run_install(session)
     session.run(
-        "pytest", "--cov=src/tagkit", "cov-branch", "--cov-report=xml", *session.posargs
+        "pytest",
+        "--cov=src/tagkit",
+        "--cov-branch",
+        *session.posargs,
     )
     print("Coverage HTML report: file://htmlcov/index.html")
 
