@@ -95,10 +95,9 @@ def doctest_docs(session: nox.Session) -> None:
 def coverage(session: nox.Session) -> None:
     """Run tests with coverage reporting."""
     _run_install(session)
-    session.install("coverage[toml]")
-    session.run("coverage", "run", "-m", "pytest", *session.posargs)
-    session.run("coverage", "report", "-m")
-    session.run("coverage", "html")
+    session.run(
+        "pytest", "--cov=src/tagkit", "cov-branch", "--cov-report=xml", *session.posargs
+    )
     print("Coverage HTML report: file://htmlcov/index.html")
 
 
