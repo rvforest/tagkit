@@ -5,6 +5,10 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from textwrap import dedent
+from pathlib import Path
+
+import yaml
 
 project = "tagkit"
 copyright = "2025, Robert Forest"
@@ -14,11 +18,56 @@ author = "Robert Forest"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "autodoc2",
     "myst_parser",
-    "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx_jinja",  # Enable Jinja2 templating in Markdown
 ]
+myst_enable_extensions = [
+    "colon_fence",
+]
+autodoc2_packages = [
+    "../../src/tagkit",
+]
+
+# doctest settings
+doctest_test_doctest_blocks = ""
+doctest_global_setup = dedent(
+    """
+    import os
+    import sys
+    import tempfile
+    from pathlib import Path
+
+    sys.path.append(".")
+    from conftest import create_test_images_from_metadata
+
+    metadata_path = "./tests/conf/doctest-img-metadata.json"
+
+    # Create test images from the doctest metadata
+    img_dir = Path(tempfile.mkdtemp()) / "doctest_images"
+    create_test_images_from_metadata(img_dir, metadata_path)
+
+    original_dir = os.getcwd()
+    os.chdir(img_dir)
+
+    # Create a dummy print function to avoid needing to check outputs with doctest.
+    # doctest is just being used to ensure examples run without error.
+    def print(*args, **kwargs):
+        pass
+    """
+)
+doctest_global_cleanup = dedent(
+    """
+    import os
+    import shutil
+
+    os.chdir(original_dir)
+    shutil.rmtree(img_dir)
+    """
+)
 
 templates_path = ["_templates"]
 exclude_patterns = []  # type: ignore
@@ -44,11 +93,16 @@ html_theme_options = {
 # Favicon configuration
 html_favicon = "_static/logo/favicon.png"
 
-autodoc_member_order = "bysource"
-autodoc_class_content = "both"
-autodoc_default_options = {
-    "members": True,
-    "undoc-members": True,
-    "show-inheritance": True,
-    "inherited-members": True,
+
+def load_yaml_file(path):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
+jinja_contexts = {
+    "tag_reference": {
+        "yaml": load_yaml_file(
+            str(Path(__file__).parents[2] / "src" / "tagkit" / "conf" / "registry.yaml")
+        )
+    }
 }
