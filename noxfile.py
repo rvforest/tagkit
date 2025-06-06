@@ -101,7 +101,7 @@ def coverage(session: nox.Session) -> None:
     print("Coverage HTML report: file://htmlcov/index.html")
 
 
-# ---- Documentation ----
+# ==================== DOCUMENTATION ====================
 
 
 @nox.session(venv_backend="uv", tags=[DOCS_TAG])
