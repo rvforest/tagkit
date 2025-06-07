@@ -43,4 +43,10 @@ repos:
     hooks:
       - id: detect-secrets
 
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.7.12
+    hooks:
+      - id: uv-lock
+
 default_stages: [pre-commit, pre-push]
