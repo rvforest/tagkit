@@ -23,7 +23,7 @@ jobs:
         run: uv run pre-commit run --all-files --show-diff-on-failure
 
   run-tests:
-    name: Run tests
+    name: Run tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
