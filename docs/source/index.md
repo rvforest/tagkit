@@ -1,8 +1,15 @@
 # tagkit documentation
 
 [![GitHub](https://img.shields.io/badge/GitHub-rvforest%2Ftagkit-blue?logo=github)](https://github.com/rvforest/tagkit)
+[![Read the Docs](https://img.shields.io/readthedocs/tagkit)](https://tagkit.readthedocs.io)
+
+[![Checks](https://img.shields.io/github/check-runs/rvforest/tagkit/main)](https://github.com/rvforest/tagkit/actions/workflows/run-checks.yaml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/rvforest/tagkit/graph/badge.svg?token=JXB4LR2241)](https://codecov.io/gh/rvforest/tagkit)
+
 [![PyPI](https://img.shields.io/pypi/v/tagkit.svg)](https://pypi.org/project/tagkit/)
-[![License](https://img.shields.io/github/license/rvforest/tagkit)](https://github.com/rvforest/tagkit/blob/main/LICENSE)
+[![Python Versions](https://img.shields.io/pypi/pyversions/tagkit.svg)](https://pypi.org/project/tagkit/)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Welcome to the documentation for **tagkit**, a Python library for reading, writing, and managing image tags and EXIF metadata in Python projects.
 
