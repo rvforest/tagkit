@@ -1,10 +1,12 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/source/_static/logo/tagkit-logo-dark.png" width="500">
-    <img alt="Tagkit Logo" src="docs/source/_static/logo/tagkit-logo-light.png" width="500">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/rvforest/tagkit/main/docs/source/_static/logo/tagkit-logo-dark.png" width="500">
+<img alt="Tagkit Logo" src="https://raw.githubusercontent.com/rvforest/tagkit/main/docs/source/_static/logo/tagkit-logo-light.png" width="500">
   </picture>
 </div>
+
+
 
 # Tagkit
 
