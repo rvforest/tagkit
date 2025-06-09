@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from tagkit import ExifImage
@@ -148,3 +150,64 @@ def test_save_creates_backup(test_images, tmp_path):
     exif.write_tag("Make", "BackupTest")
     exif.save(create_backup=True)
     assert (test_file.parent / (test_file.name + ".bak")).exists()
+
+
+class TestExifImageIntegration:
+    def test_write_tag_and_persist(self, test_images, tmp_path):
+        """Integration: write_tag persists value after save and reload."""
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        exif = ExifImage(dst)
+        exif.write_tag("Make", "IntegrationTest")
+        exif.save()
+
+        # Reload and check
+        reloaded = ExifImage(dst)
+        assert reloaded.tags["Make"].value == "IntegrationTest"
+
+    def test_delete_tag_and_persist(self, test_images, tmp_path):
+        """Integration: delete_tag removes value after save and reload."""
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        exif = ExifImage(dst)
+        # Ensure tag exists
+        assert "Make" in exif.tags
+        exif.delete_tag("Make")
+        exif.save()
+        # Reload and check
+        reloaded = ExifImage(dst)
+        assert "Make" not in reloaded.tags
+
+    def test_write_tag_creates_backup(self, test_images, tmp_path):
+        """Integration: save(create_backup=True) creates a backup file after write_tag."""
+        import shutil
+
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        exif = ExifImage(dst)
+        exif.write_tag("Make", "BackupTest")
+        exif.save(create_backup=True)
+        backup = dst.parent / (dst.name + ".bak")
+        assert backup.exists()
+        # The backup should not have the new value
+        exif_bak = ExifImage(backup)
+        assert exif_bak.tags["Make"].value != "BackupTest"
+
+    def test_delete_tag_creates_backup(self, test_images, tmp_path):
+        """Integration: save(create_backup=True) creates a backup file after delete_tag."""
+        import shutil
+
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        exif = ExifImage(dst)
+        exif.delete_tag("Make")
+        exif.save(create_backup=True)
+        backup = dst.parent / (dst.name + ".bak")
+        assert backup.exists()
+        # The backup should still have the tag
+        exif_bak = ExifImage(backup)
+        assert "Make" in exif_bak.tags
