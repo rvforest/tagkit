@@ -139,12 +139,11 @@ class ExifImage:
         Raises:
             IOError: If writing to the file fails.
         """
-        exif_bytes = piexif.dump(self._tag_dict)
         if create_backup:
             import shutil
 
             shutil.copy2(self.file_path, self.file_path + ".bak")
-        piexif.insert(exif_bytes, self.file_path)
+        self._io_backend.save_tags(self.file_path, self._tag_dict)
 
     def as_dict(
         self, binary_format: Optional[str] = None
