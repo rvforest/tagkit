@@ -23,7 +23,8 @@
 
 ---
 
-**Source Code**: https://github.com/rvforest
+**Source Code**: https://github.com/rvforest/tagkit
+
 **Documentation**: https://tagkit.readthedocs.io
 
 ---
