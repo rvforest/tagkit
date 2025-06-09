@@ -103,3 +103,90 @@ class ExifImageCollection:
             2
         """
         return len(self.files)
+
+    def write_tag(
+        self,
+        tag: Union[str, int],
+        value: Any,
+        ifd: Optional[IfdName] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ):
+        """
+        Set the value of a specific EXIF tag for all or selected images in the collection.
+
+        Args:
+            tag: Tag name or tag ID.
+            value: Value to set.
+            ifd: Specific IFD to use.
+            files: Iterable of file names (keys in self.files) to update. If None, update all.
+
+        Raises:
+            KeyError: If a file is not found in the collection.
+            ValueError: If the tag or IFD is invalid.
+
+        Example:
+            >>> from tagkit.image.collection import ExifImageCollection
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
+        """
+        targets = self.files.keys() if files is None else files
+        for fname in targets:
+            # Normalize fname to string key
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            self.files[fname].write_tag(tag, value, ifd=ifd)
+
+    def delete_tag(
+        self,
+        tag_key: Union[str, int],
+        ifd: Optional[IfdName] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ):
+        """
+        Remove a specific EXIF tag from all or selected images in the collection.
+        If a file does not contain the tag, it is silently ignored.
+
+        Args:
+            tag_key: Tag name or tag ID.
+            ifd: Specific IFD to use.
+            files: Iterable of file names (keys in self.files) to update. If None, update all.
+
+        Raises:
+            KeyError: If a file is not found in the collection.
+            ValueError: If the tag or IFD is invalid.
+
+        Example:
+            >>> from tagkit.image.collection import ExifImageCollection
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
+            >>> collection.delete_tag('Artist', ifd='IFD0')
+        """
+        targets = self.files.keys() if files is None else files
+        for fname in targets:
+            # Normalize fname to string key
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            try:
+                self.files[fname].delete_tag(tag_key, ifd=ifd)
+            except KeyError:
+                pass  # Ignore if tag is missing
+
+    def save_all(self, create_backup: bool = False):
+        """
+        Save all modified EXIF data back to their respective image files.
+
+        Args:
+            create_backup: If True, create a backup of each file before saving.
+
+        Example:
+            >>> from tagkit.image.collection import ExifImageCollection
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.write_tag('Artist', 'John Doe')
+            >>> collection.save_all(create_backup=True)
+        """
+        for exif in self.files.values():
+            exif.save(create_backup=create_backup)

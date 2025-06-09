@@ -42,3 +42,36 @@ You can also get the total number of tags and files:
 print(f"Total files: {collection.n_files}")
 print(f"Total tags: {collection.n_tags}")
 ```
+
+### Batch Modifying Tags
+
+You can set or remove tags for all or selected images in a collection using `write_tag` and `delete_tag`:
+
+```{testcode}
+from tagkit.image.collection import ExifImageCollection
+collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+
+# Set the camera make for all images
+collection.write_tag("Make", "Tagkit Labs")
+
+# Set the camera model for only one image
+collection.write_tag("Model", "Special Edition", files=["image1.jpg"])
+
+# Remove the camera model from one image
+collection.delete_tag("Model", files=["image1.jpg"])
+
+# Remove the camera make from all images
+collection.delete_tag("Make")
+```
+
+### Saving All Changes
+
+After modifying tags in a collection, you can save all changes at once:
+
+```{testcode}
+from tagkit.image.collection import ExifImageCollection
+
+collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+collection.write_tag("Make", "Tagkit Labs")
+collection.save_all(create_backup=True)
+```

@@ -73,4 +73,19 @@ for file_path, exif_image in collection.files.items():
     # Add copyright information
     exif_image.write_tag("Copyright", "© 2025 Your Name")
     exif_image.save()
+
+# Set a tag for all images in the collection
+collection.write_tag("Artist", "John Doe")
+
+# Remove a tag from all images
+collection.delete_tag("Artist")
+
+# Set a tag for a single image
+collection.write_tag("Artist", "Jane", files=["image2.jpg"])
+
+# Remove a tag from a single image
+collection.delete_tag("Artist", files=["image2.jpg"])
+
+# Save all changes to all images, making a backup of each
+collection.save_all(create_backup=True)
 ```
