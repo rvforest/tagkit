@@ -52,6 +52,10 @@ class TestImageCollection:
         n_tags = len(result.files["foo"])
         assert n_tags == n_tags_expected
 
+    def test_n_tags_property(self, n_tags_expected, mock_exif_w_patch):
+        result = ExifImageCollection(["foo"])
+        assert result.n_tags == n_tags_expected
+
     def test_image_collection_tag_values_retrieved(self, mock_exif_w_patch):
         result = ExifImageCollection(["foo"])
 
@@ -116,6 +120,24 @@ class TestImageCollection:
         collection = ExifImageCollection(["foo_0"])
         with pytest.raises(KeyError):
             collection.delete_tag("Artist", files=["not_a_file"])
+
+    def test_write_tag_selected_files_accepts_path(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        # Pass a Path object as the file identifier
+        collection.write_tag("Artist", "Jane", files=[Path("foo_1")])
+        assert "Artist" not in collection.files["foo_0"].tags
+        assert collection.files["foo_1"].tags["Artist"].value == "Jane"
+
+    def test_delete_tag_selected_files_accepts_path(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        collection.files["foo_0"].write_tag("Artist", "val0")
+        # Pass a Path object as the file identifier
+        collection.delete_tag("Artist", files=[Path("foo_0")])
+        assert "Artist" not in collection.files["foo_0"].tags
+        # foo_1 never had the tag, should not raise
+        assert "Artist" not in collection.files["foo_1"].tags
 
 
 class TestImageCollectionIntegration:
