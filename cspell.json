@@ -18,6 +18,7 @@
     "endswith",
     "EXIF",
     "Exiv",
+    "fnames",
     "fract",
     "furo",
     "GPSDOP",
