@@ -112,16 +112,17 @@ from tagkit.image.exif import ExifImage
 exif = ExifImage("image1.jpg")
 
 # GPS coordinates (latitude, longitude)
-# Latitude and longitude must be provided as tuples of (degrees, minutes, seconds)
-latitude = (40, 44, 52.0)   # 40° 44' 52" N
-longitude = (73, 59, 2.0)   # 73° 59' 2" W
+# Latitude and longitude must be provided as tuples of (degrees, minutes, seconds),
+# where each value is a (numerator, denominator) tuple (i.e., rational number)
+latitude = ((40, 1), (44, 1), (52, 1))   # 40° 44' 52" N
+longitude = ((73, 1), (59, 1), (2, 1))   # 73° 59' 2" W
 
 # Set GPS tags (in-memory)
 exif.write_tag("GPSLatitude", latitude)
 exif.write_tag("GPSLatitudeRef", "N")
 exif.write_tag("GPSLongitude", longitude)
 exif.write_tag("GPSLongitudeRef", "W")
-exif.write_tag("GPSAltitude", 10.5)      # Altitude in meters
+exif.write_tag("GPSAltitude", (105, 10))      # Altitude in meters as rational (e.g., 10.5m)
 exif.write_tag("GPSAltitudeRef", 0)      # 0 = above sea level, 1 = below sea level
 
 # Save changes
