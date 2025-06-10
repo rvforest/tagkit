@@ -42,10 +42,9 @@ exif.save()
 print(f"Tags written to {exif.file_path}")
 ```
 
-### Creating Backups Before Saving
+### Writing Multiple Tags at Once
 
-A backup can be created automatically before saving changes to the image file. This helps prevent data loss in case of errors during writing.
-To enable this feature, pass `create_backup=True` to the `save()` method. The backup will be saved with the same name as the original file, but with a `.bak` extension.
+To efficiently set several tags in a single call, use the `write_tags` method, which accepts a dictionary of tag names or IDs to values.
 
 ```{testcode}
 from tagkit.image.exif import ExifImage
@@ -53,15 +52,16 @@ from tagkit.image.exif import ExifImage
 # Create an instance
 exif = ExifImage("image1.jpg")
 
-# Write tags (in-memory)
-tags_to_write = {"Artist": "Jane Doe"}
-for tag_name, tag_value in tags_to_write.items():
-    exif.write_tag(tag_name, tag_value)
+# Write multiple tags (in-memory)
+tags_to_write = {
+    "Artist": "Jane Doe",
+    "Copyright": "© 2025 Jane Doe"
+}
+exif.write_tags(tags_to_write)
 
-# Save changes and create a backup
-exif.save(create_backup=True)
+# Save changes
+exif.save()
 print(f"Tags written to {exif.file_path}")
-print(f"Backup created at {exif.file_path}.bak")
 ```
 
 ### Deleting Tags
@@ -99,6 +99,27 @@ exif.write_tag("Artist", "Jane Doe")
 # Save changes
 exif.save()
 print("Tags updated successfully")
+```
+
+### Creating Backups Before Saving
+
+A backup can be created automatically before saving changes to the image file. This helps prevent data loss in case of errors during writing.
+To enable this feature, pass `create_backup=True` to the `save()` method. The backup will be saved with the same name as the original file, but with a `.bak` extension.
+
+```{testcode}
+from tagkit.image.exif import ExifImage
+
+# Create an instance
+exif = ExifImage("image1.jpg")
+
+# Write tags (in-memory)
+tags_to_write = {"Artist": "Jane Doe"}
+exif.write_tags(tags_to_write)
+
+# Save changes and create a backup
+exif.save(create_backup=True)
+print(f"Tags written to {exif.file_path}")
+print(f"Backup created at {exif.file_path}.bak")
 ```
 
 ## Writing GPS Information

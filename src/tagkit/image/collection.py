@@ -138,6 +138,33 @@ class ExifImageCollection:
                 raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].write_tag(tag, value, ifd=ifd)
 
+    def write_tags(
+        self,
+        tags: dict[Union[str, int], Any],
+        ifd: Optional[IfdName] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ):
+        """
+        Set multiple EXIF tags for all or selected images in the collection.
+
+        Args:
+            tags: A dictionary mapping tag names or IDs to values.
+            ifd: Specific IFD to use for all tags.
+            files: Iterable of file names (keys in self.files) to update. If None, update all.
+
+        Example:
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
+        """
+        targets = self.files.keys() if files is None else files
+        for fname in targets:
+            # Normalize fname to string key
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            self.files[fname].write_tags(tags, ifd=ifd)
+
     def delete_tag(
         self,
         tag_key: Union[str, int],

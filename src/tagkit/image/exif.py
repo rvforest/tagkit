@@ -83,6 +83,25 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
+    def write_tags(
+        self,
+        tags: dict[Union[str, int], TagValue],
+        ifd: Optional[IfdName] = None,
+    ):
+        """
+        Set multiple EXIF tags at once.
+
+        Args:
+            tags: A dictionary mapping tag names or IDs to values.
+            ifd: Specific IFD to use for all tags (overrides default logic).
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
+        """
+        for tag, value in tags.items():
+            self.write_tag(tag, value, ifd=ifd)
+
     def delete_tag(
         self,
         tag_key: Union[str, int],
