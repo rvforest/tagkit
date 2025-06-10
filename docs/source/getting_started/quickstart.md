@@ -44,6 +44,9 @@ try:
     exif.delete_tag("Copyright")
 except KeyError:
     print("Copyright tag not found")
+
+# Delete multiple tags at once
+exif.delete_tags(["Artist", "Copyright"])
 ```
 
 ### Working with Multiple Images
@@ -86,11 +89,17 @@ collection.write_tags(multi_tag_dict)
 # Remove a tag from all images
 collection.delete_tag("Artist")
 
+# Remove multiple tags from all images
+collection.delete_tags(["Artist", "Copyright"])
+
 # Set a tag for a single image
 collection.write_tag("Artist", "Jane", files=["image2.jpg"])
 
 # Remove a tag from a single image
 collection.delete_tag("Artist", files=["image2.jpg"])
+
+# Remove multiple tags from a single image
+collection.delete_tags(["Artist", "Copyright"], files=["image2.jpg"])
 
 # Save all changes to all images, making a backup of each
 collection.save_all(create_backup=True)

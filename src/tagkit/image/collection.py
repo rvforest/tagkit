@@ -202,6 +202,34 @@ class ExifImageCollection:
             except KeyError:
                 pass  # Ignore if tag is missing
 
+    def delete_tags(
+        self,
+        tags: list[Union[str, int]],
+        ifd: Optional[IfdName] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ):
+        """
+        Remove multiple EXIF tags from all or selected images in the collection.
+        If a file does not contain a tag, it is silently ignored.
+
+        Args:
+            tags: A list of tag names or tag IDs to remove.
+            ifd: Specific IFD to use for all tags.
+            files: Iterable of file names (keys in self.files) to update. If None, update all.
+
+        Example:
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.delete_tags(['Artist', 'Copyright'])
+        """
+        targets = self.files.keys() if files is None else files
+        for fname in targets:
+            # Normalize fname to string key
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            self.files[fname].delete_tags(tags, ifd=ifd)
+
     def save_all(self, create_backup: bool = False):
         """
         Save all modified EXIF data back to their respective image files.

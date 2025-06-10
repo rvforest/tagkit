@@ -69,7 +69,7 @@ print(f"Tags written to {exif.file_path}")
 To remove tags from an image, use the `delete_tag` method. You can specify the tag by name or ID, and optionally target a specific IFD (via the `ifd` argument).
 If the tag exists in both the main and thumbnail IFDs and `ifd` is not specified, it will be removed from the main IFD only.
 
-The same rules for overlapping tag ids apply as when writing tags.
+You can also delete multiple tags at once using `delete_tags`, which takes a list of tag names or IDs.
 
 **Remember:** Call `save()` to persist deletions to disk.
 
@@ -95,6 +95,9 @@ for tag_name, tag in list(all_tags.items()):
 
 # Add new tags
 exif.write_tag("Artist", "Jane Doe")
+
+# Remove multiple tags at once
+exif.delete_tags(["Artist", "Copyright"])
 
 # Save changes
 exif.save()

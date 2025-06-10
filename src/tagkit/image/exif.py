@@ -130,6 +130,28 @@ class ExifImage:
 
         del self._tag_dict[tag_id, ifd]
 
+    def delete_tags(
+        self,
+        tags: list[Union[str, int]],
+        ifd: Optional[IfdName] = None,
+    ):
+        """
+        Remove multiple EXIF tags at once.
+
+        Args:
+            tags: A list of tag names or tag IDs to remove.
+            ifd: Specific IFD to use for all tags (overrides default logic).
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.delete_tags(['Artist', 'Copyright'])
+        """
+        for tag in tags:
+            try:
+                self.delete_tag(tag, ifd=ifd)
+            except KeyError:
+                pass  # Ignore if tag is missing
+
     @property
     def tags(self) -> dict[str, ExifTag]:
         """
