@@ -228,6 +228,11 @@ class TestImageCollection:
         assert "Artist" not in collection.files["foo_0"].tags
         assert "Artist" not in collection.files["foo_1"].tags
 
+    def test_n_files_property(self, mock_exif_w_patch):
+        files = [f"foo_{i}" for i in range(4)]
+        collection = ExifImageCollection(files)
+        assert collection.n_files == 4
+
 
 class TestImageCollectionIntegration:
     def test_bulk_write_save_reload(self, test_images: Path):
