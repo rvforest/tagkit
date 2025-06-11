@@ -279,7 +279,7 @@ class TestExifImageIntegration:
         exif_bak = ExifImage(backup)
         assert "Make" in exif_bak.tags
 
-    def test_write_tags_and_persist(self, test_images, tmp_path):
+    def test_write_tags_and_persist(self, test_images: Path, tmp_path):
         """Integration: write_tags persists values after save and reload."""
         from typing import Union
         from tagkit.core.types import TagValue

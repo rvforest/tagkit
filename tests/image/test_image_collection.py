@@ -142,7 +142,7 @@ class TestImageCollection:
         # foo_1 never had the tag, should not raise
         assert "Artist" not in collection.files["foo_1"].tags
 
-    def test_write_tags_all_files(self, mock_exif_w_patch):
+    def test_write_tags_all_files(self, mock_exif_w_patch: dict):
         files = [f"foo_{i}" for i in range(2)]
         tags: dict[Union[str, int], TagValue] = {
             "Artist": "Jane Doe",
@@ -171,14 +171,14 @@ class TestImageCollection:
         # Should not raise, tags remain unchanged
         assert "Make" in collection.files["foo_0"].tags or True
 
-    def test_write_tags_file_not_found(self, mock_exif_w_patch):
+    def test_write_tags_file_not_found(self, mock_exif_w_patch: dict):
         files = ["foo_0"]
         tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
         collection = ExifImageCollection(files)
         with pytest.raises(KeyError):
             collection.write_tags(tags, files=["not_a_file"])
 
-    def test_delete_tags_all_files(self, mock_exif_w_patch):
+    def test_delete_tags_all_files(self, mock_exif_w_patch: dict):
         files = [f"foo_{i}" for i in range(2)]
         tags: dict[Union[str, int], TagValue] = {
             "Artist": "Jane Doe",
