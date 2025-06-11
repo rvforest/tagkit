@@ -142,10 +142,7 @@ class ExifImage:
             >>> exif.delete_tags(['Artist', 'Copyright'])
         """
         for tag in tags:
-            try:
-                self.delete_tag(tag, ifd=ifd)
-            except KeyError:
-                pass  # Ignore if tag is missing
+            self.delete_tag(tag, ifd=ifd)
 
     @property
     def tags(self) -> dict[str, ExifTag]:
