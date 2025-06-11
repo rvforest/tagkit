@@ -7,12 +7,9 @@ image files.
 
 from typing import Iterable, Optional, Union
 
-import piexif
-
 from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
 from tagkit.core.types import TagValue, FilePath, IfdName
-from tagkit.core.utils import validate_single_arg_set
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
