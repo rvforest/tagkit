@@ -154,11 +154,13 @@ class TestImageCollection:
             assert collection.files[fname].tags["Artist"].value == "Jane Doe"
             assert collection.files[fname].tags["Copyright"].value == b"2025 John"
 
-    def test_write_tags_selected_files(self, mock_exif_w_patch):
+    @pytest.mark.parametrize("file_type", [str, Path])
+    def test_write_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
         files = ["foo_0", "foo_1"]
         tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
         collection = ExifImageCollection(files)
-        collection.write_tags(tags, files=["foo_1"])
+        file_id = file_type("foo_1")
+        collection.write_tags(tags, files=[file_id])
         assert "Artist" not in collection.files["foo_0"].tags
         assert collection.files["foo_1"].tags["Artist"].value == "Jane Doe"
 
@@ -189,12 +191,14 @@ class TestImageCollection:
             assert "Artist" not in collection.files[fname].tags
             assert "Copyright" not in collection.files[fname].tags
 
-    def test_delete_tags_selected_files(self, mock_exif_w_patch):
+    @pytest.mark.parametrize("file_type", [str, Path])
+    def test_delete_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
         files = ["foo_0", "foo_1"]
         tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
         collection = ExifImageCollection(files)
-        collection.write_tags(tags, files=["foo_0"])
-        collection.delete_tags(["Artist"], files=["foo_0"])
+        file_id = file_type("foo_0")
+        collection.write_tags(tags, files=[file_id])
+        collection.delete_tags(["Artist"], files=[file_id])
         assert "Artist" not in collection.files["foo_0"].tags
         # foo_1 never had the tag, should not raise
         assert "Artist" not in collection.files["foo_1"].tags

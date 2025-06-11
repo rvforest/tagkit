@@ -1,7 +1,8 @@
 import shutil
-from typing import Union
+from typing import Callable, Union
 
 import pytest
+from pathlib import Path
 
 from tagkit import ExifImage
 from tagkit.core.tag import ExifTag
@@ -154,53 +155,65 @@ def test_save_creates_backup(test_images, tmp_path):
     assert (test_file.parent / (test_file.name + ".bak")).exists()
 
 
-def test_write_tags_multiple_tags(test_images):
-    """Test writing multiple tags at once"""
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_multiple_tags(test_images, file_type: Callable):
+    """Test writing multiple tags at once with both str and Path file_path types."""
     tags: dict[Union[str, int], TagValue] = {
         "Artist": "Jane Doe",
         "Copyright": b"2025 John",
     }
-    exif = ExifImage(test_images / "minimal.jpg")
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     exif.write_tags(tags)
     assert exif.tags["Artist"].value == "Jane Doe"
     assert exif.tags["Copyright"].value == b"2025 John"
 
 
-def test_write_tags_empty_dict(test_images):
-    """Test writing with an empty dict does nothing and does not error"""
-    exif = ExifImage(test_images / "minimal.jpg")
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_empty_dict(test_images, file_type):
+    """Test writing with an empty dict does nothing and does not error (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     exif.write_tags({})
     # Should not raise, tags remain unchanged
     assert "Make" in exif.tags
 
 
-def test_write_tags_invalid_tag(test_images):
-    """Test writing with an invalid tag raises ValueError"""
-    exif = ExifImage(test_images / "minimal.jpg")
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_invalid_tag(test_images, file_type):
+    """Test writing with an invalid tag raises ValueError (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     with pytest.raises(Exception):
         exif.write_tags({"NonExistentTag": "foo"})
 
 
-def test_delete_tags_multiple_tags(test_images):
-    """Test deleting multiple tags at once"""
-    exif = ExifImage(test_images / "minimal.jpg")
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_multiple_tags(test_images, file_type):
+    """Test deleting multiple tags at once (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     exif.write_tags({"Artist": "Jane Doe", "Copyright": "2025 John"})
     exif.delete_tags(["Artist", "Copyright"])
     assert "Artist" not in exif.tags
     assert "Copyright" not in exif.tags
 
 
-def test_delete_tags_empty_list(test_images):
-    """Test deleting with an empty list does nothing and does not error"""
-    exif = ExifImage(test_images / "minimal.jpg")
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_empty_list(test_images, file_type):
+    """Test deleting with an empty list does nothing and does not error (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     exif.delete_tags([])
     # Should not raise, tags remain unchanged
     assert "Make" in exif.tags
 
 
-def test_delete_tags_partial_missing(test_images):
-    """Test deleting tags where some do not exist raises InvalidTagName for unknown tag name"""
-    exif = ExifImage(test_images / "minimal.jpg")
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_partial_missing(test_images, file_type):
+    """Test deleting tags where some do not exist raises InvalidTagName for unknown tag name (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
     exif.write_tag("Artist", "Jane Doe")
     with pytest.raises(InvalidTagName):
         exif.delete_tags(["Artist", "NonExistentTag"])
