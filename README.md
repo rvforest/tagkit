@@ -21,10 +21,13 @@
 
 **Tagkit** is a Python toolkit and CLI for viewing and manipulating EXIF metadata in image files. It provides both a user-friendly command-line interface and a flexible Python API for programmatic access to EXIF data, with rich formatting options for photographers.
 
+![Screenshot: tagkit CLI table output](https://github.com/rvforest/tagkit/blob/main/docs/source/_static/screenshots/cli-table-example.png?raw=true)
+
 ---
 
-**Source Code**: https://github.com/rvforest
-**Documentation**: https://tagkit.readthedocs.io
+**Source Code**: <https://github.com/rvforest/tagkit>
+
+**Documentation**: <https://tagkit.readthedocs.io>
 
 ---
 
