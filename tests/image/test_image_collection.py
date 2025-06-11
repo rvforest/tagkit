@@ -191,6 +191,11 @@ class TestImageCollection:
             assert "Artist" not in collection.files[fname].tags
             assert "Copyright" not in collection.files[fname].tags
 
+    def test_delete_tags_file_not_found(self, mock_exif_w_patch):
+        collection = ExifImageCollection(["foo_0"])
+        with pytest.raises(KeyError):
+            collection.delete_tags(["Artist"], files=["not_a_file"])
+
     @pytest.mark.parametrize("file_type", [str, Path])
     def test_delete_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
         files = ["foo_0", "foo_1"]
