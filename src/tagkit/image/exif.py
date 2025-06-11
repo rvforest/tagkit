@@ -7,12 +7,9 @@ image files.
 
 from typing import Iterable, Optional, Union
 
-import piexif
-
 from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
 from tagkit.core.types import TagValue, FilePath, IfdName
-from tagkit.core.utils import validate_single_arg_set
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
@@ -83,6 +80,25 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
+    def write_tags(
+        self,
+        tags: dict[Union[str, int], TagValue],
+        ifd: Optional[IfdName] = None,
+    ):
+        """
+        Set multiple EXIF tags at once.
+
+        Args:
+            tags: A dictionary mapping tag names or IDs to values.
+            ifd: Specific IFD to use for all tags (overrides default logic).
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
+        """
+        for tag, value in tags.items():
+            self.write_tag(tag, value, ifd=ifd)
+
     def delete_tag(
         self,
         tag_key: Union[str, int],
@@ -96,7 +112,6 @@ class ExifImage:
             ifd: Specific IFD to use.
 
         Raises:
-            KeyError: If the tag is not found.
             ValueError: If the tag or IFD is invalid.
 
         Example:
@@ -106,10 +121,28 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_id)
-        if (tag_id, ifd) not in self._tag_dict:
-            raise KeyError(f"Tag '{tag_key}' not found in {self.file_path}")
+        # Only delete if present; do not raise if missing
+        if (tag_id, ifd) in self._tag_dict:
+            del self._tag_dict[tag_id, ifd]
 
-        del self._tag_dict[tag_id, ifd]
+    def delete_tags(
+        self,
+        tags: list[Union[str, int]],
+        ifd: Optional[IfdName] = None,
+    ):
+        """
+        Remove multiple EXIF tags at once.
+
+        Args:
+            tags: A list of tag names or tag IDs to remove.
+            ifd: Specific IFD to use for all tags (overrides default logic).
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.delete_tags(['Artist', 'Copyright'])
+        """
+        for tag in tags:
+            self.delete_tag(tag, ifd=ifd)
 
     @property
     def tags(self) -> dict[str, ExifTag]:

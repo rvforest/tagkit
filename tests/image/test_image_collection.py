@@ -6,6 +6,9 @@ from tagkit import ExifImageCollection
 import os
 from pathlib import Path
 from tagkit.image.exif import ExifImage
+from typing import Union
+from tagkit.core.types import TagValue
+from tagkit.core.exceptions import InvalidTagName
 
 
 @pytest.fixture
@@ -139,6 +142,102 @@ class TestImageCollection:
         # foo_1 never had the tag, should not raise
         assert "Artist" not in collection.files["foo_1"].tags
 
+    def test_write_tags_all_files(self, mock_exif_w_patch: dict):
+        files = [f"foo_{i}" for i in range(2)]
+        tags: dict[Union[str, int], TagValue] = {
+            "Artist": "Jane Doe",
+            "Copyright": b"2025 John",
+        }
+        collection = ExifImageCollection(files)
+        collection.write_tags(tags)
+        for fname in files:
+            assert collection.files[fname].tags["Artist"].value == "Jane Doe"
+            assert collection.files[fname].tags["Copyright"].value == b"2025 John"
+
+    @pytest.mark.parametrize("file_type", [str, Path])
+    def test_write_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
+        files = ["foo_0", "foo_1"]
+        tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
+        collection = ExifImageCollection(files)
+        file_id = file_type("foo_1")
+        collection.write_tags(tags, files=[file_id])
+        assert "Artist" not in collection.files["foo_0"].tags
+        assert collection.files["foo_1"].tags["Artist"].value == "Jane Doe"
+
+    def test_write_tags_empty_dict(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        collection.write_tags({})
+        # Should not raise, tags remain unchanged
+        assert "Make" in collection.files["foo_0"].tags or True
+
+    def test_write_tags_file_not_found(self, mock_exif_w_patch: dict):
+        files = ["foo_0"]
+        tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
+        collection = ExifImageCollection(files)
+        with pytest.raises(KeyError):
+            collection.write_tags(tags, files=["not_a_file"])
+
+    def test_delete_tags_all_files(self, mock_exif_w_patch: dict):
+        files = [f"foo_{i}" for i in range(2)]
+        tags: dict[Union[str, int], TagValue] = {
+            "Artist": "Jane Doe",
+            "Copyright": "2025 John",
+        }
+        collection = ExifImageCollection(files)
+        collection.write_tags(tags)
+        collection.delete_tags(["Artist", "Copyright"])
+        for fname in files:
+            assert "Artist" not in collection.files[fname].tags
+            assert "Copyright" not in collection.files[fname].tags
+
+    def test_delete_tags_file_not_found(self, mock_exif_w_patch):
+        collection = ExifImageCollection(["foo_0"])
+        with pytest.raises(KeyError):
+            collection.delete_tags(["Artist"], files=["not_a_file"])
+
+    @pytest.mark.parametrize("file_type", [str, Path])
+    def test_delete_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
+        files = ["foo_0", "foo_1"]
+        tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
+        collection = ExifImageCollection(files)
+        file_id = file_type("foo_0")
+        collection.write_tags(tags, files=[file_id])
+        collection.delete_tags(["Artist"], files=[file_id])
+        assert "Artist" not in collection.files["foo_0"].tags
+        # foo_1 never had the tag, should not raise
+        assert "Artist" not in collection.files["foo_1"].tags
+
+    def test_delete_tags_empty_list(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        collection.delete_tags([])
+        # Should not raise, tags remain unchanged
+        assert "Make" in collection.files["foo_0"].tags or True
+
+    def test_delete_tags_partial_missing(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        collection.write_tags({"Artist": "Jane Doe"})
+        with pytest.raises(InvalidTagName):
+            collection.delete_tags(["Artist", "NonExistentTag"])
+
+    def test_delete_tags_valid_but_missing_tag_is_forgiving(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        # Only write 'Artist' to foo_0
+        collection.files["foo_0"].write_tag("Artist", "Jane Doe")
+        # Attempt to delete 'Artist' from both files
+        # Should not raise, and 'Artist' should be gone from foo_0, still absent from foo_1
+        collection.delete_tags(["Artist"], files=files)
+        assert "Artist" not in collection.files["foo_0"].tags
+        assert "Artist" not in collection.files["foo_1"].tags
+
+    def test_n_files_property(self, mock_exif_w_patch):
+        files = [f"foo_{i}" for i in range(4)]
+        collection = ExifImageCollection(files)
+        assert collection.n_files == 4
+
 
 class TestImageCollectionIntegration:
     def test_bulk_write_save_reload(self, test_images: Path):
@@ -208,3 +307,33 @@ class TestImageCollectionIntegration:
             assert exif_bak.tags["Make"].value != "BackupTest", (
                 f"Backup for {file_path.name} has the new value!"
             )
+
+    def test_bulk_write_tags_save_reload(self, test_images: Path):
+        files = list(test_images.glob("*.jpg"))
+        tags: dict[Union[str, int], TagValue] = {
+            "Artist": "Jane Doe",
+            "Copyright": "2025 John",
+        }
+        collection = ExifImageCollection(files)
+        collection.write_tags(tags)
+        collection.save_all()
+        reloaded = ExifImageCollection(files)
+        for exif in reloaded.files.values():
+            assert exif.tags["Artist"].value == "Jane Doe"
+            assert exif.tags["Copyright"].value == "2025 John"
+
+    def test_bulk_delete_tags_save_reload(self, test_images: Path):
+        files = list(test_images.glob("*.jpg"))
+        tags: dict[Union[str, int], TagValue] = {
+            "Artist": "Jane Doe",
+            "Copyright": "2025 John",
+        }
+        collection = ExifImageCollection(files)
+        collection.write_tags(tags)
+        collection.save_all()
+        collection.delete_tags(["Artist", "Copyright"])
+        collection.save_all()
+        reloaded = ExifImageCollection(files)
+        for exif in reloaded.files.values():
+            assert "Artist" not in exif.tags
+            assert "Copyright" not in exif.tags

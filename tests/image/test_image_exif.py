@@ -1,10 +1,13 @@
 import shutil
+from typing import Callable, Union
 
 import pytest
+from pathlib import Path
 
 from tagkit import ExifImage
 from tagkit.core.tag import ExifTag
 from tagkit.core.exceptions import InvalidTagId, InvalidTagName
+from tagkit.core.types import TagValue
 
 
 def test_tags_property_access(test_images):
@@ -114,11 +117,11 @@ def test_remove_nonexistent_tag(test_images):
 
 
 def test_remove_missing_tag(test_images):
-    """Test removing a tag that exists in registry but not in the image"""
+    """Test removing a tag that exists in registry but not in the image does not raise."""
     exif = ExifImage(test_images / "minimal.jpg")
     # Artist tag (315) is a valid tag but doesn't exist in the minimal.jpg test image
-    with pytest.raises(KeyError, match="Tag 'Artist' not found"):
-        exif.delete_tag("Artist")
+    exif.delete_tag("Artist")  # Should not raise
+    assert "Artist" not in exif.tags
 
 
 def test_as_dict_method(test_images):
@@ -150,6 +153,70 @@ def test_save_creates_backup(test_images, tmp_path):
     exif.write_tag("Make", "BackupTest")
     exif.save(create_backup=True)
     assert (test_file.parent / (test_file.name + ".bak")).exists()
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_multiple_tags(test_images, file_type: Callable):
+    """Test writing multiple tags at once with both str and Path file_path types."""
+    tags: dict[Union[str, int], TagValue] = {
+        "Artist": "Jane Doe",
+        "Copyright": b"2025 John",
+    }
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    exif.write_tags(tags)
+    assert exif.tags["Artist"].value == "Jane Doe"
+    assert exif.tags["Copyright"].value == b"2025 John"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_empty_dict(test_images, file_type):
+    """Test writing with an empty dict does nothing and does not error (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    exif.write_tags({})
+    # Should not raise, tags remain unchanged
+    assert "Make" in exif.tags
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_write_tags_invalid_tag(test_images, file_type):
+    """Test writing with an invalid tag raises ValueError (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    with pytest.raises(Exception):
+        exif.write_tags({"NonExistentTag": "foo"})
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_multiple_tags(test_images, file_type):
+    """Test deleting multiple tags at once (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    exif.write_tags({"Artist": "Jane Doe", "Copyright": "2025 John"})
+    exif.delete_tags(["Artist", "Copyright"])
+    assert "Artist" not in exif.tags
+    assert "Copyright" not in exif.tags
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_empty_list(test_images, file_type):
+    """Test deleting with an empty list does nothing and does not error (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    exif.delete_tags([])
+    # Should not raise, tags remain unchanged
+    assert "Make" in exif.tags
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_delete_tags_partial_missing(test_images, file_type):
+    """Test deleting tags where some do not exist raises InvalidTagName for unknown tag name (str/Path)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    exif.write_tag("Artist", "Jane Doe")
+    with pytest.raises(InvalidTagName):
+        exif.delete_tags(["Artist", "NonExistentTag"])
 
 
 class TestExifImageIntegration:
@@ -211,3 +278,36 @@ class TestExifImageIntegration:
         # The backup should still have the tag
         exif_bak = ExifImage(backup)
         assert "Make" in exif_bak.tags
+
+    def test_write_tags_and_persist(self, test_images: Path, tmp_path):
+        """Integration: write_tags persists values after save and reload."""
+        from typing import Union
+        from tagkit.core.types import TagValue
+
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        tags: dict[Union[str, int], TagValue] = {
+            "Artist": "Jane Doe",
+            "Copyright": "2025 John",
+        }
+        exif = ExifImage(dst)
+        exif.write_tags(tags)
+        exif.save()
+        reloaded = ExifImage(dst)
+        assert reloaded.tags["Artist"].value == "Jane Doe"
+        assert reloaded.tags["Copyright"].value == "2025 John"
+
+    def test_delete_tags_and_persist(self, test_images, tmp_path):
+        """Integration: delete_tags removes values after save and reload."""
+        src = test_images / "minimal.jpg"
+        dst = tmp_path / "minimal.jpg"
+        shutil.copy(src, dst)
+        exif = ExifImage(dst)
+        exif.write_tags({"Artist": "Jane Doe", "Copyright": "2025 John"})
+        exif.save()
+        exif.delete_tags(["Artist", "Copyright"])
+        exif.save()
+        reloaded = ExifImage(dst)
+        assert "Artist" not in reloaded.tags
+        assert "Copyright" not in reloaded.tags
