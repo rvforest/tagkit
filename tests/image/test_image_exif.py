@@ -117,11 +117,11 @@ def test_remove_nonexistent_tag(test_images):
 
 
 def test_remove_missing_tag(test_images):
-    """Test removing a tag that exists in registry but not in the image"""
+    """Test removing a tag that exists in registry but not in the image does not raise."""
     exif = ExifImage(test_images / "minimal.jpg")
     # Artist tag (315) is a valid tag but doesn't exist in the minimal.jpg test image
-    with pytest.raises(KeyError, match="Tag 'Artist' not found"):
-        exif.delete_tag("Artist")
+    exif.delete_tag("Artist")  # Should not raise
+    assert "Artist" not in exif.tags
 
 
 def test_as_dict_method(test_images):

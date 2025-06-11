@@ -112,7 +112,6 @@ class ExifImage:
             ifd: Specific IFD to use.
 
         Raises:
-            KeyError: If the tag is not found.
             ValueError: If the tag or IFD is invalid.
 
         Example:
@@ -122,10 +121,9 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_id)
-        if (tag_id, ifd) not in self._tag_dict:
-            raise KeyError(f"Tag '{tag_key}' not found in {self.file_path}")
-
-        del self._tag_dict[tag_id, ifd]
+        # Only delete if present; do not raise if missing
+        if (tag_id, ifd) in self._tag_dict:
+            del self._tag_dict[tag_id, ifd]
 
     def delete_tags(
         self,
