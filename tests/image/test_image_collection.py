@@ -217,6 +217,17 @@ class TestImageCollection:
         with pytest.raises(InvalidTagName):
             collection.delete_tags(["Artist", "NonExistentTag"])
 
+    def test_delete_tags_valid_but_missing_tag_is_forgiving(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        # Only write 'Artist' to foo_0
+        collection.files["foo_0"].write_tag("Artist", "Jane Doe")
+        # Attempt to delete 'Artist' from both files
+        # Should not raise, and 'Artist' should be gone from foo_0, still absent from foo_1
+        collection.delete_tags(["Artist"], files=files)
+        assert "Artist" not in collection.files["foo_0"].tags
+        assert "Artist" not in collection.files["foo_1"].tags
+
 
 class TestImageCollectionIntegration:
     def test_bulk_write_save_reload(self, test_images: Path):
