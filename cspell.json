@@ -24,6 +24,7 @@
     "GPSDOP",
     "GPSIFD",
     "ifds",
+    "junitxml",
     "listdir",
     "livedocs",
     "mypy",
