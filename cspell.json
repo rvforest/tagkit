@@ -37,6 +37,7 @@
     "pipx",
     "posargs",
     "pypi",
+    "pyproject",
     "pyyaml",
     "pytest",
     "readthedocs",
