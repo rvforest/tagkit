@@ -9,7 +9,7 @@ This file provides essential project information and development standards for c
 - **Repository**: https://github.com/rvforest/tagkit
 - **Documentation**: https://tagkit.readthedocs.io
 - **License**: MIT
-- **Python Version**: 3.9+
+- **Python Version**: 3.10+
 - **Main Dependencies**: piexif, pyyaml, rich, typer
 
 ## Architecture Overview
@@ -57,7 +57,7 @@ src/tagkit/
 
 ### Development Environment Setup
 
-1. **Prerequisites**: Python 3.9+, Git, uv package manager
+1. **Prerequisites**: Python 3.10+, Git, uv package manager
 2. **Setup**: Run `uv sync` to create virtual environment and install dependencies
 3. **Workflow**: Create feature branches, make changes, test, commit, and open PRs
 
@@ -107,7 +107,7 @@ src/tagkit/
 
 #### Continuous Integration
 - **Platform**: GitHub Actions
-- **Checks**: All pre-commit hooks, tests across Python 3.9-3.13, coverage reporting
+- **Checks**: All pre-commit hooks, tests across Python 3.10-3.14, coverage reporting
 
 ### Configuration Files
 
