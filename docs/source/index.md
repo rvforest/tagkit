@@ -34,6 +34,7 @@ user_guide/cli.md
 user_guide/reading.md
 user_guide/writing.md
 user_guide/batch_processing.md
+user_guide/datetime.md
 ```
 
 ```{toctree}
@@ -43,6 +44,7 @@ user_guide/batch_processing.md
 
 apidocs/index
 reference/tag_reference.md
+reference/datetime_api.md
 ```
 
 ```{toctree}
