@@ -5,6 +5,7 @@ This module provides the ExifImageCollection class for working with EXIF data
 from multiple image files.
 """
 
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, Iterable
 
@@ -245,3 +246,134 @@ class ExifImageCollection:
         """
         for exif in self.files.values():
             exif.save(create_backup=create_backup)
+
+    # DateTime operations
+
+    def get_datetime(
+        self,
+        files: Optional[Iterable[FilePath]] = None,
+        tag: Optional[str] = None,
+        use_precedence: bool = True,
+    ) -> dict[str, Optional[datetime]]:
+        """
+        Get datetime from EXIF tags for all or selected images in the collection.
+
+        Args:
+            files: Iterable of file names to query. If None, queries all files.
+            tag: Optional specific datetime tag name to retrieve.
+            use_precedence: If True and tag is None, uses precedence order.
+
+        Returns:
+            Dictionary mapping file names to datetime objects (or None if not found).
+
+        Example:
+            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> datetimes = collection.get_datetime()
+            >>> for filename, dt in datetimes.items():
+            ...     print(f"{filename}: {dt}")
+        """
+        targets = self.files.keys() if files is None else files
+        result = {}
+
+        for fname in targets:
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            result[fname] = self.files[fname].get_datetime(
+                tag=tag, use_precedence=use_precedence
+            )
+
+        return result
+
+    def set_datetime(
+        self,
+        dt: datetime,
+        tags: Optional[list[str]] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ) -> None:
+        """
+        Set datetime EXIF tags for all or selected images (in-memory, not saved).
+
+        Args:
+            dt: Datetime object to set.
+            tags: Optional list of specific datetime tag names to update.
+                If None, updates all three datetime tags.
+            files: Iterable of file names to update. If None, updates all files.
+
+        Example:
+            >>> from datetime import datetime
+            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection.set_datetime(datetime(2025, 6, 15, 10, 30, 0))
+            >>> collection.save_all()
+        """
+        targets = self.files.keys() if files is None else files
+
+        for fname in targets:
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            self.files[fname].set_datetime(dt, tags=tags)
+
+    def offset_datetime(
+        self,
+        delta: timedelta,
+        tags: Optional[list[str]] = None,
+        files: Optional[Iterable[FilePath]] = None,
+    ) -> None:
+        """
+        Offset datetime EXIF tags by a timedelta for all or selected images (in-memory).
+
+        Args:
+            delta: Timedelta to add to existing datetime values.
+            tags: Optional list of specific datetime tag names to offset.
+                If None, offsets all present datetime tags.
+            files: Iterable of file names to update. If None, updates all files.
+
+        Example:
+            >>> from datetime import timedelta
+            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection.offset_datetime(timedelta(hours=-5))
+            >>> collection.save_all()
+        """
+        targets = self.files.keys() if files is None else files
+
+        for fname in targets:
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            self.files[fname].offset_datetime(delta, tags=tags)
+
+    def get_all_datetimes(
+        self, files: Optional[Iterable[FilePath]] = None
+    ) -> dict[str, dict[str, datetime]]:
+        """
+        Get all datetime EXIF tags for all or selected images in the collection.
+
+        Args:
+            files: Iterable of file names to query. If None, queries all files.
+
+        Returns:
+            Dictionary mapping file names to dictionaries of datetime tags.
+
+        Example:
+            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> all_datetimes = collection.get_all_datetimes()
+            >>> for filename, datetimes in all_datetimes.items():
+            ...     print(f"{filename}:")
+            ...     for tag_name, dt in datetimes.items():
+            ...         print(f"  {tag_name}: {dt}")
+        """
+        targets = self.files.keys() if files is None else files
+        result = {}
+
+        for fname in targets:
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            result[fname] = self.files[fname].get_all_datetimes()
+
+        return result
