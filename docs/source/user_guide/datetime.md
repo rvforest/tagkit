@@ -277,7 +277,7 @@ except IOError as e:
 
 ## API Reference
 
-For complete API documentation, see the [API Reference](../reference/api.md).
+For complete API documentation, see the [API Reference](../reference/datetime_api.md).
 
 ### ExifImage (single-file API)
 
