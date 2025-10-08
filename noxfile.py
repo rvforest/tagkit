@@ -110,7 +110,7 @@ def coverage(session: nox.Session) -> None:
 @nox.session(venv_backend="uv", tags=[DOCS_TAG])
 def docs(session: nox.Session) -> None:
     """Build the documentation."""
-    _run_install(session, groups=["docs"])
+    _run_install(session, groups=["main", "docs"])
     session.chdir("docs")
     session.run("sphinx-build", "-b", "html", "source", "build/html", *session.posargs)
     print("Documentation built.")
