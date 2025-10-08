@@ -297,8 +297,7 @@ class ExifImageCollection:
 
         Args:
             dt: Datetime object to set.
-            tags: Optional list of specific datetime tag names to update.
-                If None, updates all three datetime tags.
+            tags: Optional list of specific datetime tag names to update. If None, updates all three datetime tags.
             files: Iterable of file names to update. If None, updates all files.
 
         Example:
@@ -327,8 +326,7 @@ class ExifImageCollection:
 
         Args:
             delta: Timedelta to add to existing datetime values.
-            tags: Optional list of specific datetime tag names to offset.
-                If None, offsets all present datetime tags.
+            tags: Optional list of specific datetime tag names to offset. If None, offsets all present datetime tags.
             files: Iterable of file names to update. If None, updates all files.
 
         Example:

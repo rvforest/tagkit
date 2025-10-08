@@ -319,9 +319,7 @@ class ExifImage:
 
         Args:
             dt: Datetime object to set.
-            tags: Optional list of specific datetime tag names to update.
-                If None, updates all three datetime tags.
-                Valid values: 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
+            tags: Optional list of specific datetime tag names to update. If None, updates all three datetime tags. Valid values are 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
 
         Examples:
             >>> from datetime import datetime
@@ -359,9 +357,7 @@ class ExifImage:
 
         Args:
             delta: Timedelta to add to existing datetime values.
-            tags: Optional list of specific datetime tag names to offset.
-                If None, offsets all present datetime tags.
-                Valid values: 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
+            tags: Optional list of specific datetime tag names to offset. If None, offsets all present datetime tags. Valid values are 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
 
         Raises:
             DateTimeError: If a datetime tag is found but cannot be parsed.
