@@ -8,23 +8,31 @@ from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
 from tagkit.core.exceptions import DateTimeError
 
 
-def test_parse_exif_datetime_valid() -> None:
-    datetime_str = "2025:06:15 10:30:45"
+class TestParseFormatDatetime:
+    """Tests for datetime parsing and formatting functions."""
 
-    result = parse_exif_datetime(datetime_str)
+    def test_parse_exif_datetime(self):
+        """Test parsing EXIF datetime strings."""
+        dt = parse_exif_datetime("2025:05:01 14:30:00")
+        assert dt == datetime(2025, 5, 1, 14, 30, 0)
 
-    assert result == datetime(2025, 6, 15, 10, 30, 45)
+    def test_parse_exif_datetime_invalid(self):
+        """Test parsing invalid EXIF datetime strings."""
+        with pytest.raises(DateTimeError, match="Invalid EXIF datetime format"):
+            parse_exif_datetime("invalid")
 
+        with pytest.raises(DateTimeError, match="Invalid EXIF datetime format"):
+            parse_exif_datetime("2025-05-01 14:30:00")  # Wrong separator
 
-def test_parse_exif_datetime_invalid() -> None:
-    with pytest.raises(DateTimeError):
-        parse_exif_datetime("2025-06-15 10:30:45")
+    def test_format_exif_datetime(self):
+        """Test formatting datetime objects as EXIF strings."""
+        dt = datetime(2025, 5, 1, 14, 30, 0)
+        formatted = format_exif_datetime(dt)
+        assert formatted == "2025:05:01 14:30:00"
 
-
-def test_format_exif_datetime_round_trip() -> None:
-    dt = datetime(2025, 6, 15, 10, 30, 45)
-
-    formatted = format_exif_datetime(dt)
-
-    assert formatted == "2025:06:15 10:30:45"
-    assert parse_exif_datetime(formatted) == dt
+    def test_parse_and_format_roundtrip(self):
+        """Test that parsing and formatting are inverse operations."""
+        original = "2025:05:01 14:30:00"
+        dt = parse_exif_datetime(original)
+        formatted = format_exif_datetime(dt)
+        assert formatted == original
