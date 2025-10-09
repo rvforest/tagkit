@@ -12,6 +12,7 @@ from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
 from tagkit.core.types import TagValue, FilePath, IfdName
 from tagkit.core.exceptions import DateTimeError
+from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
@@ -19,37 +20,6 @@ from tagkit.tag_io.piexif_io import PiexifBackend
 # DateTime constants and helpers
 DATETIME_TAG_NAMES = ["DateTime", "DateTimeOriginal", "DateTimeDigitized"]
 DATETIME_TAG_PRIMARY = "DateTimeOriginal"
-DATETIME_FORMAT = "%Y:%m:%d %H:%M:%S"
-
-
-def parse_exif_datetime(datetime_str: str) -> datetime:
-    """Parse EXIF datetime string to datetime object.
-
-    Args:
-        datetime_str: EXIF datetime string in format "YYYY:MM:DD HH:MM:SS"
-
-    Returns:
-        Parsed datetime object
-
-    Raises:
-        DateTimeError: If datetime string cannot be parsed
-    """
-    try:
-        return datetime.strptime(datetime_str, DATETIME_FORMAT)
-    except ValueError as e:
-        raise DateTimeError(f"Invalid EXIF datetime format: {datetime_str}") from e
-
-
-def format_exif_datetime(dt: datetime) -> str:
-    """Format datetime object as EXIF datetime string.
-
-    Args:
-        dt: Datetime object to format
-
-    Returns:
-        EXIF datetime string in format "YYYY:MM:DD HH:MM:SS"
-    """
-    return dt.strftime(DATETIME_FORMAT)
 
 
 class ExifImage:
