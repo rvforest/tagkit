@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from unittest import mock
 
 import pytest
@@ -6,7 +7,7 @@ from tagkit import ExifImageCollection
 import os
 from pathlib import Path
 from tagkit.image.exif import ExifImage
-from typing import Union
+from typing import Optional, Union
 from tagkit.core.types import TagValue
 from tagkit.core.exceptions import InvalidTagName
 
@@ -237,6 +238,131 @@ class TestImageCollection:
         files = [f"foo_{i}" for i in range(4)]
         collection = ExifImageCollection(files)
         assert collection.n_files == 4
+
+
+@pytest.fixture
+def collection_factory(monkeypatch):
+    def _create(
+        files: list[str],
+        *,
+        datetime_returns: Optional[dict[str, Optional[datetime]]] = None,
+        all_datetime_returns: Optional[dict[str, dict[str, datetime]]] = None,
+    ):
+        instances: dict[str, mock.Mock] = {}
+
+        def fake_exif(path, **kwargs):
+            name = Path(path).name
+            exif_mock = mock.Mock()
+            exif_mock.get_datetime.return_value = (datetime_returns or {}).get(name)
+            exif_mock.get_all_datetimes.return_value = (all_datetime_returns or {}).get(
+                name, {}
+            )
+            exif_mock.set_datetime = mock.Mock()
+            exif_mock.offset_datetime = mock.Mock()
+            instances[name] = exif_mock
+            return exif_mock
+
+        monkeypatch.setattr("tagkit.image.collection.ExifImage", fake_exif)
+        collection = ExifImageCollection(files)
+        return collection, instances
+
+    return _create
+
+
+class TestImageCollectionDatetime:
+    def test_get_datetime_returns_mapping(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        dt_map = {
+            "foo.jpg": datetime(2020, 1, 1, 12, 0, 0),
+            "bar.jpg": None,
+        }
+        collection, instances = collection_factory(files, datetime_returns=dt_map)
+
+        result = collection.get_datetime()
+
+        assert result == dt_map
+        for instance in instances.values():
+            instance.get_datetime.assert_called_once_with(tag=None, use_precedence=True)
+
+    def test_get_datetime_filters_and_accepts_path(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        dt_map = {
+            "foo.jpg": datetime(2021, 5, 1, 8, 30, 0),
+            "bar.jpg": datetime(2021, 5, 1, 9, 45, 0),
+        }
+        collection, instances = collection_factory(files, datetime_returns=dt_map)
+
+        result = collection.get_datetime(files=[Path("bar.jpg")], tag="DateTime")
+
+        assert result == {"bar.jpg": dt_map["bar.jpg"]}
+        instances["bar.jpg"].get_datetime.assert_called_once_with(
+            tag="DateTime", use_precedence=True
+        )
+        assert not instances["foo.jpg"].get_datetime.called
+
+    def test_get_datetime_missing_file_raises_keyerror(self, collection_factory):
+        collection, _ = collection_factory(["foo.jpg"])
+
+        with pytest.raises(KeyError):
+            collection.get_datetime(files=["missing.jpg"])
+
+    def test_set_datetime_calls_each_target(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        dt_value = datetime(2022, 7, 4, 15, 0, 0)
+
+        collection.set_datetime(dt_value, tags=["DateTimeOriginal"])
+
+        for instance in instances.values():
+            instance.set_datetime.assert_called_once_with(
+                dt_value, tags=["DateTimeOriginal"]
+            )
+
+    def test_set_datetime_with_path_filter(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        dt_value = datetime(2023, 3, 10, 18, 45, 0)
+
+        collection.set_datetime(dt_value, files=[Path("bar.jpg")])
+
+        instances["bar.jpg"].set_datetime.assert_called_once_with(dt_value, tags=None)
+        assert not instances["foo.jpg"].set_datetime.called
+
+    def test_offset_datetime_calls_each_target(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        delta = timedelta(hours=2)
+
+        collection.offset_datetime(delta, tags=["DateTime"])
+
+        for instance in instances.values():
+            instance.offset_datetime.assert_called_once_with(delta, tags=["DateTime"])
+
+    def test_offset_datetime_with_path_filter(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        delta = timedelta(minutes=30)
+
+        collection.offset_datetime(delta, files=[Path("foo.jpg")])
+
+        instances["foo.jpg"].offset_datetime.assert_called_once_with(delta, tags=None)
+        assert not instances["bar.jpg"].offset_datetime.called
+
+    def test_get_all_datetimes_returns_mapping(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        all_dt_map = {
+            "foo.jpg": {"DateTime": datetime(2020, 1, 1, 12, 0, 0)},
+            "bar.jpg": {},
+        }
+        collection, instances = collection_factory(
+            files, all_datetime_returns=all_dt_map
+        )
+
+        result = collection.get_all_datetimes()
+
+        assert result == all_dt_map
+        for instance in instances.values():
+            instance.get_all_datetimes.assert_called_once_with()
 
 
 class TestImageCollectionIntegration:
