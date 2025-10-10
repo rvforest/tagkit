@@ -138,3 +138,61 @@ def test_format_value_with_bytes_bytes(formatter: ValueFormatter):
 def test_format_value_with_bytes_no_render(formatter: ValueFormatter):
     tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format=None) == "<bytes: 4>"
+
+
+def test_format_decimal_sequence(formatter: ValueFormatter):
+    """Test that decimal formatter handles sequences of rationals."""
+    # ReferenceBlackWhite contains 6 rationals
+    ref_black_white_value = ((0, 1), (255, 1), (0, 1), (255, 1), (0, 1), (255, 1))
+    tag = ExifTag(id=532, value=ref_black_white_value, ifd="IFD0")
+    result = formatter.format_value(tag)
+    # Should format each rational in the sequence
+    assert result == "[0.0, 255.0, 0.0, 255.0, 0.0, 255.0]"
+
+
+def test_format_decimal_single_rational(formatter: ValueFormatter):
+    """Test that decimal formatter still works with single rationals."""
+    # Test that single rationals still work correctly
+    assert formatter._format_decimal((3, 2)) == "1.5"
+    assert formatter._format_decimal((10, 5)) == "2.0"
+
+
+def test_format_fraction_sequence(formatter: ValueFormatter):
+    """Test that fraction formatter handles sequences of rationals."""
+    # Test the wrapper function directly since we don't have a configured tag
+    sequence_value = ((1, 2), (3, 4), (5, 6))
+    result = formatter._format_fraction_with_sequence_support(sequence_value)
+    assert result == "[1/2, 3/4, 5/6]"
+
+
+def test_format_fraction_single_rational(formatter: ValueFormatter):
+    """Test that fraction formatter still works with single rationals."""
+    assert formatter._format_fraction((1, 2)) == "1/2"
+    assert formatter._format_fraction((6, 4)) == "3/2"  # Should be reduced
+
+
+def test_format_percent_sequence(formatter: ValueFormatter):
+    """Test that percent formatter handles sequences of rationals."""
+    sequence_value = ((1, 2), (3, 4), (1, 1))
+    result = formatter._format_percent_with_sequence_support(sequence_value)
+    assert result == "[50%, 75%, 100%]"
+
+
+def test_format_percent_single_rational(formatter: ValueFormatter):
+    """Test that percent formatter still works with single rationals."""
+    assert formatter._format_percent((1, 2)) == "50%"
+    assert formatter._format_percent((1, 4)) == "25%"
+
+
+def test_format_f_number_sequence(formatter: ValueFormatter):
+    """Test that f_number formatter handles sequences of rationals."""
+    # Sequence of APEX values
+    sequence_value = ((2, 1), (497, 100), (3, 1))
+    result = formatter._format_f_number_with_sequence_support(sequence_value)
+    assert result == "[f/2.0, f/5.6, f/2.8]"
+
+
+def test_format_f_number_single_rational(formatter: ValueFormatter):
+    """Test that f_number formatter still works with single rationals."""
+    assert formatter._format_f_number((2, 1)) == "f/2.0"
+    assert formatter._format_f_number((497, 100)) == "f/5.6"

@@ -13,7 +13,7 @@ FilePath = Union[str, Path]
 IntCollection = tuple[int, ...]
 FloatCollection = tuple[float, ...]
 Rational = tuple[int, int]
-RationalCollection = tuple[Rational]
+RationalCollection = tuple[Rational, ...]
 TagValue = Union[
     bytes,
     float,
