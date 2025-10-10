@@ -6,7 +6,7 @@ image files.
 """
 
 from datetime import datetime, timedelta
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Mapping
 
 from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
@@ -90,7 +90,7 @@ class ExifImage:
 
     def write_tags(
         self,
-        tags: dict[Union[str, int], TagValue],
+        tags: Mapping[Union[str, int], TagValue],
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -135,7 +135,7 @@ class ExifImage:
 
     def delete_tags(
         self,
-        tags: list[Union[str, int]],
+        tags: Iterable[Union[str, int]],
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -153,7 +153,7 @@ class ExifImage:
             self.delete_tag(tag, ifd=ifd)
 
     @property
-    def tags(self) -> dict[str, ExifTag]:
+    def tags(self) -> Mapping[str, ExifTag]:
         """
         Get the filtered tags based on tag_filter and ifd settings.
 
@@ -188,7 +188,7 @@ class ExifImage:
 
     def as_dict(
         self, binary_format: Optional[str] = None
-    ) -> dict[str, dict[str, Union[str, int]]]:
+    ) -> Mapping[str, Mapping[str, Union[str, int]]]:
         """
         Convert the image data to a nested dictionary structure.
 
@@ -222,14 +222,11 @@ class ExifImage:
         """
         Get datetime from EXIF tags.
 
-
         By default, uses precedence order: DateTimeOriginal > DateTimeDigitized > DateTime.
         Can also retrieve a specific datetime tag.
 
         Args:
-            tag: Optional specific datetime tag name to retrieve. If provided,
-                precedence lookup is ignored and that specific tag is returned
-                (or None if missing).
+            tag: Optional specific datetime tag name to retrieve
 
         Returns:
             datetime object if found, None otherwise.
@@ -258,7 +255,6 @@ class ExifImage:
                 return parse_exif_datetime(value)
             return None
 
-        # Use precedence order to find the most relevant datetime
         for tag_name in [DATETIME_TAG_PRIMARY, "DateTimeDigitized", "DateTime"]:
             if tag_name in self.tags:
                 value = self.tags[tag_name].value
@@ -273,7 +269,7 @@ class ExifImage:
     def set_datetime(
         self,
         dt: datetime,
-        tags: Optional[list[str]] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> None:
         """
         Set datetime EXIF tags (in-memory, not saved until save() is called).
@@ -303,7 +299,7 @@ class ExifImage:
 
         # Determine which tags to update
         if tags is None:
-            tags_to_update = DATETIME_TAG_NAMES
+            tags_to_update: Iterable[str] = DATETIME_TAG_NAMES
         else:
             tags_to_update = tags
 
@@ -314,7 +310,7 @@ class ExifImage:
     def offset_datetime(
         self,
         delta: timedelta,
-        tags: Optional[list[str]] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> None:
         """
         Offset datetime EXIF tags by a timedelta (in-memory, not saved until save() is called).
@@ -341,7 +337,7 @@ class ExifImage:
         """
         # Determine which tags to offset
         if tags is None:
-            tags_to_process = DATETIME_TAG_NAMES
+            tags_to_process: Iterable[str] = DATETIME_TAG_NAMES
         else:
             tags_to_process = tags
 
@@ -379,7 +375,7 @@ class ExifImage:
             DateTime: 2025-05-01 14:30:00
             DateTimeOriginal: 2025-05-01 14:30:00
         """
-        result = {}
+        result: dict[str, datetime] = {}
         for tag_name in DATETIME_TAG_NAMES:
             if tag_name in self.tags:
                 value = self.tags[tag_name].value

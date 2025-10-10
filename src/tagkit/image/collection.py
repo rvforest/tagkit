@@ -7,7 +7,7 @@ from multiple image files.
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, Iterable
+from typing import Dict, Any, Optional, Union, Iterable, Mapping
 
 from tagkit.core.types import FilePath, IfdName
 from tagkit.image.exif import ExifImage
@@ -32,7 +32,7 @@ class ExifImageCollection:
         self,
         files: Iterable[FilePath],
         *,
-        tag_filter: Optional[list[Union[int, str]]] = None,
+        tag_filter: Optional[Iterable[Union[int, str]]] = None,
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -161,7 +161,7 @@ class ExifImageCollection:
 
     def write_tags(
         self,
-        tags: dict[Union[str, int], Any],
+        tags: Mapping[Union[str, int], Any],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -219,7 +219,7 @@ class ExifImageCollection:
 
     def delete_tags(
         self,
-        tags: list[Union[str, int]],
+        tags: Iterable[Union[str, int]],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -300,7 +300,7 @@ class ExifImageCollection:
     def set_datetime(
         self,
         dt: datetime,
-        tags: Optional[list[str]] = None,
+        tags: Optional[Iterable[str]] = None,
         files: Optional[Iterable[FilePath]] = None,
     ) -> None:
         """
@@ -329,7 +329,7 @@ class ExifImageCollection:
     def offset_datetime(
         self,
         delta: timedelta,
-        tags: Optional[list[str]] = None,
+        tags: Optional[Iterable[str]] = None,
         files: Optional[Iterable[FilePath]] = None,
     ) -> None:
         """
