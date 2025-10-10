@@ -218,19 +218,18 @@ class ExifImage:
     def get_datetime(
         self,
         tag: Optional[str] = None,
-        use_precedence: bool = True,
     ) -> Optional[datetime]:
         """
         Get datetime from EXIF tags.
+
 
         By default, uses precedence order: DateTimeOriginal > DateTimeDigitized > DateTime.
         Can also retrieve a specific datetime tag.
 
         Args:
             tag: Optional specific datetime tag name to retrieve. If provided,
-                use_precedence is ignored.
-            use_precedence: If True and tag is None, uses precedence order to find
-                the most relevant datetime. If False, returns None unless tag is specified.
+                precedence lookup is ignored and that specific tag is returned
+                (or None if missing).
 
         Returns:
             datetime object if found, None otherwise.
@@ -259,11 +258,7 @@ class ExifImage:
                 return parse_exif_datetime(value)
             return None
 
-        # If not using precedence, return None
-        if not use_precedence:
-            return None
-
-        # Use precedence order
+        # Use precedence order to find the most relevant datetime
         for tag_name in [DATETIME_TAG_PRIMARY, "DateTimeDigitized", "DateTime"]:
             if tag_name in self.tags:
                 value = self.tags[tag_name].value

@@ -312,7 +312,7 @@ class TestImageCollectionDatetime:
 
         assert result == dt_map
         for instance in instances.values():
-            instance.get_datetime.assert_called_once_with(tag=None, use_precedence=True)
+            instance.get_datetime.assert_called_once_with(tag=None)
 
     def test_get_datetime_filters_and_accepts_path(self, collection_factory):
         files = ["foo.jpg", "bar.jpg"]
@@ -325,9 +325,7 @@ class TestImageCollectionDatetime:
         result = collection.get_datetime(files=[Path("bar.jpg")], tag="DateTime")
 
         assert result == {"bar.jpg": dt_map["bar.jpg"]}
-        instances["bar.jpg"].get_datetime.assert_called_once_with(
-            tag="DateTime", use_precedence=True
-        )
+        instances["bar.jpg"].get_datetime.assert_called_once_with(tag="DateTime")
         assert not instances["foo.jpg"].get_datetime.called
 
     def test_get_datetime_missing_file_raises_keyerror(self, collection_factory):

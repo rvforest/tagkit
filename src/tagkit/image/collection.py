@@ -264,7 +264,6 @@ class ExifImageCollection:
         self,
         files: Optional[Iterable[FilePath]] = None,
         tag: Optional[str] = None,
-        use_precedence: bool = True,
     ) -> dict[str, Optional[datetime]]:
         """
         Get datetime from EXIF tags for all or selected images in the collection.
@@ -272,7 +271,8 @@ class ExifImageCollection:
         Args:
             files: Iterable of file names to query. If None, queries all files.
             tag: Optional specific datetime tag name to retrieve.
-            use_precedence: If True and tag is None, uses precedence order.
+            If tag is None, precedence order is used to select the most relevant
+            datetime tag (DateTimeOriginal > DateTimeDigitized > DateTime).
 
         Returns:
             Dictionary mapping file names to datetime objects (or None if not found).
@@ -293,9 +293,7 @@ class ExifImageCollection:
                 fname = fname.name
             if fname not in self.files:
                 raise KeyError(f"File '{fname}' not found in collection.")
-            result[fname] = self.files[fname].get_datetime(
-                tag=tag, use_precedence=use_precedence
-            )
+            result[fname] = self.files[fname].get_datetime(tag=tag)
 
         return result
 
