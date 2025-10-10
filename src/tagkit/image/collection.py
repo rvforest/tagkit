@@ -104,6 +104,29 @@ class ExifImageCollection:
         """
         return len(self.files)
 
+    def _normalize_filenames(self, files: Iterable[FilePath]) -> list[str]:
+        """
+        Normalize file names to string keys and validate their presence in the collection.
+
+        Args:
+            files: Iterable of file paths (can be strings or Path objects).
+
+        Returns:
+            List of normalized file names (strings).
+
+        Raises:
+            KeyError: If a file is not found in the collection.
+        """
+        normalized = []
+        for fname in files:
+            # Normalize fname to string key
+            if isinstance(fname, Path):
+                fname = fname.name
+            if fname not in self.files:
+                raise KeyError(f"File '{fname}' not found in collection.")
+            normalized.append(fname)
+        return normalized
+
     def write_tag(
         self,
         tag: Union[str, int],
@@ -129,13 +152,8 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
-        targets = self.files.keys() if files is None else files
+        targets = self.files.keys() if files is None else self._normalize_filenames(files)
         for fname in targets:
-            # Normalize fname to string key
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].write_tag(tag, value, ifd=ifd)
 
     def write_tags(
@@ -156,13 +174,8 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
         """
-        targets = self.files.keys() if files is None else files
+        targets = self.files.keys() if files is None else self._normalize_filenames(files)
         for fname in targets:
-            # Normalize fname to string key
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].write_tags(tags, ifd=ifd)
 
     def delete_tag(
@@ -190,13 +203,8 @@ class ExifImageCollection:
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
             >>> collection.delete_tag('Artist', ifd='IFD0')
         """
-        targets = self.files.keys() if files is None else files
+        targets = self.files.keys() if files is None else self._normalize_filenames(files)
         for fname in targets:
-            # Normalize fname to string key
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             try:
                 self.files[fname].delete_tag(tag_key, ifd=ifd)
             except KeyError:
@@ -221,13 +229,8 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.delete_tags(['Artist', 'Copyright'])
         """
-        targets = self.files.keys() if files is None else files
+        targets = self.files.keys() if files is None else self._normalize_filenames(files)
         for fname in targets:
-            # Normalize fname to string key
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].delete_tags(tags, ifd=ifd)
 
     def save_all(self, create_backup: bool = False):
