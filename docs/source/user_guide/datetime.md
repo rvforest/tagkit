@@ -277,8 +277,6 @@ except IOError as e:
 
 ## API Reference
 
-For complete API documentation, see the [API Reference](../reference/datetime_api.md).
-
 ### ExifImage (single-file API)
 
 - `ExifImage.get_datetime(tag=None, use_precedence=True)` — Get the primary datetime
