@@ -41,9 +41,10 @@ Issues = "https://github.com/rvforest/tagkit/issues"
 
 [dependency-groups]
 dev = [
+  "jsonschema>=4.25.1",
   "mypy>=1.15.0",
   "nox>=2025.2.9",
-  "pillow>=11.2.1",                # For dynamically generating test jpg files
+  "pillow>=11.2.1", # For dynamically generating test jpg files
   "pre-commit>=4.2.0",
   "pytest>=8.3.5",
   "pytest-cov>=6.1.1",
