@@ -44,7 +44,6 @@ user_guide/datetime.md
 
 apidocs/index
 reference/tag_reference.md
-reference/datetime_api.md
 ```
 
 ```{toctree}
