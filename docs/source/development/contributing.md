@@ -165,15 +165,25 @@ uv run nox -s coverage
 
 ### Test Image Configuration Files
 
-The project uses JSON configuration files to generate temporary test images with specific EXIF metadata. There are two config files for different testing purposes:
+The project uses JSON configuration files to generate temporary JPG test images with specific EXIF metadata. There are two files with distinct purposes:
 
-#### `tests/conf/test-img-metadata.json`
+- `tests/conf/test-img-metadata.json` — images for unit and integration tests (pytest).
+- `tests/conf/doctest-img-metadata.json` — images for documentation and docstring doctests.
 
-This file generates images for unit and integration tests via the `test_images` pytest fixture.
+Purpose:
+- Use `test-img-metadata.json` when writing tests that require particular EXIF metadata.
+- Use `doctest-img-metadata.json` only for examples referenced in documentation or docstrings; doctest examples must refer exclusively to files defined here so examples remain reproducible.
 
-**Purpose:** Used for functional testing with pytest. Add test images here when you need specific EXIF metadata combinations for your tests.
+Schema (summary)
+- Top-level keys: filenames ending with `.jpg` or `.jpeg`.
+- Each filename maps to an object with a required `tags` array.
+- Each tag object must include:
+  - `id` (integer) — EXIF tag ID
+  - `name` (string) — tag name
+  - `value` (string, number, or array) — tag value
+  - `ifd` (string) — one of `"0th"`, `"1st"`, `"Exif"`, `"GPS"`
 
-**Schema:**
+Example entry:
 
 ```json
 {
@@ -196,65 +206,25 @@ This file generates images for unit and integration tests via the `test_images` 
 }
 ```
 
-Each filename creates an empty 100x100 pixel JPG with the specified EXIF tags:
-- **id**: EXIF tag ID (integer)
-- **name**: Tag name (string)
-- **value**: Tag value (string, integer, or array depending on tag type)
-- **ifd**: IFD location - one of `"0th"`, `"1st"`, `"Exif"`, or `"GPS"`
+Usage in tests and doctests:
+- Pytest tests use the `test_images` fixture which creates a temporary directory containing images defined in `tests/conf/test-img-metadata.json`:
+  ```python
+  def test_example(test_images):
+      image_path = test_images / "minimal.jpg"
+      # use the image in your test
+  ```
+- Doctests (in MyST docs and docstrings) run in a temporary directory pre-populated with images from `tests/conf/doctest-img-metadata.json`. Reference these files by filename in examples so doctests remain stable.
 
-**Usage in tests:**
+Schema validation:
+- The machine-readable schema is at `tests/conf/img-metadata.schema.json`.
+- CI validates both config files against that schema using `tests/test_conf_schemas.py`.
+- Quick local validation:
 
-```python
-def test_example(test_images):
-    # test_images is a Path to a temporary directory with generated images
-    image_path = test_images / "minimal.jpg"
-    # Use the image in your test
+```bash
+uv run pytest tests/test_conf_schemas.py -q
 ```
 
-### Schema and validation
-
-We provide a machine-readable JSON Schema used by CI to validate the test image config files. Contributors should continue to rely on the short example above when adding or editing entries. For strict validation the project maintains:
-
-- `tests/conf/img-metadata.schema.json` — JSON Schema used by tests
-- `tests/test_conf_schemas.py` — pytest that validates `tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`
-
-Summary of the required structure:
-
-- Top-level keys: filenames ending with `.jpg` or `.jpeg`.
-- Each filename maps to an object with a required `tags` array.
-- Each tag is an object with required fields:
-  - `id` (integer)
-  - `name` (string)
-  - `value` (string, number, or array)
-  - `ifd` (one of `"0th"`, `"1st"`, `"Exif"`, `"GPS"`)
-
-#### `tests/conf/doctest-img-metadata.json`
-
-This file generates images for use in doctests - both in MyST markdown documentation and in API docstrings.
-
-**Purpose:** Doctests verify that documentation examples run without error. All docstring and documentation examples **must** use files referenced in this config file. This ensures documentation examples are stable and reproducible.
-
-**Schema:** Same as `test-img-metadata.json` (see above).
-
-**Important:** When writing or updating documentation examples or API docstrings, only reference image files defined in `doctest-img-metadata.json`. If you need a new example image with specific EXIF metadata, add it to this file first before referencing it in your documentation.
-
-**Usage in doctests:**
-
-Examples in docstrings and MyST markdown documentation automatically have access to generated images:
-
-```python
-def example_function():
-    """
-    Example usage:
-
-    >>> from tagkit import ExifImage
-    >>> img = ExifImage("image1.jpg")
-    >>> img.get_tag("Make")
-    'Tagkit'
-    """
-```
-
-The doctest environment automatically changes to a temporary directory containing the generated images, so you can reference them by filename directly.
+If you add or modify images used in doctests, update `tests/conf/doctest-img-metadata.json` first, then reference those files in docs/docstrings.
 
 ## Building and Previewing Documentation
 
