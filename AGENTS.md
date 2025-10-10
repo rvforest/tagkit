@@ -96,6 +96,9 @@ src/tagkit/
 - Tests are organized in `tests/` directory, mirroring `src/` structure
 - Unit tests for each component: `core/`, `image/`, `tag_io/`, `cli/`
 - Test configuration in `tests/conf/` with metadata for generating test images
+  - `test-img-metadata.json`: Generates images for pytest unit/integration tests
+  - `doctest-img-metadata.json`: Generates images for documentation examples and API docstrings
+  - Images are created via `create_test_images_from_metadata` function in `tests/conftest.py`
 
 ### Pre-commit Hooks and CI
 
@@ -152,6 +155,7 @@ uv run nox -s lint
 - **API stability**: Public APIs are stable within major versions (after v1.0)
 - **Extensibility**: The system is designed to be extensible (new tags, formatters, I/O backends)
 - **Backwards compatibility**: Maintain compatibility when making changes to public APIs
+- **Documentation examples**: All docstring and documentation examples must use image files defined in `tests/conf/doctest-img-metadata.json`. If you need a new example image with specific EXIF metadata, add it to this config file first before referencing it in documentation or docstrings. This ensures examples are reproducible and stable across documentation builds and doctest runs.
 
 ## Resources
 

@@ -146,7 +146,7 @@ We use [pytest](https://docs.pytest.org/) for testing. Place your tests in the `
 Run the test suite with:
 
 ```bash
-uv run nox -s tests
+uv run nox -s test-3.13
 ```
 
 Or run specific tests with:
@@ -160,8 +160,84 @@ uv run pytest tests/test_image_exif.py
 Check coverage with:
 
 ```bash
-uv run nox -s coverage
+uv run nox -s coverage-3.13
 ```
+
+### Test Image Configuration Files
+
+The project uses JSON configuration files to generate temporary test images with specific EXIF metadata. There are two config files for different testing purposes:
+
+#### `tests/conf/test-img-metadata.json`
+
+This file generates images for unit and integration tests via the `test_images` pytest fixture.
+
+**Purpose:** Used for functional testing with pytest. Add test images here when you need specific EXIF metadata combinations for your tests.
+
+**Schema:**
+
+```json
+{
+  "filename.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "TestMake",
+        "ifd": "0th"
+      },
+      {
+        "id": 272,
+        "name": "Model",
+        "value": "TestModel",
+        "ifd": "0th"
+      }
+    ]
+  }
+}
+```
+
+Each filename creates an empty 100x100 pixel JPG with the specified EXIF tags:
+- **id**: EXIF tag ID (integer)
+- **name**: Tag name (string)
+- **value**: Tag value (string, integer, or array depending on tag type)
+- **ifd**: IFD location - one of `"0th"`, `"1st"`, `"Exif"`, or `"GPS"`
+
+**Usage in tests:**
+
+```python
+def test_example(test_images):
+    # test_images is a Path to a temporary directory with generated images
+    image_path = test_images / "minimal.jpg"
+    # Use the image in your test
+```
+
+#### `tests/conf/doctest-img-metadata.json`
+
+This file generates images for use in doctests - both in MyST markdown documentation and in API docstrings.
+
+**Purpose:** Doctests verify that documentation examples run without error. All docstring and documentation examples **must** use files referenced in this config file. This ensures documentation examples are stable and reproducible.
+
+**Schema:** Same as `test-img-metadata.json` (see above).
+
+**Important:** When writing or updating documentation examples or API docstrings, only reference image files defined in `doctest-img-metadata.json`. If you need a new example image with specific EXIF metadata, add it to this file first before referencing it in your documentation.
+
+**Usage in doctests:**
+
+Examples in docstrings and MyST markdown documentation automatically have access to generated images:
+
+```python
+def example_function():
+    """
+    Example usage:
+
+    >>> from tagkit import ExifImage
+    >>> img = ExifImage("image1.jpg")
+    >>> img.get_tag("Make")
+    'Tagkit'
+    """
+```
+
+The doctest environment automatically changes to a temporary directory containing the generated images, so you can reference them by filename directly.
 
 ## Building and Previewing Documentation
 
