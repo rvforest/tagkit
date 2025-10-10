@@ -267,10 +267,12 @@ class ExifImageCollection:
             Dictionary mapping file names to datetime objects (or None if not found).
 
         Example:
-            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection = ExifImageCollection(['image1.jpg', 'image2.jpg'])
             >>> datetimes = collection.get_datetime()
             >>> for filename, dt in datetimes.items():
             ...     print(f"{filename}: {dt}")
+            image1.jpg: 2025-05-01 14:30:00
+            image2.jpg: 2025-05-02 14:30:00
         """
         targets = self.files.keys() if files is None else files
         result = {}
@@ -302,7 +304,7 @@ class ExifImageCollection:
 
         Example:
             >>> from datetime import datetime
-            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection = ExifImageCollection(['image1.jpg', 'image2.jpg'])
             >>> collection.set_datetime(datetime(2025, 6, 15, 10, 30, 0))
             >>> collection.save_all()
         """
@@ -331,7 +333,7 @@ class ExifImageCollection:
 
         Example:
             >>> from datetime import timedelta
-            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection = ExifImageCollection(['image1.jpg', 'image2.jpg'])
             >>> collection.offset_datetime(timedelta(hours=-5))
             >>> collection.save_all()
         """
@@ -357,12 +359,17 @@ class ExifImageCollection:
             Dictionary mapping file names to dictionaries of datetime tags.
 
         Example:
-            >>> collection = ExifImageCollection(['photo1.jpg', 'photo2.jpg'])
+            >>> collection = ExifImageCollection(['image1.jpg', 'image2.jpg'])
             >>> all_datetimes = collection.get_all_datetimes()
             >>> for filename, datetimes in all_datetimes.items():
             ...     print(f"{filename}:")
             ...     for tag_name, dt in datetimes.items():
             ...         print(f"  {tag_name}: {dt}")
+            image1.jpg:
+              DateTime: 2025-05-01 14:30:00
+              DateTimeOriginal: 2025-05-01 14:30:00
+            image2.jpg:
+              DateTime: 2025-05-02 14:30:00
         """
         targets = self.files.keys() if files is None else files
         result = {}

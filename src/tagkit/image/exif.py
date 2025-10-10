@@ -239,12 +239,12 @@ class ExifImage:
             DateTimeError: If a datetime tag is found but cannot be parsed.
 
         Examples:
-            >>> exif = ExifImage('photo.jpg')
+            >>> exif = ExifImage('image1.jpg')
             >>> dt = exif.get_datetime()
             >>> print(dt)
             2025-05-01 14:30:00
 
-            >>> dt = exif.get_datetime(tag='DateTime')
+            >>> dt = exif.get_datetime(tag='DateTimeOriginal')
             >>> print(dt)
             2025-05-01 14:30:00
         """
@@ -293,13 +293,15 @@ class ExifImage:
 
         Examples:
             >>> from datetime import datetime
-            >>> exif = ExifImage('photo.jpg')
+            >>> exif = ExifImage('image1.jpg')
             >>> exif.set_datetime(datetime(2025, 6, 15, 10, 30, 0))
             >>> exif.save()
 
             >>> # Update only specific tags
-            >>> exif.set_datetime(datetime(2025, 6, 15, 10, 30, 0),
-            ...                   tags=['DateTimeOriginal'])
+            >>> exif.set_datetime(
+            ...     datetime(2025, 6, 15, 10, 30, 0),
+            ...     tags=['DateTimeOriginal'],
+            ... )
             >>> exif.save()
         """
         datetime_str = format_exif_datetime(dt)
@@ -334,7 +336,7 @@ class ExifImage:
 
         Examples:
             >>> from datetime import timedelta
-            >>> exif = ExifImage('photo.jpg')
+            >>> exif = ExifImage('image1.jpg')
             >>> exif.offset_datetime(timedelta(hours=2))
             >>> exif.save()
 
@@ -375,13 +377,12 @@ class ExifImage:
             DateTimeError: If a datetime tag is found but cannot be parsed.
 
         Examples:
-            >>> exif = ExifImage('photo.jpg')
+            >>> exif = ExifImage('image1.jpg')
             >>> datetimes = exif.get_all_datetimes()
             >>> for tag_name, dt in datetimes.items():
             ...     print(f"{tag_name}: {dt}")
             DateTime: 2025-05-01 14:30:00
             DateTimeOriginal: 2025-05-01 14:30:00
-            DateTimeDigitized: 2025-05-01 14:30:00
         """
         result = {}
         for tag_name in DATETIME_TAG_NAMES:
