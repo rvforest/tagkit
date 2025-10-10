@@ -152,7 +152,9 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
-        targets = self.files.keys() if files is None else self._normalize_filenames(files)
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
         for fname in targets:
             self.files[fname].write_tag(tag, value, ifd=ifd)
 
@@ -174,7 +176,9 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
         """
-        targets = self.files.keys() if files is None else self._normalize_filenames(files)
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
         for fname in targets:
             self.files[fname].write_tags(tags, ifd=ifd)
 
@@ -203,7 +207,9 @@ class ExifImageCollection:
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
             >>> collection.delete_tag('Artist', ifd='IFD0')
         """
-        targets = self.files.keys() if files is None else self._normalize_filenames(files)
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
         for fname in targets:
             try:
                 self.files[fname].delete_tag(tag_key, ifd=ifd)
@@ -229,7 +235,9 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.delete_tags(['Artist', 'Copyright'])
         """
-        targets = self.files.keys() if files is None else self._normalize_filenames(files)
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
         for fname in targets:
             self.files[fname].delete_tags(tags, ifd=ifd)
 
