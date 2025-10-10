@@ -146,7 +146,7 @@ We use [pytest](https://docs.pytest.org/) for testing. Place your tests in the `
 Run the test suite with:
 
 ```bash
-uv run nox -s test-3.13
+uv run nox -s test
 ```
 
 Or run specific tests with:
@@ -160,7 +160,7 @@ uv run pytest tests/test_image_exif.py
 Check coverage with:
 
 ```bash
-uv run nox -s coverage-3.13
+uv run nox -s coverage
 ```
 
 ### Test Image Configuration Files
