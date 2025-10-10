@@ -202,7 +202,7 @@ class ExifImage:
         Example:
             >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
-            {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}
+            {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}
         """
         return {
             tag_name: {

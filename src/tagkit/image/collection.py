@@ -68,7 +68,7 @@ class ExifImageCollection:
         Example:
             >>> collection = ExifImageCollection(["image2.jpg", "image3.jpg"])
             >>> collection.as_dict()
-            {'image2.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}, 'image3.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}}
+            {'image2.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}, 'image3.jpg': {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}}
         """
         return {
             path: exif.as_dict(binary_format=binary_format)
@@ -86,7 +86,7 @@ class ExifImageCollection:
         Example:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.n_tags
-            9
+            11
         """
         return sum(len(exif) for exif in self.files.values())
 
