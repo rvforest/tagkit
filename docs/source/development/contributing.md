@@ -211,6 +211,23 @@ def test_example(test_images):
     # Use the image in your test
 ```
 
+### Schema and validation
+
+We provide a machine-readable JSON Schema used by CI to validate the test image config files. Contributors should continue to rely on the short example above when adding or editing entries. For strict validation the project maintains:
+
+- `tests/conf/img-metadata.schema.json` — JSON Schema used by tests
+- `tests/test_conf_schemas.py` — pytest that validates `tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`
+
+Summary of the required structure:
+
+- Top-level keys: filenames ending with `.jpg` or `.jpeg`.
+- Each filename maps to an object with a required `tags` array.
+- Each tag is an object with required fields:
+  - `id` (integer)
+  - `name` (string)
+  - `value` (string, number, or array)
+  - `ifd` (one of `"0th"`, `"1st"`, `"Exif"`, `"GPS"`)
+
 #### `tests/conf/doctest-img-metadata.json`
 
 This file generates images for use in doctests - both in MyST markdown documentation and in API docstrings.

@@ -129,6 +129,22 @@ src/tagkit/
 4. **Quality**: Ensure code passes all linting, formatting, and type checking
 5. **Documentation**: Update docstrings and docs if changing public APIs
 
+### Guidance for coding agents: test-image metadata schema
+
+This repository includes machine-readable validation for the JSON files used to generate test images (`tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`). When working on features or docs that add or change test images, follow these steps:
+
+- Edit or add image metadata only in `tests/conf/test-img-metadata.json` (for pytest) or `tests/conf/doctest-img-metadata.json` (for doctests).
+- The repository includes a JSON Schema at `tests/conf/img-metadata.schema.json`. Use it to ensure new entries match the required structure.
+- A pytest (`tests/test_conf_schemas.py`) validates both config files against the schema in CI. Run this test locally after changes.
+
+Quick local validation:
+
+```bash
+uv run pytest tests/test_conf_schemas.py -q
+```
+
+If you (the agent) modify the schema, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
+
 ### Common Commands
 
 ```bash
