@@ -96,6 +96,9 @@ src/tagkit/
 - Tests are organized in `tests/` directory, mirroring `src/` structure
 - Unit tests for each component: `core/`, `image/`, `tag_io/`, `cli/`
 - Test configuration in `tests/conf/` with metadata for generating test images
+  - `test-img-metadata.json`: Generates images for pytest unit/integration tests
+  - `doctest-img-metadata.json`: Generates images for documentation examples and API docstrings
+  - Images are created via `create_test_images_from_metadata` function in `tests/conftest.py`
 
 ### Pre-commit Hooks and CI
 
@@ -126,6 +129,22 @@ src/tagkit/
 4. **Quality**: Ensure code passes all linting, formatting, and type checking
 5. **Documentation**: Update docstrings and docs if changing public APIs
 
+### Guidance for coding agents: test-image metadata schema
+
+This repository includes machine-readable validation for the JSON files used to generate test images (`tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`). When working on features or docs that add or change test images, follow these steps:
+
+- Edit or add image metadata only in `tests/conf/test-img-metadata.json` (for pytest) or `tests/conf/doctest-img-metadata.json` (for doctests).
+- The repository includes a JSON Schema at `tests/conf/img-metadata.schema.json`. Use it to ensure new entries match the required structure.
+- A pytest (`tests/test_conf_schemas.py`) validates both config files against the schema in CI. Run this test locally after changes.
+
+Quick local validation:
+
+```bash
+uv run pytest tests/test_conf_schemas.py -q
+```
+
+If you (the agent) modify the schema, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
+
 ### Common Commands
 
 ```bash
@@ -152,6 +171,7 @@ uv run nox -s lint
 - **API stability**: Public APIs are stable within major versions (after v1.0)
 - **Extensibility**: The system is designed to be extensible (new tags, formatters, I/O backends)
 - **Backwards compatibility**: Maintain compatibility when making changes to public APIs
+- **Documentation examples**: All docstring and documentation examples must use image files defined in `tests/conf/doctest-img-metadata.json`. If you need a new example image with specific EXIF metadata, add it to this config file first before referencing it in documentation or docstrings. This ensures examples are reproducible and stable across documentation builds and doctest runs.
 
 ## Resources
 

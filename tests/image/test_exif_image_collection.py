@@ -239,6 +239,36 @@ class TestImageCollection:
         collection = ExifImageCollection(files)
         assert collection.n_files == 4
 
+    def test_normalize_filenames_with_string_keys(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames(["foo_0", "foo_1"])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_path_objects(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames([Path("foo_0"), Path("foo_1")])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_mixed_types(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames(["foo_0", Path("foo_1")])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_invalid_file(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+            collection._normalize_filenames(["not_found"])
+
+    def test_normalize_filenames_with_path_invalid_file(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+            collection._normalize_filenames([Path("not_found")])
+
 
 @pytest.fixture
 def collection_factory(monkeypatch):
