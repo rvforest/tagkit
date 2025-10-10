@@ -146,7 +146,7 @@ We use [pytest](https://docs.pytest.org/) for testing. Place your tests in the `
 Run the test suite with:
 
 ```bash
-uv run nox -s tests
+uv run nox -s test
 ```
 
 Or run specific tests with:
@@ -162,6 +162,69 @@ Check coverage with:
 ```bash
 uv run nox -s coverage
 ```
+
+### Test Image Configuration Files
+
+The project uses JSON configuration files to generate temporary JPG test images with specific EXIF metadata. There are two files with distinct purposes:
+
+- `tests/conf/test-img-metadata.json` — images for unit and integration tests (pytest).
+- `tests/conf/doctest-img-metadata.json` — images for documentation and docstring doctests.
+
+Purpose:
+- Use `test-img-metadata.json` when writing tests that require particular EXIF metadata.
+- Use `doctest-img-metadata.json` only for examples referenced in documentation or docstrings; doctest examples must refer exclusively to files defined here so examples remain reproducible.
+
+Schema (summary)
+- Top-level keys: filenames ending with `.jpg` or `.jpeg`.
+- Each filename maps to an object with a required `tags` array.
+- Each tag object must include:
+  - `id` (integer) — EXIF tag ID
+  - `name` (string) — tag name
+  - `value` (string, number, or array) — tag value
+  - `ifd` (string) — one of `"0th"`, `"1st"`, `"Exif"`, `"GPS"`
+
+Example entry:
+
+```json
+{
+  "filename.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "TestMake",
+        "ifd": "0th"
+      },
+      {
+        "id": 272,
+        "name": "Model",
+        "value": "TestModel",
+        "ifd": "0th"
+      }
+    ]
+  }
+}
+```
+
+Usage in tests and doctests:
+- Pytest tests use the `test_images` fixture which creates a temporary directory containing images defined in `tests/conf/test-img-metadata.json`:
+  ```python
+  def test_example(test_images):
+      image_path = test_images / "minimal.jpg"
+      # use the image in your test
+  ```
+- Doctests (in MyST docs and docstrings) run in a temporary directory pre-populated with images from `tests/conf/doctest-img-metadata.json`. Reference these files by filename in examples so doctests remain stable.
+
+Schema validation:
+- The machine-readable schema is at `tests/conf/img-metadata.schema.json`.
+- CI validates both config files against that schema using `tests/test_conf_schemas.py`.
+- Quick local validation:
+
+```bash
+uv run pytest tests/test_conf_schemas.py -q
+```
+
+If you add or modify images used in doctests, update `tests/conf/doctest-img-metadata.json` first, then reference those files in docs/docstrings.
 
 ## Building and Previewing Documentation
 
