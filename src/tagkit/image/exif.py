@@ -330,7 +330,7 @@ class ExifImage:
     def get_datetime(
         self,
         tag: Optional[str] = None,
-    ) -> Optional[datetime]:
+    ) -> datetime:
         """
         Get datetime from EXIF tags.
 
@@ -341,10 +341,12 @@ class ExifImage:
             tag: Optional specific datetime tag name to retrieve
 
         Returns:
-            datetime object if found, None otherwise.
+            datetime: datetime object for image.
 
         Raises:
             DateTimeError: If a datetime tag is found but cannot be parsed.
+            TagNotFound: If no datetime tags are found.
+            InvalidTagName: If the provided tag name is invalid.
 
         Examples:
             >>> exif = ExifImage('image1.jpg')
@@ -356,27 +358,16 @@ class ExifImage:
             >>> print(dt)
             2025-05-01 14:30:00
         """
-        # If a specific tag is requested, try to get it
-        if tag is not None:
-            if tag in self.tags:
-                value = self.tags[tag].value
-                if not isinstance(value, str):
-                    raise DateTimeError(
-                        f"Tag '{tag}' value is not a string: {type(value)}"
-                    )
-                return parse_exif_datetime(value)
-            return None
+        tags_to_check = DATETIME_TAG_NAMES if tag is None else [tag]
 
-        for tag_name in [DATETIME_TAG_PRIMARY, "DateTimeDigitized", "DateTime"]:
-            if tag_name in self.tags:
-                value = self.tags[tag_name].value
-                if not isinstance(value, str):
-                    raise DateTimeError(
-                        f"Tag '{tag_name}' value is not a string: {type(value)}"
-                    )
+        for tag_name in tags_to_check:
+            try:
+                value = self.read_tag(tag_name)
                 return parse_exif_datetime(value)
+            except TagNotFound:
+                continue
 
-        return None
+        raise TagNotFound(tag if tag is not None else "any datetime tag")
 
     def set_datetime(
         self,
@@ -410,10 +401,7 @@ class ExifImage:
         datetime_str = format_exif_datetime(dt)
 
         # Determine which tags to update
-        if tags is None:
-            tags_to_update: Iterable[str] = DATETIME_TAG_NAMES
-        else:
-            tags_to_update = tags
+        tags_to_update = DATETIME_TAG_NAMES if tags is None else tags
 
         # Update the tags in memory
         for tag_name in tags_to_update:
@@ -448,20 +436,12 @@ class ExifImage:
             >>> exif.save()
         """
         # Determine which tags to offset
-        if tags is None:
-            tags_to_process: Iterable[str] = DATETIME_TAG_NAMES
-        else:
-            tags_to_process = tags
+        tags_to_process = DATETIME_TAG_NAMES if tags is None else tags
 
         # Offset each tag that exists
         for tag_name in tags_to_process:
             if tag_name in self.tags:
-                value = self.tags[tag_name].value
-                if not isinstance(value, str):
-                    raise DateTimeError(
-                        f"Tag '{tag_name}' value is not a string: {type(value)}"
-                    )
-                current_dt = parse_exif_datetime(value)
+                current_dt = self.get_datetime(tag=tag_name)
                 new_dt = current_dt + delta
                 self.write_tag(tag_name, format_exif_datetime(new_dt))
 
