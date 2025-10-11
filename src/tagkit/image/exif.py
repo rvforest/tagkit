@@ -148,7 +148,7 @@ class ExifImage:
         self,
         tag: Union[str, int],
         ifd: Optional[IfdName] = None,
-        format_value: bool = True,
+        format_value: bool = False,
         binary_format: Optional[str] = None,
         default: Any = None,
         raise_on_missing: bool = True,
@@ -203,7 +203,7 @@ class ExifImage:
         self,
         tags: list[Union[str, int]],
         ifd: Optional[IfdName] = None,
-        format_value: bool = True,
+        format_value: bool = False,
         binary_format: Optional[str] = None,
     ) -> dict[str, Any]:
         """
