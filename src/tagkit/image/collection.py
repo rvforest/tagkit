@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Union, Iterable
 
 from tagkit.core.exceptions import TagNotFound
-from tagkit.core.types import FilePath, IfdName
+from tagkit.core.types import FilePath, IfdName, TagValue
 from tagkit.core.registry import tag_registry
 from tagkit.image.exif import ExifImage
 
@@ -267,7 +267,7 @@ class ExifImageCollection:
         binary_format: Optional[str] = None,
         files: Optional[Iterable[FilePath]] = None,
         skip_missing: bool = False,
-    ) -> dict[str, Any]:
+    ) -> dict[str, TagValue]:
         """
         Read the value of a specific EXIF tag from all or selected images in the collection.
 
@@ -322,7 +322,7 @@ class ExifImageCollection:
         binary_format: Optional[str] = None,
         files: Optional[Iterable[FilePath]] = None,
         skip_missing: bool = False,
-    ) -> dict[str, dict[str, Any]]:
+    ) -> dict[str, dict[str, TagValue]]:
         """
         Read multiple EXIF tags from all or selected images in the collection.
 

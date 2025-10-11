@@ -9,8 +9,8 @@ from typing import Any, Iterable, Optional, Union
 
 from tagkit.core.exceptions import TagNotFound
 from tagkit.core.tag import ExifTag
-from tagkit.core.registry import tag_registry
 from tagkit.core.types import TagValue, FilePath, IfdName
+from tagkit.core.registry import tag_registry
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
@@ -151,7 +151,7 @@ class ExifImage:
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
-    ) -> Any:
+    ) -> TagValue:
         """
         Read the value of a specific EXIF tag.
 
@@ -209,7 +209,7 @@ class ExifImage:
         format_value: bool = False,
         binary_format: Optional[str] = None,
         skip_missing: bool = False,
-    ) -> dict[str, Any]:
+    ) -> dict[str, TagValue]:
         """
         Read multiple EXIF tags at once.
 
