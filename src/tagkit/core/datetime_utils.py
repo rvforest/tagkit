@@ -5,11 +5,12 @@ from __future__ import annotations
 from datetime import datetime
 
 from tagkit.core.exceptions import DateTimeError
+from tagkit.core.types import TagValue
 
 DATETIME_FORMAT = "%Y:%m:%d %H:%M:%S"
 
 
-def parse_exif_datetime(datetime_str: str) -> datetime:
+def parse_exif_datetime(datetime_str: TagValue) -> datetime:
     """Convert an EXIF datetime string into a :class:`datetime` instance.
 
     Args:
@@ -21,6 +22,11 @@ def parse_exif_datetime(datetime_str: str) -> datetime:
     Raises:
         DateTimeError: If ``datetime_str`` is not a valid EXIF datetime string.
     """
+    if not isinstance(datetime_str, str):
+        raise DateTimeError(
+            f"Expected string for EXIF datetime, got {type(datetime_str)}"
+        )
+
     try:
         return datetime.strptime(datetime_str, DATETIME_FORMAT)
     except ValueError as exc:
