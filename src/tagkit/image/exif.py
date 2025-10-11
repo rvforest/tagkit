@@ -300,7 +300,7 @@ class ExifImage:
 
     def as_dict(
         self, binary_format: Optional[str] = None
-    ) -> Mapping[str, Mapping[str, Union[str, int]]]:
+    ) -> dict[str, dict[str, Union[str, int]]]:
         """
         Convert the image data to a nested dictionary structure.
 

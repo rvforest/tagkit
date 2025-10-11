@@ -7,11 +7,11 @@ from multiple image files.
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional, Union, Iterable, Mapping
+from typing import Iterable, Mapping, Optional, Union
 
 from tagkit.core.exceptions import TagNotFound
-from tagkit.core.types import FilePath, IfdName, TagValue
 from tagkit.core.registry import tag_registry
+from tagkit.core.types import FilePath, IfdName, TagValue
 from tagkit.image.exif import ExifImage
 
 
@@ -47,7 +47,7 @@ class ExifImageCollection:
         """
         self.tag_filter = tag_filter
         self.ifd = ifd
-        self.files: Dict[str, ExifImage] = {}
+        self.files: dict[str, ExifImage] = {}
 
         for path in files:
             self.files[Path(path).name] = ExifImage(
@@ -58,7 +58,7 @@ class ExifImageCollection:
 
     def as_dict(
         self, binary_format: Optional[str] = None
-    ) -> Dict[str, dict[str, dict[str, Union[str, int]]]]:
+    ) -> dict[str, dict[str, dict[str, Union[str, int]]]]:
         """
         Convert the collection to a dictionary.
 
@@ -393,6 +393,9 @@ class ExifImageCollection:
             if fname not in self.files:
                 raise KeyError(f"File '{fname}' not found in collection.")
             result[fname] = self.files[fname].get_all_datetimes()
+
+        return result
+
     def read_tag(
         self,
         tag: Union[str, int],
