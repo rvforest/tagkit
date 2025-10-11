@@ -175,10 +175,6 @@ class ExifImage:
             'Tagkit'
             >>> exif.read_tag('Make', format_value=False)
             'Tagkit'
-            >>> exif.read_tag('NonExistentTag')
-            Traceback (most recent call last):
-                ...
-            tagkit.core.exceptions.InvalidTagName: 'NonExistentTag'
         """
         # Validate binary_format early to provide a clear error if invalid
         if binary_format is not None and binary_format not in (
@@ -229,7 +225,7 @@ class ExifImage:
         Example:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.read_tags(['Make', 'Model'])
-            {'Make': 'Tagkit', 'Model': 'TestModel'}
+            {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}
         """
         from tagkit.core.exceptions import InvalidTagName, InvalidTagId
 

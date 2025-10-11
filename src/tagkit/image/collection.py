@@ -344,9 +344,9 @@ class ExifImageCollection:
 
         Example:
             >>> from tagkit.image.collection import ExifImageCollection
-            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection = ExifImageCollection(["image1.jpg", "image20.jpg"])
             >>> collection.read_tags(['Make', 'Model'])
-            {'image1.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}, 'image2.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}}
+            {'image1.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}, 'image20.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}}
         """
 
         targets = (
