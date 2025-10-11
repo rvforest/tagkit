@@ -1,14 +1,13 @@
+from pathlib import Path
+from typing import Union
 from unittest import mock
 
 import pytest
 
 from tagkit import ExifImageCollection
-import os
-from pathlib import Path
-from tagkit.image.exif import ExifImage
-from typing import Union
+from tagkit.core.exceptions import InvalidTagName, TagNotFound
 from tagkit.core.types import TagValue
-from tagkit.core.exceptions import InvalidTagName
+from tagkit.image.exif import ExifImage
 
 
 @pytest.fixture
@@ -410,7 +409,7 @@ class TestImageCollectionRead:
     def test_read_tag_missing_raises(self, mock_exif_w_patch):
         files = ["foo_0"]
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError, match="Tag 'Artist' not found in image"):
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
             collection.read_tag("Artist")
 
     def test_read_tag_missing_with_skip(self, mock_exif_w_patch):

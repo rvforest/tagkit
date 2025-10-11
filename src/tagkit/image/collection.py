@@ -8,6 +8,7 @@ from multiple image files.
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, Iterable
 
+from tagkit.core.exceptions import TagNotFound
 from tagkit.core.types import FilePath, IfdName
 from tagkit.core.registry import tag_registry
 from tagkit.image.exif import ExifImage
@@ -308,7 +309,7 @@ class ExifImageCollection:
                     binary_format=binary_format,
                 )
                 result[fname] = value
-            except KeyError:
+            except TagNotFound:
                 if not skip_missing:
                     raise
         return result
@@ -356,12 +357,7 @@ class ExifImageCollection:
         # Pre-resolve tag names; respect skip_missing for invalid tags
         resolved_tags: list[tuple[Union[str, int], str]] = []
         for tag in tags:
-            try:
-                tag_name = tag_registry.resolve_tag_name(tag)
-            except Exception:
-                if not skip_missing:
-                    raise
-                continue
+            tag_name = tag_registry.resolve_tag_name(tag)
             resolved_tags.append((tag, tag_name))
 
         result: dict[str, Any] = {}
@@ -375,10 +371,10 @@ class ExifImageCollection:
                         format_value=format_value,
                         binary_format=binary_format,
                     )
-                except KeyError:
-                    if not skip_missing:
-                        raise
-                    continue
+                except TagNotFound:
+                    if skip_missing:
+                        continue
+                    raise
                 result[fname][tag_name] = value
 
         return result

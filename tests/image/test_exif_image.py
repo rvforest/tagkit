@@ -6,7 +6,7 @@ from pathlib import Path
 
 from tagkit import ExifImage
 from tagkit.core.tag import ExifTag
-from tagkit.core.exceptions import InvalidTagId, InvalidTagName
+from tagkit.core.exceptions import InvalidTagId, InvalidTagName, TagNotFound
 from tagkit.core.types import TagValue
 
 
@@ -365,7 +365,7 @@ def test_read_tag_missing_raises(test_images, file_type):
     """Test reading a missing tag raises KeyError by default"""
     file_path = file_type(test_images / "minimal.jpg")
     exif = ExifImage(file_path)
-    with pytest.raises(KeyError, match="Tag 'Artist' not found in image"):
+    with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
         exif.read_tag("Artist")
 
 
@@ -419,11 +419,11 @@ def test_read_tags_raw(test_images, file_type):
 
 
 @pytest.mark.parametrize("file_type", [str, Path])
-def test_read_tags_with_missing(test_images, file_type):
-    """Test reading multiple tags where some are missing"""
+def test_read_tags_with_missing_skip(test_images, file_type):
+    """Test reading multiple tags where some are missing and skip_missing is True"""
     file_path = file_type(test_images / "minimal.jpg")
     exif = ExifImage(file_path)
-    result = exif.read_tags(["Make", "Artist"])
+    result = exif.read_tags(["Make", "Artist"], skip_missing=True)
     # Only Make should be in result (Artist doesn't exist)
     assert "Make" in result
     assert "Artist" not in result
@@ -440,13 +440,31 @@ def test_read_tags_empty_list(test_images, file_type):
 
 @pytest.mark.parametrize("file_type", [str, Path])
 def test_read_tags_with_invalid_tag(test_images, file_type):
-    """Test reading multiple tags with one invalid tag skips the invalid tag"""
+    """Test reading multiple tags with one invalid tag raises InvalidTagName"""
     file_path = file_type(test_images / "minimal.jpg")
     exif = ExifImage(file_path)
-    result = exif.read_tags(["Make", "NonExistentTag"])
+    with pytest.raises(InvalidTagName):
+        exif.read_tags(["Make", "NonExistentTag"])
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_with_missing_tag(test_images, file_type):
+    """Test reading multiple tags with one missing tag raises KeyError by default"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    with pytest.raises(TagNotFound, match="Tag 'DateTime' not found in image"):
+        exif.read_tags(["Make", "DateTime"], skip_missing=False)
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_with_missing_tag_skip(test_images, file_type):
+    """Test reading multiple tags with one missing tag skips the missing tag"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "DateTime"], skip_missing=True)
     # Only Make should be in result
     assert "Make" in result
-    assert "NonExistentTag" not in result
+    assert "DateTime" not in result
 
 
 @pytest.mark.parametrize("file_type", [str, Path])
