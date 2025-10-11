@@ -13,8 +13,7 @@ from tagkit.core.datetime_utils import (
 )
 from tagkit.image import ExifImageCollection, ExifImage
 from tagkit.image.exif import (
-    DATETIME_TAG_NAMES,
-    DATETIME_TAG_PRIMARY,
+    DATETIME_TAG_PRECEDENCE,
 )
 
 __all__ = [
@@ -22,8 +21,7 @@ __all__ = [
     "ExifImage",
     "parse_exif_datetime",
     "format_exif_datetime",
-    "DATETIME_TAG_NAMES",
-    "DATETIME_TAG_PRIMARY",
+    "DATETIME_TAG_PRECEDENCE",
     "DATETIME_FORMAT",
     "__version__",
 ]

@@ -16,10 +16,7 @@ from tagkit.core.types import TagValue, FilePath, IfdName
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
-
-# DateTime constants and helpers
-DATETIME_TAG_NAMES = ["DateTime", "DateTimeOriginal", "DateTimeDigitized"]
-DATETIME_TAG_PRIMARY = "DateTimeOriginal"
+DATETIME_TAG_PRECEDENCE = ["DateTimeOriginal", "DateTimeDigitized", "DateTime"]
 
 
 class ExifImage:
@@ -358,7 +355,7 @@ class ExifImage:
             >>> print(dt)
             2025-05-01 14:30:00
         """
-        tags_to_check = DATETIME_TAG_NAMES if tag is None else [tag]
+        tags_to_check = DATETIME_TAG_PRECEDENCE if tag is None else [tag]
 
         for tag_name in tags_to_check:
             try:
@@ -401,7 +398,7 @@ class ExifImage:
         datetime_str = format_exif_datetime(dt)
 
         # Determine which tags to update
-        tags_to_update = DATETIME_TAG_NAMES if tags is None else tags
+        tags_to_update = DATETIME_TAG_PRECEDENCE if tags is None else tags
 
         # Update the tags in memory
         for tag_name in tags_to_update:
@@ -436,7 +433,7 @@ class ExifImage:
             >>> exif.save()
         """
         # Determine which tags to offset
-        tags_to_process = DATETIME_TAG_NAMES if tags is None else tags
+        tags_to_process = DATETIME_TAG_PRECEDENCE if tags is None else tags
 
         # Offset each tag that exists
         tag_found = False
@@ -473,7 +470,7 @@ class ExifImage:
             DateTimeOriginal: 2025-05-01 14:30:00
         """
         result: dict[str, datetime] = {}
-        for tag_name in DATETIME_TAG_NAMES:
+        for tag_name in DATETIME_TAG_PRECEDENCE:
             if tag_name in self.tags:
                 value = self.tags[tag_name].value
                 if not isinstance(value, str):
