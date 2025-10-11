@@ -7,7 +7,7 @@ according to configuration rules.
 
 import base64
 from pathlib import Path
-from typing import Callable, Optional, Self, TYPE_CHECKING, Union
+from typing import Callable, Optional, Self, TYPE_CHECKING, Union, cast
 import math
 
 if TYPE_CHECKING:
@@ -71,14 +71,102 @@ class ValueFormatter:
             conf = yaml.safe_load(f)
         return cls(conf)
 
+    def _is_rational_sequence(self, val: tuple) -> bool:
+        """
+        Check if a value is a sequence of rationals.
+        
+        A rational is a tuple of two ints: (numerator, denominator).
+        A sequence of rationals is a tuple where elements are themselves tuples.
+        
+        Args:
+            val: The value to check.
+            
+        Returns:
+            True if val is a sequence of rationals, False otherwise.
+        """
+        if not isinstance(val, tuple) or len(val) == 0:
+            return False
+        # Check if first element is a tuple (indicating a sequence of rationals)
+        return isinstance(val[0], tuple)
+
+    def _format_decimal_with_sequence_support(
+        self, val: Union[Rational, tuple], unit: Optional[str] = None
+    ) -> str:
+        """
+        Format as a decimal value, with support for sequences of rationals.
+        
+        Args:
+            val: Either a single rational or a sequence of rationals.
+            unit: Optional unit to append to each formatted value.
+            
+        Returns:
+            Formatted decimal string or list of formatted decimals.
+        """
+        if self._is_rational_sequence(val):
+            formatted = [self._format_decimal(cast(Rational, r), unit) for r in val]
+            return "[" + ", ".join(formatted) + "]"
+        return self._format_decimal(cast(Rational, val), unit)
+
+    def _format_fraction_with_sequence_support(
+        self, val: Union[Rational, tuple], unit: Optional[str] = None
+    ) -> str:
+        """
+        Format as a fraction value, with support for sequences of rationals.
+        
+        Args:
+            val: Either a single rational or a sequence of rationals.
+            unit: Optional unit to append to each formatted value.
+            
+        Returns:
+            Formatted fraction string or list of formatted fractions.
+        """
+        if self._is_rational_sequence(val):
+            formatted = [self._format_fraction(cast(Rational, r), unit) for r in val]
+            return "[" + ", ".join(formatted) + "]"
+        return self._format_fraction(cast(Rational, val), unit)
+
+    def _format_f_number_with_sequence_support(
+        self, val: Union[Rational, tuple]
+    ) -> str:
+        """
+        Format as an f-number value, with support for sequences of rationals.
+        
+        Args:
+            val: Either a single rational or a sequence of rationals.
+            
+        Returns:
+            Formatted f-number string or list of formatted f-numbers.
+        """
+        if self._is_rational_sequence(val):
+            formatted = [self._format_f_number(cast(Rational, r)) for r in val]
+            return "[" + ", ".join(formatted) + "]"
+        return self._format_f_number(cast(Rational, val))
+
+    def _format_percent_with_sequence_support(
+        self, val: Union[Rational, tuple]
+    ) -> str:
+        """
+        Format as a percent value, with support for sequences of rationals.
+        
+        Args:
+            val: Either a single rational or a sequence of rationals.
+            
+        Returns:
+            Formatted percent string or list of formatted percents.
+        """
+        if self._is_rational_sequence(val):
+            formatted = [self._format_percent(cast(Rational, r)) for r in val]
+            return "[" + ", ".join(formatted) + "]"
+        return self._format_percent(cast(Rational, val))
+
     def _get_format_handler(self, format_type: str) -> Optional[Callable]:
         """Get the appropriate handler method for the given format type."""
         handler_map = {
             "show_plus": lambda v, c: self._show_plus(str(v)),
-            "decimal": lambda v, c: self._format_decimal(v, c.get("unit")),
-            "fraction": lambda v, c: self._format_fraction(v, c.get("unit")),
-            "f_number": lambda v, c: self._format_f_number(v),
-            "percent": lambda v, c: self._format_percent(v),
+            "decimal": lambda v, c: self._format_decimal_with_sequence_support(v, c.get("unit")),
+            "fraction": lambda v, c: self._format_fraction_with_sequence_support(v, c.get("unit")),
+            "f_number": lambda v, c: self._format_f_number_with_sequence_support(v),
+            "percent": lambda v, c: self._format_percent_with_sequence_support(v),
             "coordinates": lambda v, c: self._format_coordinates(v),
             "lens_info": lambda v, c: self._format_lens_info(v),
             "map": lambda v, c: self._format_map(v, c.get("mapping")),
