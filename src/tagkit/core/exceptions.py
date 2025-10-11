@@ -4,7 +4,7 @@ Exception classes for tagkit.
 This module contains all custom exceptions used throughout the tagkit package.
 """
 
-from typing import Any
+from typing import Any, Iterable, Union
 
 
 class TagkitError(Exception):
@@ -80,5 +80,8 @@ class TagNotFound(TagkitError):
         tag_name (str): The name of the tag that was not found.
     """
 
-    def __init__(self, tag_name: str):
-        super().__init__(f"Tag '{tag_name}' not found in image.")
+    def __init__(self, tag_name: Union[str, Iterable[str]]):
+        first_word = "Tag" if isinstance(tag_name, str) else "Tags"
+        if isinstance(tag_name, list):
+            tag_name = ", ".join(tag_name)
+        super().__init__(f"{first_word} '{tag_name}' not found in image.")
