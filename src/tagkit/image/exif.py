@@ -184,16 +184,16 @@ class ExifImage:
         tag_id = tag_registry.resolve_tag_id(tag)
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_id)
-        
+
         # Check if tag exists in the image
         if (tag_id, ifd) not in self._tag_dict:
             if raise_on_missing:
                 tag_name = tag_registry.resolve_tag_name(tag_id)
                 raise KeyError(f"Tag '{tag_name}' not found in image")
             return default
-        
+
         exif_tag = self._tag_dict[tag_id, ifd]
-        
+
         if format_value:
             return exif_tag.format(binary_format=binary_format)
         else:
@@ -226,7 +226,7 @@ class ExifImage:
             {'Make': 'Tagkit', 'Model': 'TestModel'}
         """
         from tagkit.core.exceptions import InvalidTagName, InvalidTagId
-        
+
         result = {}
         for tag in tags:
             try:

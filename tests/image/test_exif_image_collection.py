@@ -473,7 +473,9 @@ class TestImageCollectionRead:
     def test_read_tags_selected_files_per_image(self, mock_exif_w_patch):
         files = ["foo_0", "foo_1"]
         collection = ExifImageCollection(files)
-        result = collection.read_tags(["Make", "Model"], files=["foo_1"], per_image=True)
+        result = collection.read_tags(
+            ["Make", "Model"], files=["foo_1"], per_image=True
+        )
         assert len(result) == 1
         assert "foo_1" in result
         assert "foo_0" not in result

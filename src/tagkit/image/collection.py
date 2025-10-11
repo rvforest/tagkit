@@ -364,11 +364,11 @@ class ExifImageCollection:
             {'image1.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}, 'image2.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}}
         """
         from tagkit.core.exceptions import InvalidTagName, InvalidTagId
-        
+
         targets = (
             self.files.keys() if files is None else self._normalize_filenames(files)
         )
-        
+
         if per_image:
             # Return data organized by image
             result: dict[str, Any] = {}
