@@ -268,7 +268,7 @@ class ExifImageCollection:
         self,
         files: Optional[Iterable[FilePath]] = None,
         tag: Optional[str] = None,
-    ) -> dict[str, Optional[datetime]]:
+    ) -> dict[str, datetime]:
         """
         Get datetime from EXIF tags for all or selected images in the collection.
 
