@@ -34,6 +34,7 @@
 ## Features
 
 - View EXIF metadata for one or more images
+- **High-level datetime API** for reading, setting, and offsetting datetime EXIF tags
 - Filter by tag names or IDs
 - Output as a rich table or JSON
 - Handles binary EXIF data (bytes) with base64 encoding
@@ -114,6 +115,53 @@ tagkit view image.jpg --json
 ---
 
 ## API Usage
+
+### Working with DateTime Tags
+
+The library exposes a high-level object API for datetime operations via
+`ExifImage` (single file) and `ExifImageCollection` (multiple files).
+
+Example: single image operations
+
+```python
+from datetime import datetime, timedelta
+from tagkit import ExifImage, parse_exif_datetime, format_exif_datetime
+
+# Open an image and read the primary datetime (uses precedence)
+exif = ExifImage('photo.jpg')
+dt = exif.get_datetime()
+print(dt)  # e.g. 2025-05-01 14:30:00
+
+# Set datetime (in-memory) and save the file
+new_dt = datetime(2025, 6, 15, 10, 30, 0)
+exif.set_datetime(new_dt)  # updates DateTime, DateTimeOriginal, DateTimeDigitized by default
+exif.save()  # write changes to disk
+
+# Offset existing datetimes (e.g. timezone correction)
+exif.offset_datetime(timedelta(hours=-5))
+exif.save()
+
+# Parse/format raw EXIF datetime strings if needed
+raw = '2025:05:01 14:30:00'
+dt = parse_exif_datetime(raw)
+print(format_exif_datetime(dt))  # '2025:05:01 14:30:00'
+```
+
+Example: bulk operations with a collection
+
+```python
+from datetime import timedelta
+from tagkit import ExifImageCollection
+
+files = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg']
+collection = ExifImageCollection(files)
+
+# Offset all files in the collection (in-memory)
+collection.offset_datetime(timedelta(hours=2))
+
+# Persist changes to all files
+collection.save_all()
+```
 
 ### Extract EXIF Data
 

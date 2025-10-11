@@ -5,14 +5,21 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
-from typing import Iterable, Optional, Union
+from datetime import datetime, timedelta
+from typing import Iterable, Optional, Union, Mapping
 
-from tagkit.core.exceptions import TagNotFound
+from tagkit.core.exceptions import TagNotFound, DateTimeError
+from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
+from tagkit.core.registry import tag_registry
 from tagkit.core.tag import ExifTag
 from tagkit.core.types import TagValue, FilePath, IfdName
-from tagkit.core.registry import tag_registry
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
+
+
+# DateTime constants and helpers
+DATETIME_TAG_NAMES = ["DateTime", "DateTimeOriginal", "DateTimeDigitized"]
+DATETIME_TAG_PRIMARY = "DateTimeOriginal"
 
 
 class ExifImage:
@@ -83,7 +90,7 @@ class ExifImage:
 
     def write_tags(
         self,
-        tags: dict[Union[str, int], TagValue],
+        tags: Mapping[Union[str, int], TagValue],
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -128,7 +135,7 @@ class ExifImage:
 
     def delete_tags(
         self,
-        tags: list[Union[str, int]],
+        tags: Iterable[Union[str, int]],
         ifd: Optional[IfdName] = None,
     ):
         """
@@ -258,7 +265,7 @@ class ExifImage:
         return result
 
     @property
-    def tags(self) -> dict[str, ExifTag]:
+    def tags(self) -> Mapping[str, ExifTag]:
         """
         Get the filtered tags based on tag_filter and ifd settings.
 
@@ -293,7 +300,7 @@ class ExifImage:
 
     def as_dict(
         self, binary_format: Optional[str] = None
-    ) -> dict[str, dict[str, Union[str, int]]]:
+    ) -> Mapping[str, Mapping[str, Union[str, int]]]:
         """
         Convert the image data to a nested dictionary structure.
 
@@ -307,7 +314,7 @@ class ExifImage:
         Example:
             >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
-            {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}}
+            {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}
         """
         return {
             tag_name: {
@@ -317,3 +324,177 @@ class ExifImage:
             }
             for tag_name, tag in self.tags.items()
         }
+
+    # DateTime operations
+
+    def get_datetime(
+        self,
+        tag: Optional[str] = None,
+    ) -> Optional[datetime]:
+        """
+        Get datetime from EXIF tags.
+
+        By default, uses precedence order: DateTimeOriginal > DateTimeDigitized > DateTime.
+        Can also retrieve a specific datetime tag.
+
+        Args:
+            tag: Optional specific datetime tag name to retrieve
+
+        Returns:
+            datetime object if found, None otherwise.
+
+        Raises:
+            DateTimeError: If a datetime tag is found but cannot be parsed.
+
+        Examples:
+            >>> exif = ExifImage('image1.jpg')
+            >>> dt = exif.get_datetime()
+            >>> print(dt)
+            2025-05-01 14:30:00
+
+            >>> dt = exif.get_datetime(tag='DateTimeOriginal')
+            >>> print(dt)
+            2025-05-01 14:30:00
+        """
+        # If a specific tag is requested, try to get it
+        if tag is not None:
+            if tag in self.tags:
+                value = self.tags[tag].value
+                if not isinstance(value, str):
+                    raise DateTimeError(
+                        f"Tag '{tag}' value is not a string: {type(value)}"
+                    )
+                return parse_exif_datetime(value)
+            return None
+
+        for tag_name in [DATETIME_TAG_PRIMARY, "DateTimeDigitized", "DateTime"]:
+            if tag_name in self.tags:
+                value = self.tags[tag_name].value
+                if not isinstance(value, str):
+                    raise DateTimeError(
+                        f"Tag '{tag_name}' value is not a string: {type(value)}"
+                    )
+                return parse_exif_datetime(value)
+
+        return None
+
+    def set_datetime(
+        self,
+        dt: datetime,
+        tags: Optional[Iterable[str]] = None,
+    ) -> None:
+        """
+        Set datetime EXIF tags (in-memory, not saved until save() is called).
+
+        By default, updates all three datetime tags (DateTime, DateTimeOriginal,
+        DateTimeDigitized) to ensure consistency. Can optionally specify which
+        tags to update.
+
+        Args:
+            dt: Datetime object to set.
+            tags: Optional list of specific datetime tag names to update. If None, updates all three datetime tags. Valid values are 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
+
+        Examples:
+            >>> from datetime import datetime
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.set_datetime(datetime(2025, 6, 15, 10, 30, 0))
+            >>> exif.save()
+
+            >>> # Update only specific tags
+            >>> exif.set_datetime(
+            ...     datetime(2025, 6, 15, 10, 30, 0),
+            ...     tags=['DateTimeOriginal'],
+            ... )
+            >>> exif.save()
+        """
+        datetime_str = format_exif_datetime(dt)
+
+        # Determine which tags to update
+        if tags is None:
+            tags_to_update: Iterable[str] = DATETIME_TAG_NAMES
+        else:
+            tags_to_update = tags
+
+        # Update the tags in memory
+        for tag_name in tags_to_update:
+            self.write_tag(tag_name, datetime_str)
+
+    def offset_datetime(
+        self,
+        delta: timedelta,
+        tags: Optional[Iterable[str]] = None,
+    ) -> None:
+        """
+        Offset datetime EXIF tags by a timedelta (in-memory, not saved until save() is called).
+
+        Adds (or subtracts if negative) a timedelta to existing datetime tags.
+        By default, offsets all present datetime tags.
+
+        Args:
+            delta: Timedelta to add to existing datetime values.
+            tags: Optional list of specific datetime tag names to offset. If None, offsets all present datetime tags. Valid values are 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized'
+
+        Raises:
+            DateTimeError: If a datetime tag is found but cannot be parsed.
+
+        Examples:
+            >>> from datetime import timedelta
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.offset_datetime(timedelta(hours=2))
+            >>> exif.save()
+
+            >>> # Offset only specific tag
+            >>> exif.offset_datetime(timedelta(days=-1), tags=['DateTimeOriginal'])
+            >>> exif.save()
+        """
+        # Determine which tags to offset
+        if tags is None:
+            tags_to_process: Iterable[str] = DATETIME_TAG_NAMES
+        else:
+            tags_to_process = tags
+
+        # Offset each tag that exists
+        for tag_name in tags_to_process:
+            if tag_name in self.tags:
+                value = self.tags[tag_name].value
+                if not isinstance(value, str):
+                    raise DateTimeError(
+                        f"Tag '{tag_name}' value is not a string: {type(value)}"
+                    )
+                current_dt = parse_exif_datetime(value)
+                new_dt = current_dt + delta
+                self.write_tag(tag_name, format_exif_datetime(new_dt))
+
+    def get_all_datetimes(self) -> dict[str, datetime]:
+        """
+        Get all datetime EXIF tags from the image.
+
+        Returns a dictionary mapping tag names to datetime objects for all
+        datetime-related EXIF tags that are present.
+
+        Returns:
+            Dictionary mapping tag names to datetime objects. Only includes
+            tags that are present in the image.
+
+        Raises:
+            DateTimeError: If a datetime tag is found but cannot be parsed.
+
+        Examples:
+            >>> exif = ExifImage('image1.jpg')
+            >>> datetimes = exif.get_all_datetimes()
+            >>> for tag_name, dt in datetimes.items():
+            ...     print(f"{tag_name}: {dt}")
+            DateTime: 2025-05-01 14:30:00
+            DateTimeOriginal: 2025-05-01 14:30:00
+        """
+        result: dict[str, datetime] = {}
+        for tag_name in DATETIME_TAG_NAMES:
+            if tag_name in self.tags:
+                value = self.tags[tag_name].value
+                if not isinstance(value, str):
+                    raise DateTimeError(
+                        f"Tag '{tag_name}' value is not a string: {type(value)}"
+                    )
+                result[tag_name] = parse_exif_datetime(value)
+
+        return result
