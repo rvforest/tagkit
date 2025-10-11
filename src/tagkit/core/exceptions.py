@@ -4,6 +4,8 @@ Exception classes for tagkit.
 This module contains all custom exceptions used throughout the tagkit package.
 """
 
+from typing import Any
+
 
 class TagkitError(Exception):
     """Base exception for all custom tagkit errors."""
@@ -38,7 +40,11 @@ class BatchProcessingError(TagkitError):
 class DateTimeError(TagkitError):
     """Raised when a date/time parsing or formatting error occurs."""
 
-    pass
+    def __init__(self, value: Any) -> None:
+        super().__init__(
+            f"Tag value is not a valid datetime: '{value}'. "
+            "Expected format is 'YYYY:MM:DD HH:MM:SS'."
+        )
 
 
 class InvalidTagName(TagkitError):

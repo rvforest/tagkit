@@ -23,9 +23,7 @@ def parse_exif_datetime(datetime_str: TagValue) -> datetime:
         DateTimeError: If ``datetime_str`` is not a valid EXIF datetime string.
     """
     if not isinstance(datetime_str, str):
-        raise DateTimeError(
-            f"Expected string for EXIF datetime, got {type(datetime_str)}"
-        )
+        raise DateTimeError(datetime_str)
 
     try:
         return datetime.strptime(datetime_str, DATETIME_FORMAT)
