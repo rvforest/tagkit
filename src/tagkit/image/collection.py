@@ -6,7 +6,7 @@ from multiple image files.
 """
 
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, Iterable
+from typing import Dict, Optional, Union, Iterable
 
 from tagkit.core.exceptions import TagNotFound
 from tagkit.core.types import FilePath, IfdName, TagValue
@@ -55,7 +55,9 @@ class ExifImageCollection:
                 ifd=ifd,
             )
 
-    def as_dict(self, binary_format: Optional[str] = None) -> Dict[str, Any]:
+    def as_dict(
+        self, binary_format: Optional[str] = None
+    ) -> Dict[str, dict[str, dict[str, Union[str, int]]]]:
         """
         Convert the collection to a dictionary.
 
@@ -132,7 +134,7 @@ class ExifImageCollection:
     def write_tag(
         self,
         tag: Union[str, int],
-        value: Any,
+        value: TagValue,
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -162,7 +164,7 @@ class ExifImageCollection:
 
     def write_tags(
         self,
-        tags: dict[Union[str, int], Any],
+        tags: dict[Union[str, int], TagValue],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -356,7 +358,7 @@ class ExifImageCollection:
             tag_name = tag_registry.resolve_tag_name(tag)
             resolved_tags.append((tag, tag_name))
 
-        result: dict[str, Any] = {}
+        result: dict[str, dict[str, TagValue]] = {}
         for fname in targets:
             result[fname] = {}
             for orig_tag, tag_name in resolved_tags:

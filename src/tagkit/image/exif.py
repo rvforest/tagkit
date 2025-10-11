@@ -5,7 +5,7 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
-from typing import Any, Iterable, Optional, Union
+from typing import Iterable, Optional, Union
 
 from tagkit.core.exceptions import TagNotFound
 from tagkit.core.tag import ExifTag
@@ -239,7 +239,7 @@ class ExifImage:
                 "binary_format must be one of 'bytes', 'hex', 'base64' or None"
             )
 
-        result: dict[str, Any] = {}
+        result: dict[str, TagValue] = {}
 
         for tag in tags:
             tag_name = tag_registry.resolve_tag_name(tag)
