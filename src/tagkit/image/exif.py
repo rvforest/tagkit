@@ -5,7 +5,7 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
-from typing import Iterable, Optional, Union
+from typing import Any, Iterable, Optional, Union
 
 from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
@@ -143,6 +143,108 @@ class ExifImage:
         """
         for tag in tags:
             self.delete_tag(tag, ifd=ifd)
+
+    def read_tag(
+        self,
+        tag: Union[str, int],
+        ifd: Optional[IfdName] = None,
+        format_value: bool = True,
+        binary_format: Optional[str] = None,
+        default: Any = None,
+        raise_on_missing: bool = True,
+    ) -> Any:
+        """
+        Read the value of a specific EXIF tag.
+
+        Args:
+            tag: Tag name or tag ID.
+            ifd: Specific IFD to use.
+            format_value: If True, return formatted string value; if False, return raw value.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
+                Only used when format_value=True.
+            default: Default value to return if tag is missing (only when raise_on_missing=False).
+            raise_on_missing: If True, raise KeyError when tag is missing; if False, return default.
+
+        Returns:
+            The tag value (formatted or raw depending on format_value parameter).
+
+        Raises:
+            KeyError: If the tag is not found in the image (when raise_on_missing=True).
+            ValueError: If the tag or IFD is invalid.
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.read_tag('Make')
+            'Tagkit'
+            >>> exif.read_tag('Make', format_value=False)
+            'Tagkit'
+            >>> exif.read_tag('NonExistentTag', raise_on_missing=False, default='N/A')
+            'N/A'
+        """
+        tag_id = tag_registry.resolve_tag_id(tag)
+        if ifd is None:
+            ifd = tag_registry.get_ifd(tag_id)
+        
+        # Check if tag exists in the image
+        if (tag_id, ifd) not in self._tag_dict:
+            if raise_on_missing:
+                tag_name = tag_registry.resolve_tag_name(tag_id)
+                raise KeyError(f"Tag '{tag_name}' not found in image")
+            return default
+        
+        exif_tag = self._tag_dict[tag_id, ifd]
+        
+        if format_value:
+            return exif_tag.format(binary_format=binary_format)
+        else:
+            return exif_tag.value
+
+    def read_tags(
+        self,
+        tags: list[Union[str, int]],
+        ifd: Optional[IfdName] = None,
+        format_value: bool = True,
+        binary_format: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Read multiple EXIF tags at once.
+
+        Args:
+            tags: A list of tag names or tag IDs to read.
+            ifd: Specific IFD to use for all tags (overrides default logic).
+            format_value: If True, return formatted string values; if False, return raw values.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
+                Only used when format_value=True.
+
+        Returns:
+            A dictionary mapping tag names to their values.
+            Only tags that exist in the image are included in the result.
+
+        Example:
+            >>> exif = ExifImage('image1.jpg')
+            >>> exif.read_tags(['Make', 'Model'])
+            {'Make': 'Tagkit', 'Model': 'TestModel'}
+        """
+        from tagkit.core.exceptions import InvalidTagName, InvalidTagId
+        
+        result = {}
+        for tag in tags:
+            try:
+                tag_id = tag_registry.resolve_tag_id(tag)
+                tag_name = tag_registry.resolve_tag_name(tag_id)
+                value = self.read_tag(
+                    tag,
+                    ifd=ifd,
+                    format_value=format_value,
+                    binary_format=binary_format,
+                    raise_on_missing=False,
+                )
+                if value is not None:
+                    result[tag_name] = value
+            except (ValueError, KeyError, InvalidTagName, InvalidTagId):
+                # Skip invalid tags
+                pass
+        return result
 
     @property
     def tags(self) -> dict[str, ExifTag]:

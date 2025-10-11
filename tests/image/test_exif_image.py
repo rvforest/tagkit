@@ -311,3 +311,177 @@ class TestExifImageIntegration:
         reloaded = ExifImage(dst)
         assert "Artist" not in reloaded.tags
         assert "Copyright" not in reloaded.tags
+
+
+# Tests for read_tag and read_tags methods
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_by_name(test_images, file_type):
+    """Test reading a tag by name"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag("Make")
+    assert value == "TestMake"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_by_id(test_images, file_type):
+    """Test reading a tag by ID"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag(271)  # Make tag
+    assert value == "TestMake"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_with_ifd(test_images, file_type):
+    """Test reading a tag with explicit IFD"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag(271, ifd="IFD0")
+    assert value == "TestMake"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_formatted(test_images, file_type):
+    """Test reading a tag with formatting enabled (default)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag("Make", format_value=True)
+    assert isinstance(value, str)
+    assert value == "TestMake"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_raw(test_images, file_type):
+    """Test reading a tag with formatting disabled"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag("Make", format_value=False)
+    assert value == "TestMake"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_missing_raises(test_images, file_type):
+    """Test reading a missing tag raises KeyError by default"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    with pytest.raises(KeyError, match="Tag 'Artist' not found in image"):
+        exif.read_tag("Artist")
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_missing_with_default(test_images, file_type):
+    """Test reading a missing tag returns default when raise_on_missing=False"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag("Artist", raise_on_missing=False, default="N/A")
+    assert value == "N/A"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_missing_with_none_default(test_images, file_type):
+    """Test reading a missing tag returns None when raise_on_missing=False and no default"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    value = exif.read_tag("Artist", raise_on_missing=False)
+    assert value is None
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_invalid_tag_raises(test_images, file_type):
+    """Test reading an invalid tag raises exception"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    with pytest.raises(InvalidTagName):
+        exif.read_tag("NonExistentTag")
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tag_invalid_id_raises(test_images, file_type):
+    """Test reading an invalid tag ID raises exception"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    with pytest.raises(InvalidTagId):
+        exif.read_tag(99999)
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_multiple(test_images, file_type):
+    """Test reading multiple tags at once"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "Model"])
+    assert "Make" in result
+    assert "Model" in result
+    assert result["Make"] == "TestMake"
+    assert result["Model"] == "TestModel"
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_formatted(test_images, file_type):
+    """Test reading multiple tags with formatting enabled (default)"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "Model"], format_value=True)
+    assert all(isinstance(v, str) for v in result.values())
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_raw(test_images, file_type):
+    """Test reading multiple tags with formatting disabled"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "Model"], format_value=False)
+    assert "Make" in result
+    assert "Model" in result
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_with_missing(test_images, file_type):
+    """Test reading multiple tags where some are missing"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "Artist"])
+    # Only Make should be in result (Artist doesn't exist)
+    assert "Make" in result
+    assert "Artist" not in result
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_empty_list(test_images, file_type):
+    """Test reading with an empty list returns empty dict"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags([])
+    assert result == {}
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_with_invalid_tag(test_images, file_type):
+    """Test reading multiple tags with one invalid tag skips the invalid tag"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "NonExistentTag"])
+    # Only Make should be in result
+    assert "Make" in result
+    assert "NonExistentTag" not in result
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_by_id(test_images, file_type):
+    """Test reading multiple tags by ID"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags([271, 272])  # Make, Model
+    assert "Make" in result
+    assert "Model" in result
+
+
+@pytest.mark.parametrize("file_type", [str, Path])
+def test_read_tags_with_ifd(test_images, file_type):
+    """Test reading multiple tags with explicit IFD"""
+    file_path = file_type(test_images / "minimal.jpg")
+    exif = ExifImage(file_path)
+    result = exif.read_tags(["Make", "Model"], ifd="IFD0")
+    assert "Make" in result
+    assert "Model" in result
