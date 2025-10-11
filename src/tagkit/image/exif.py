@@ -165,8 +165,9 @@ class ExifImage:
             The tag value (formatted or raw depending on format_value parameter).
 
         Raises:
-            KeyError: If the tag is not found in the image (when raise_on_missing=True).
-            ValueError: If the tag or IFD is invalid.
+            KeyError: If the tag is not present in the image.
+            InvalidTagName, InvalidTagId: If the provided tag name or id is invalid.
+            ValueError: If the tag or IFD is invalid or if `binary_format` is unsupported.
 
         Example:
             >>> exif = ExifImage('image1.jpg')
@@ -175,8 +176,20 @@ class ExifImage:
             >>> exif.read_tag('Make', format_value=False)
             'Tagkit'
             >>> exif.read_tag('NonExistentTag')
-            'N/A'
+            Traceback (most recent call last):
+                ...
+            tagkit.core.exceptions.InvalidTagName: 'NonExistentTag'
         """
+        # Validate binary_format early to provide a clear error if invalid
+        if binary_format is not None and binary_format not in (
+            "bytes",
+            "hex",
+            "base64",
+        ):
+            raise ValueError(
+                "binary_format must be one of 'bytes', 'hex', 'base64' or None"
+            )
+
         tag_id = tag_registry.resolve_tag_id(tag)
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_id)
@@ -190,8 +203,7 @@ class ExifImage:
 
         if format_value:
             return exif_tag.format(binary_format=binary_format)
-        else:
-            return exif_tag.value
+        return exif_tag.value
 
     def read_tags(
         self,
@@ -221,10 +233,32 @@ class ExifImage:
         """
         from tagkit.core.exceptions import InvalidTagName, InvalidTagId
 
-        result = {}
+        # Validate binary_format early
+        if binary_format is not None and binary_format not in (
+            "bytes",
+            "hex",
+            "base64",
+        ):
+            raise ValueError(
+                "binary_format must be one of 'bytes', 'hex', 'base64' or None"
+            )
+
+        result: dict[str, Any] = {}
+
+        # Pre-resolve tag names and ids to avoid repeated lookups and to handle
+        # invalid tags according to a single policy (skip silently here).
+        resolved: list[tuple[Union[str, int], str]] = []
         for tag in tags:
             try:
                 tag_name = tag_registry.resolve_tag_name(tag)
+                # Keep original tag (for resolving id when reading) and resolved name
+                resolved.append((tag, tag_name))
+            except (ValueError, InvalidTagName, InvalidTagId):
+                # Skip invalid/unknown tags
+                continue
+
+        for tag, tag_name in resolved:
+            try:
                 value = self.read_tag(
                     tag,
                     ifd=ifd,
@@ -233,9 +267,9 @@ class ExifImage:
                 )
                 if value is not None:
                     result[tag_name] = value
-            except (ValueError, KeyError, InvalidTagName, InvalidTagId):
-                # Skip invalid tags
-                pass
+            except KeyError:
+                # Tag not present in this image, skip
+                continue
         return result
 
     @property

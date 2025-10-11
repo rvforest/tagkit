@@ -353,13 +353,24 @@ class ExifImageCollection:
             self.files.keys() if files is None else self._normalize_filenames(files)
         )
 
+        # Pre-resolve tag names; respect skip_missing for invalid tags
+        resolved_tags: list[tuple[Union[str, int], str]] = []
+        for tag in tags:
+            try:
+                tag_name = tag_registry.resolve_tag_name(tag)
+            except Exception:
+                if not skip_missing:
+                    raise
+                continue
+            resolved_tags.append((tag, tag_name))
+
         result: dict[str, Any] = {}
         for fname in targets:
             result[fname] = {}
-            for tag in tags:
+            for orig_tag, tag_name in resolved_tags:
                 try:
                     value = self.files[fname].read_tag(
-                        tag,
+                        orig_tag,
                         ifd=ifd,
                         format_value=format_value,
                         binary_format=binary_format,
@@ -368,8 +379,6 @@ class ExifImageCollection:
                     if not skip_missing:
                         raise
                     continue
-
-                tag_name = tag_registry.resolve_tag_name(tag)
                 result[fname][tag_name] = value
 
         return result
