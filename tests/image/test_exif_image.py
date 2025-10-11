@@ -485,3 +485,17 @@ def test_read_tags_with_ifd(test_images, file_type):
     result = exif.read_tags(["Make", "Model"], ifd="IFD0")
     assert "Make" in result
     assert "Model" in result
+
+
+def test_read_tag_invalid_binary_entry(test_images):
+    """Test that providing an invalid binary_format raises ValueError"""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValueError):
+        exif.read_tag("Make", binary_format="invalid_format")
+
+
+def test_read_tags_invalid_binary_entry(test_images):
+    """Test that providing an invalid binary_format raises ValueError"""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValueError):
+        exif.read_tags(["Make", "Model"], binary_format="invalid_format")

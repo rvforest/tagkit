@@ -451,6 +451,12 @@ class TestImageCollectionRead:
     def test_read_tags_with_missing_tags(self, mock_exif_w_patch):
         files = ["foo_0", "foo_1"]
         collection = ExifImageCollection(files)
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
+            collection.read_tags(["Make", "Artist"], skip_missing=False)
+
+    def test_read_tags_with_missing_tags_skip(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
         result = collection.read_tags(["Make", "Artist"], skip_missing=True)
 
         assert "foo_0" in result
