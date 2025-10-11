@@ -379,8 +379,8 @@ class ExifImageCollection:
             ...     for tag_name, dt in datetimes.items():
             ...         print(f"  {tag_name}: {dt}")
             image1.jpg:
-              DateTime: 2025-05-01 14:30:00
               DateTimeOriginal: 2025-05-01 14:30:00
+              DateTime: 2025-05-01 14:30:00
             image2.jpg:
               DateTime: 2025-05-02 14:30:00
         """

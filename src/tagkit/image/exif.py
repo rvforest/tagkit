@@ -466,8 +466,8 @@ class ExifImage:
             >>> datetimes = exif.get_all_datetimes()
             >>> for tag_name, dt in datetimes.items():
             ...     print(f"{tag_name}: {dt}")
-            DateTime: 2025-05-01 14:30:00
             DateTimeOriginal: 2025-05-01 14:30:00
+            DateTime: 2025-05-01 14:30:00
         """
         result: dict[str, datetime] = {}
         for tag_name in DATETIME_TAG_PRECEDENCE:
