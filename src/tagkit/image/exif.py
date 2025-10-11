@@ -253,8 +253,7 @@ class ExifImage:
                     format_value=format_value,
                     binary_format=binary_format,
                 )
-                if value is not None:
-                    result[tag_name] = value
+                result[tag_name] = value
             except TagNotFound:
                 if skip_missing:
                     continue
