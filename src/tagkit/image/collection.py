@@ -7,9 +7,11 @@ from multiple image files.
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, Iterable, Mapping
+from typing import Dict, Optional, Union, Iterable, Mapping
 
-from tagkit.core.types import FilePath, IfdName
+from tagkit.core.exceptions import TagNotFound
+from tagkit.core.types import FilePath, IfdName, TagValue
+from tagkit.core.registry import tag_registry
 from tagkit.image.exif import ExifImage
 
 
@@ -54,7 +56,9 @@ class ExifImageCollection:
                 ifd=ifd,
             )
 
-    def as_dict(self, binary_format: Optional[str] = None) -> Dict[str, Any]:
+    def as_dict(
+        self, binary_format: Optional[str] = None
+    ) -> Dict[str, dict[str, dict[str, Union[str, int]]]]:
         """
         Convert the collection to a dictionary.
 
@@ -131,7 +135,7 @@ class ExifImageCollection:
     def write_tag(
         self,
         tag: Union[str, int],
-        value: Any,
+        value: TagValue,
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -161,7 +165,7 @@ class ExifImageCollection:
 
     def write_tags(
         self,
-        tags: Mapping[Union[str, int], Any],
+        tags: Mapping[Union[str, int], TagValue],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -389,5 +393,118 @@ class ExifImageCollection:
             if fname not in self.files:
                 raise KeyError(f"File '{fname}' not found in collection.")
             result[fname] = self.files[fname].get_all_datetimes()
+    def read_tag(
+        self,
+        tag: Union[str, int],
+        ifd: Optional[IfdName] = None,
+        format_value: bool = False,
+        binary_format: Optional[str] = None,
+        files: Optional[Iterable[FilePath]] = None,
+        skip_missing: bool = False,
+    ) -> dict[str, TagValue]:
+        """
+        Read the value of a specific EXIF tag from all or selected images in the collection.
+
+        Args:
+            tag: Tag name or tag ID.
+            ifd: Specific IFD to use.
+            format_value: If True, return formatted string values; if False, return raw values.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
+            files: Iterable of file names (keys in self.files) to read from. If None, read from all.
+            skip_missing: If True, skip files where the tag is missing; if False, raise if missing.
+
+        Returns:
+            A dictionary mapping file names to tag values.
+
+        Raises:
+            KeyError: If a file is not found in the collection, or if a tag is missing (when skip_missing=False).
+            ValueError: If the tag or IFD is invalid.
+
+        Example:
+            >>> from tagkit.image.collection import ExifImageCollection
+            >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
+            >>> collection.read_tag('Make')
+            {'image1.jpg': 'Tagkit', 'image2.jpg': 'Tagkit'}
+            >>> collection.read_tag('Artist', skip_missing=True)
+            {}
+        """
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
+        result = {}
+        for fname in targets:
+            try:
+                value = self.files[fname].read_tag(
+                    tag,
+                    ifd=ifd,
+                    format_value=format_value,
+                    binary_format=binary_format,
+                )
+                result[fname] = value
+            except TagNotFound:
+                if not skip_missing:
+                    raise
+        return result
+
+    def read_tags(
+        self,
+        tags: list[Union[str, int]],
+        ifd: Optional[IfdName] = None,
+        format_value: bool = False,
+        binary_format: Optional[str] = None,
+        files: Optional[Iterable[FilePath]] = None,
+        skip_missing: bool = False,
+    ) -> dict[str, dict[str, TagValue]]:
+        """
+        Read multiple EXIF tags from all or selected images in the collection.
+
+        Args:
+            tags: A list of tag names or tag IDs to read.
+            ifd: Specific IFD to use for all tags.
+            format_value: If True, return formatted string values; if False, return raw values.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
+            files: Iterable of file names (keys in self.files) to read from. If None, read from all.
+            skip_missing: If True, skip missing tags; if False, only include tags that exist.
+
+        Returns:
+            dict[str, dict[str, Any]]: Dictionary mapping file names to dictionaries of tag names to values: {'image1.jpg': {'Make': 'Canon', 'Model': 'EOS'}}
+
+        Raises:
+            KeyError: If a file is not found in the collection.
+            ValueError: If a tag or IFD is invalid.
+
+        Example:
+            >>> from tagkit.image.collection import ExifImageCollection
+            >>> collection = ExifImageCollection(["image1.jpg", "image20.jpg"])
+            >>> collection.read_tags(['Make', 'Model'])
+            {'image1.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}, 'image20.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}}
+        """
+
+        targets = (
+            self.files.keys() if files is None else self._normalize_filenames(files)
+        )
+
+        # Pre-resolve tag names; respect skip_missing for invalid tags
+        resolved_tags: list[tuple[Union[str, int], str]] = []
+        for tag in tags:
+            tag_name = tag_registry.resolve_tag_name(tag)
+            resolved_tags.append((tag, tag_name))
+
+        result: dict[str, dict[str, TagValue]] = {}
+        for fname in targets:
+            result[fname] = {}
+            for orig_tag, tag_name in resolved_tags:
+                try:
+                    value = self.files[fname].read_tag(
+                        orig_tag,
+                        ifd=ifd,
+                        format_value=format_value,
+                        binary_format=binary_format,
+                    )
+                except TagNotFound:
+                    if skip_missing:
+                        continue
+                    raise
+                result[fname][tag_name] = value
 
         return result

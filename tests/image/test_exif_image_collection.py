@@ -1,15 +1,14 @@
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Optional, Union
 from unittest import mock
 
 import pytest
 
 from tagkit import ExifImageCollection
-import os
-from pathlib import Path
-from tagkit.image.exif import ExifImage
-from typing import Optional, Union
+from tagkit.core.exceptions import InvalidTagName, TagNotFound
 from tagkit.core.types import TagValue
-from tagkit.core.exceptions import InvalidTagName
+from tagkit.image.exif import ExifImage
 
 
 @pytest.fixture
@@ -491,3 +490,139 @@ class TestImageCollectionIntegration:
         for exif in reloaded.files.values():
             assert "Artist" not in exif.tags
             assert "Copyright" not in exif.tags
+
+
+# Tests for read_tag and read_tags collection methods
+class TestImageCollectionRead:
+    def test_read_tag_all_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make")
+        assert len(result) == 2
+        assert result["foo_0"] == "TestMake"
+        assert result["foo_1"] == "TestMake"
+
+    def test_read_tag_selected_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1", "foo_2"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", files=["foo_0", "foo_2"])
+        assert len(result) == 2
+        assert "foo_0" in result
+        assert "foo_2" in result
+        assert "foo_1" not in result
+
+    def test_read_tag_by_id(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag(271)  # Make tag
+        assert len(result) == 2
+        assert result["foo_0"] == "TestMake"
+
+    def test_read_tag_formatted(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", format_value=True)
+        assert isinstance(result["foo_0"], str)
+
+    def test_read_tag_raw(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", format_value=False)
+        assert result["foo_0"] == "TestMake"
+
+    def test_read_tag_missing_raises(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
+            collection.read_tag("Artist")
+
+    def test_read_tag_missing_with_skip(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        # Write tag to only one file
+        collection.files["foo_0"].write_tag("Artist", "John")
+        result = collection.read_tag("Artist", skip_missing=True)
+        # Only foo_0 should be in result
+        assert len(result) == 1
+        assert "foo_0" in result
+        assert "foo_1" not in result
+
+    def test_read_tag_invalid_file_raises(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+            collection.read_tag("Make", files=["not_found"])
+
+    def test_read_tags_all_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"])
+        # Result should be organized by file
+        assert "foo_0" in result
+        assert "foo_1" in result
+        assert result["foo_0"]["Make"] == "TestMake"
+        assert result["foo_0"]["Model"] == "TestModel"
+        assert result["foo_1"]["Make"] == "TestMake"
+
+    def test_read_tags_selected_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"], files=["foo_1"])
+        assert len(result) == 1
+        assert "foo_1" in result
+        assert "foo_0" not in result
+
+    def test_read_tags_with_missing_tags(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
+            collection.read_tags(["Make", "Artist"], skip_missing=False)
+
+    def test_read_tags_with_missing_tags_skip(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Artist"], skip_missing=True)
+
+        assert "foo_0" in result
+        assert "foo_1" in result
+        assert "Artist" not in result["foo_0"]
+        assert "Artist" not in result["foo_1"]
+
+    def test_read_tags_empty_list(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([])
+        assert "foo_0" in result
+        assert result["foo_0"] == {}
+
+    def test_read_tags_by_id(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([271, 272])  # Make, Model
+        assert "Make" in result["foo_0"]
+        assert "Model" in result["foo_0"]
+
+    def test_read_tags_formatted(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", 37385], format_value=True)
+        assert all(isinstance(v, str) for v in result["foo_0"].values())
+
+    def test_read_tags_raw(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([37385], format_value=False)
+        assert all(not isinstance(v, str) for v in result["foo_0"].values())
+
+    def test_read_tags_with_ifd(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"], ifd="IFD0")
+        assert "Make" in result["foo_0"]
+        assert "Model" in result["foo_0"]
+
+    def test_read_tags_with_invalid_tag(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(InvalidTagName, match="Invalid tag name"):
+            collection.read_tags(["Make", "NonExistentTag"])

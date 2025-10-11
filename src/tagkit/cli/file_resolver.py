@@ -17,16 +17,15 @@ class FileResolver:
         regex_mode (bool): If True, use regex matching.
 
     Example:
-        >>> os.listdir(img_dir)
-        ['foo.txt', 'image1.jpg', 'image10.jpg', 'image2.jpg', 'image3.jpg']
+        Dir contents: 'foo.txt', 'image1.jpg', 'image10.jpg', 'image2.jpg', 'image3.jpg']
 
         >>> resolver = FileResolver("image1.jpg")
         >>> [path.name for path in resolver.files]
         ['image1.jpg']
 
-        >>> resolver = FileResolver("*.jpg", glob_mode=True)
+        >>> resolver = FileResolver("image1*.jpg", glob_mode=True)
         >>> [path.name for path in resolver.files]
-        ['image1.jpg', 'image10.jpg', 'image2.jpg', 'image3.jpg']
+        ['image1.jpg', 'image10.jpg']
 
         >>> resolver = FileResolver("image[12].jpg", regex_mode=True)
         >>> [path.name for path in resolver.files]

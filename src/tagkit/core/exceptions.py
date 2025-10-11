@@ -65,3 +65,14 @@ class InvalidTagId(TagkitError):
     def __init__(self, tag_id: int):
         msg = f"Tag ID '{tag_id}' is invalid and not part of the exif specification."
         super().__init__(msg)
+
+
+class TagNotFound(TagkitError):
+    """Raised when a specified tag is not found in an image.
+
+    Args:
+        tag_name (str): The name of the tag that was not found.
+    """
+
+    def __init__(self, tag_name: str):
+        super().__init__(f"Tag '{tag_name}' not found in image.")

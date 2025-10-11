@@ -69,6 +69,22 @@
       }
     ]
   },
+  "image20.jpg": {
+    "tags": [
+      {
+        "id": 271,
+        "name": "Make",
+        "value": "Tagkit",
+        "ifd": "0th"
+      },
+      {
+        "id": 272,
+        "name": "Model",
+        "value": "Tagkit Camera",
+        "ifd": "0th"
+      }
+    ]
+  },
   "image2.jpg": {
     "tags": [
       {
