@@ -150,8 +150,6 @@ class ExifImage:
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
-        default: Any = None,
-        raise_on_missing: bool = True,
     ) -> Any:
         """
         Read the value of a specific EXIF tag.
@@ -162,8 +160,6 @@ class ExifImage:
             format_value: If True, return formatted string value; if False, return raw value.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
                 Only used when format_value=True.
-            default: Default value to return if tag is missing (only when raise_on_missing=False).
-            raise_on_missing: If True, raise KeyError when tag is missing; if False, return default.
 
         Returns:
             The tag value (formatted or raw depending on format_value parameter).
@@ -178,7 +174,7 @@ class ExifImage:
             'Tagkit'
             >>> exif.read_tag('Make', format_value=False)
             'Tagkit'
-            >>> exif.read_tag('NonExistentTag', raise_on_missing=False, default='N/A')
+            >>> exif.read_tag('NonExistentTag')
             'N/A'
         """
         tag_id = tag_registry.resolve_tag_id(tag)
@@ -187,10 +183,8 @@ class ExifImage:
 
         # Check if tag exists in the image
         if (tag_id, ifd) not in self._tag_dict:
-            if raise_on_missing:
-                tag_name = tag_registry.resolve_tag_name(tag_id)
-                raise KeyError(f"Tag '{tag_name}' not found in image")
-            return default
+            tag_name = tag_registry.resolve_tag_name(tag_id)
+            raise KeyError(f"Tag '{tag_name}' not found in image")
 
         exif_tag = self._tag_dict[tag_id, ifd]
 
@@ -230,14 +224,12 @@ class ExifImage:
         result = {}
         for tag in tags:
             try:
-                tag_id = tag_registry.resolve_tag_id(tag)
-                tag_name = tag_registry.resolve_tag_name(tag_id)
+                tag_name = tag_registry.resolve_tag_name(tag)
                 value = self.read_tag(
                     tag,
                     ifd=ifd,
                     format_value=format_value,
                     binary_format=binary_format,
-                    raise_on_missing=False,
                 )
                 if value is not None:
                     result[tag_name] = value

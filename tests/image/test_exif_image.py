@@ -370,24 +370,6 @@ def test_read_tag_missing_raises(test_images, file_type):
 
 
 @pytest.mark.parametrize("file_type", [str, Path])
-def test_read_tag_missing_with_default(test_images, file_type):
-    """Test reading a missing tag returns default when raise_on_missing=False"""
-    file_path = file_type(test_images / "minimal.jpg")
-    exif = ExifImage(file_path)
-    value = exif.read_tag("Artist", raise_on_missing=False, default="N/A")
-    assert value == "N/A"
-
-
-@pytest.mark.parametrize("file_type", [str, Path])
-def test_read_tag_missing_with_none_default(test_images, file_type):
-    """Test reading a missing tag returns None when raise_on_missing=False and no default"""
-    file_path = file_type(test_images / "minimal.jpg")
-    exif = ExifImage(file_path)
-    value = exif.read_tag("Artist", raise_on_missing=False)
-    assert value is None
-
-
-@pytest.mark.parametrize("file_type", [str, Path])
 def test_read_tag_invalid_tag_raises(test_images, file_type):
     """Test reading an invalid tag raises exception"""
     file_path = file_type(test_images / "minimal.jpg")

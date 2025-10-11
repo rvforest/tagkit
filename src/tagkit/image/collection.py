@@ -266,8 +266,6 @@ class ExifImageCollection:
         binary_format: Optional[str] = None,
         files: Optional[Iterable[FilePath]] = None,
         skip_missing: bool = False,
-        default: Any = None,
-        raise_on_missing: bool = True,
     ) -> dict[str, Any]:
         """
         Read the value of a specific EXIF tag from all or selected images in the collection.
@@ -279,17 +277,14 @@ class ExifImageCollection:
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
                 Only used when format_value=True.
             files: Iterable of file names (keys in self.files) to read from. If None, read from all.
-            skip_missing: If True, skip files where the tag is missing; if False, use default or raise.
-            default: Default value to return for missing tags (only when raise_on_missing=False).
-            raise_on_missing: If True, raise KeyError when tag is missing in any file;
-                if False, return default for missing tags.
+            skip_missing: If True, skip files where the tag is missing; if False, raise if missing.
 
         Returns:
             A dictionary mapping file names to tag values.
 
         Raises:
             KeyError: If a file is not found in the collection, or if a tag is missing
-                (when raise_on_missing=True and skip_missing=False).
+                (when skip_missing=False).
             ValueError: If the tag or IFD is invalid.
 
         Example:
@@ -311,11 +306,8 @@ class ExifImageCollection:
                     ifd=ifd,
                     format_value=format_value,
                     binary_format=binary_format,
-                    default=default,
-                    raise_on_missing=raise_on_missing,
                 )
-                if not skip_missing or value != default:
-                    result[fname] = value
+                result[fname] = value
             except KeyError:
                 if not skip_missing:
                     raise
@@ -329,8 +321,7 @@ class ExifImageCollection:
         binary_format: Optional[str] = None,
         files: Optional[Iterable[FilePath]] = None,
         skip_missing: bool = False,
-        per_image: bool = False,
-    ) -> Union[dict[str, dict[str, Any]], dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         """
         Read multiple EXIF tags from all or selected images in the collection.
 
@@ -342,13 +333,9 @@ class ExifImageCollection:
                 Only used when format_value=True.
             files: Iterable of file names (keys in self.files) to read from. If None, read from all.
             skip_missing: If True, skip missing tags; if False, only include tags that exist.
-            per_image: If True, return data organized by image (nested dict);
-                if False, return data organized by tag name.
 
         Returns:
-            If per_image=False (default): Dictionary mapping tag names to dictionaries
-                of file names to values: {'Make': {'image1.jpg': 'Canon', 'image2.jpg': 'Nikon'}}
-            If per_image=True: Dictionary mapping file names to dictionaries
+            dict[str, dict[str, Any]]: Dictionary mapping file names to dictionaries
                 of tag names to values: {'image1.jpg': {'Make': 'Canon', 'Model': 'EOS'}}
 
         Raises:
@@ -359,46 +346,30 @@ class ExifImageCollection:
             >>> from tagkit.image.collection import ExifImageCollection
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.read_tags(['Make', 'Model'])
-            {'Make': {'image1.jpg': 'Tagkit', 'image2.jpg': 'Tagkit'}, 'Model': {'image1.jpg': 'TestModel', 'image2.jpg': 'TestModel'}}
-            >>> collection.read_tags(['Make', 'Model'], per_image=True)
             {'image1.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}, 'image2.jpg': {'Make': 'Tagkit', 'Model': 'TestModel'}}
         """
-        from tagkit.core.exceptions import InvalidTagName, InvalidTagId
 
         targets = (
             self.files.keys() if files is None else self._normalize_filenames(files)
         )
 
-        if per_image:
-            # Return data organized by image
-            result: dict[str, Any] = {}
-            for fname in targets:
-                result[fname] = self.files[fname].read_tags(
-                    tags,
-                    ifd=ifd,
-                    format_value=format_value,
-                    binary_format=binary_format,
-                )
-            return result
-        else:
-            # Return data organized by tag
-            result = {}
+        result: dict[str, Any] = {}
+        for fname in targets:
+            result[fname] = {}
             for tag in tags:
                 try:
-                    tag_id = tag_registry.resolve_tag_id(tag)
-                    tag_name = tag_registry.resolve_tag_name(tag_id)
-                    result[tag_name] = {}
-                    for fname in targets:
-                        value = self.files[fname].read_tag(
-                            tag,
-                            ifd=ifd,
-                            format_value=format_value,
-                            binary_format=binary_format,
-                            raise_on_missing=False,
-                        )
-                        if value is not None or not skip_missing:
-                            result[tag_name][fname] = value
-                except (ValueError, KeyError, InvalidTagName, InvalidTagId):
-                    # Skip invalid tags
-                    pass
-            return result
+                    value = self.files[fname].read_tag(
+                        tag,
+                        ifd=ifd,
+                        format_value=format_value,
+                        binary_format=binary_format,
+                    )
+                except KeyError:
+                    if not skip_missing:
+                        raise
+                    continue
+
+                tag_name = tag_registry.resolve_tag_name(tag)
+                result[fname][tag_name] = value
+
+        return result
