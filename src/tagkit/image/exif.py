@@ -159,8 +159,7 @@ class ExifImage:
             tag: Tag name or tag ID.
             ifd: Specific IFD to use.
             format_value: If True, return formatted string value; if False, return raw value.
-            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
-                Only used when format_value=True.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
 
         Returns:
             The tag value (formatted or raw depending on format_value parameter).
@@ -217,10 +216,8 @@ class ExifImage:
             tags: A list of tag names or tag IDs to read.
             ifd: Specific IFD to use for all tags (overrides default logic).
             format_value: If True, return formatted string values; if False, return raw values.
-            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
-                Only used when format_value=True.
-            skip_missing: If True, skip tags that are not present in the image.
-                If False, raise TagNotFound if any tag is missing.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
+            skip_missing: If True, skip tags that are not present in the image. If False, raise TagNotFound if any tag is missing.
 
         Returns:
             A dictionary mapping tag names to their values.

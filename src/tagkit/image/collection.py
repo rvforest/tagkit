@@ -275,8 +275,7 @@ class ExifImageCollection:
             tag: Tag name or tag ID.
             ifd: Specific IFD to use.
             format_value: If True, return formatted string values; if False, return raw values.
-            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
-                Only used when format_value=True.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
             files: Iterable of file names (keys in self.files) to read from. If None, read from all.
             skip_missing: If True, skip files where the tag is missing; if False, raise if missing.
 
@@ -284,8 +283,7 @@ class ExifImageCollection:
             A dictionary mapping file names to tag values.
 
         Raises:
-            KeyError: If a file is not found in the collection, or if a tag is missing
-                (when skip_missing=False).
+            KeyError: If a file is not found in the collection, or if a tag is missing (when skip_missing=False).
             ValueError: If the tag or IFD is invalid.
 
         Example:
@@ -330,14 +328,12 @@ class ExifImageCollection:
             tags: A list of tag names or tag IDs to read.
             ifd: Specific IFD to use for all tags.
             format_value: If True, return formatted string values; if False, return raw values.
-            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'.
-                Only used when format_value=True.
+            binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
             files: Iterable of file names (keys in self.files) to read from. If None, read from all.
             skip_missing: If True, skip missing tags; if False, only include tags that exist.
 
         Returns:
-            dict[str, dict[str, Any]]: Dictionary mapping file names to dictionaries
-                of tag names to values: {'image1.jpg': {'Make': 'Canon', 'Model': 'EOS'}}
+            dict[str, dict[str, Any]]: Dictionary mapping file names to dictionaries of tag names to values: {'image1.jpg': {'Make': 'Canon', 'Model': 'EOS'}}
 
         Raises:
             KeyError: If a file is not found in the collection.
