@@ -36,3 +36,8 @@ class TestParseFormatDatetime:
         dt = parse_exif_datetime(original)
         formatted = format_exif_datetime(dt)
         assert formatted == original
+
+    def test_invalid_type(self):
+        """Test that non-string input raises DateTimeError."""
+        with pytest.raises(DateTimeError):
+            parse_exif_datetime(12345)  # Not a string
