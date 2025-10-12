@@ -196,3 +196,14 @@ def test_format_f_number_single_rational(formatter: ValueFormatter):
     """Test that f_number formatter still works with single rationals."""
     assert formatter._format_f_number((2, 1)) == "f/2.0"
     assert formatter._format_f_number((497, 100)) == "f/5.6"
+
+
+def test_is_rational_sequence_true(formatter: ValueFormatter):
+    assert formatter._is_rational_sequence(((1, 2), (3, 4))) is True
+    assert formatter._is_rational_sequence(((1, 2), (3, 4), (5, 6))) is True
+
+
+def test_is_rational_sequence_false(formatter: ValueFormatter):
+    assert formatter._is_rational_sequence((1, 2)) is False
+    assert formatter._is_rational_sequence((1, 2, 3)) is False
+    assert formatter._is_rational_sequence("not a tuple") is False

@@ -16,7 +16,7 @@ Rational = tuple[int, int]
 Rational2 = tuple[Rational, Rational]
 Rational3 = tuple[Rational, Rational, Rational]
 Rational4 = tuple[Rational, Rational, Rational, Rational]
-RationalCollection = Union[Rational2, Rational3, Rational4]
+RationalCollection = tuple[Rational, ...]
 TagValue = Union[
     bytes,
     float,
