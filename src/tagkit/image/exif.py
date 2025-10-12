@@ -474,12 +474,10 @@ class ExifImage:
         """
         result: dict[str, datetime] = {}
         for tag_name in DATETIME_TAG_PRECEDENCE:
-            if tag_name in self.tags:
-                value = self.tags[tag_name].value
-                if not isinstance(value, str):
-                    raise DateTimeError(
-                        f"Tag '{tag_name}' value is not a string: {type(value)}"
-                    )
-                result[tag_name] = parse_exif_datetime(value)
+            try:
+                value = self.read_tag(tag_name)
+            except TagNotFound:
+                continue
+            result[tag_name] = parse_exif_datetime(value)
 
         return result
