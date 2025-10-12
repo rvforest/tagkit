@@ -136,7 +136,7 @@ class ExifImageCollection:
 
     def write_tag(
         self,
-        tag: Union[str, int],
+        tag_key: Union[str, int],
         value: TagValue,
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
@@ -145,7 +145,7 @@ class ExifImageCollection:
         Set the value of a specific EXIF tag for all or selected images in the collection.
 
         Args:
-            tag: Tag name or tag ID.
+            tag_key: Tag name or tag ID.
             value: Value to set.
             ifd: Specific IFD to use.
             files: Iterable of file names (keys in self.files) to update. If None, update all.
@@ -162,7 +162,7 @@ class ExifImageCollection:
         targets = self._normalize_filenames(files)
 
         for fname in targets:
-            self.files[fname].write_tag(tag, value, ifd=ifd)
+            self.files[fname].write_tag(tag_key, value, ifd=ifd)
 
     def write_tags(
         self,
@@ -217,7 +217,7 @@ class ExifImageCollection:
 
     def delete_tags(
         self,
-        tags: Iterable[Union[str, int]],
+        tag_keys: Iterable[Union[str, int]],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -226,7 +226,7 @@ class ExifImageCollection:
         If a file does not contain a tag, it is silently ignored.
 
         Args:
-            tags: A list of tag names or tag IDs to remove.
+            tag_keys: A list of tag names or tag IDs to remove.
             ifd: Specific IFD to use for all tags.
             files: Iterable of file names (keys in self.files) to update. If None, update all.
 
@@ -237,7 +237,7 @@ class ExifImageCollection:
         targets = self._normalize_filenames(files)
 
         for fname in targets:
-            self.files[fname].delete_tags(tags, ifd=ifd)
+            self.files[fname].delete_tags(tag_keys, ifd=ifd)
 
     def save_all(self, create_backup: bool = False):
         """
@@ -365,7 +365,7 @@ class ExifImageCollection:
 
     def read_tag(
         self,
-        tag: Union[str, int],
+        tag_key: Union[str, int],
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
@@ -376,7 +376,7 @@ class ExifImageCollection:
         Read the value of a specific EXIF tag from all or selected images in the collection.
 
         Args:
-            tag: Tag name or tag ID.
+            tag_key: Tag name or tag ID.
             ifd: Specific IFD to use.
             format_value: If True, return formatted string values; if False, return raw values.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
@@ -404,7 +404,7 @@ class ExifImageCollection:
         for fname in targets:
             try:
                 value = self.files[fname].read_tag(
-                    tag,
+                    tag_key,
                     ifd=ifd,
                     format_value=format_value,
                     binary_format=binary_format,
@@ -417,7 +417,7 @@ class ExifImageCollection:
 
     def read_tags(
         self,
-        tags: list[Union[str, int]],
+        tag_keys: list[Union[str, int]],
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
@@ -428,7 +428,7 @@ class ExifImageCollection:
         Read multiple EXIF tags from all or selected images in the collection.
 
         Args:
-            tags: A list of tag names or tag IDs to read.
+            tag_keys: A list of tag names or tag IDs to read.
             ifd: Specific IFD to use for all tags.
             format_value: If True, return formatted string values; if False, return raw values.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
@@ -453,17 +453,17 @@ class ExifImageCollection:
 
         # Pre-resolve tag names; respect skip_missing for invalid tags
         resolved_tags: list[tuple[Union[str, int], str]] = []
-        for tag in tags:
-            tag_name = tag_registry.resolve_tag_name(tag)
-            resolved_tags.append((tag, tag_name))
+        for tag_key in tag_keys:
+            tag_name = tag_registry.resolve_tag_name(tag_key)
+            resolved_tags.append((tag_key, tag_name))
 
         result: dict[str, dict[str, TagValue]] = {}
         for fname in targets:
             result[fname] = {}
-            for orig_tag, tag_name in resolved_tags:
+            for orig_tag_key, tag_name in resolved_tags:
                 try:
                     value = self.files[fname].read_tag(
-                        orig_tag,
+                        orig_tag_key,
                         ifd=ifd,
                         format_value=format_value,
                         binary_format=binary_format,
