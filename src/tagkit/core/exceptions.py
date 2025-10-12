@@ -4,6 +4,8 @@ Exception classes for tagkit.
 This module contains all custom exceptions used throughout the tagkit package.
 """
 
+from typing import Any, Iterable, Union
+
 
 class TagkitError(Exception):
     """Base exception for all custom tagkit errors."""
@@ -38,7 +40,11 @@ class BatchProcessingError(TagkitError):
 class DateTimeError(TagkitError):
     """Raised when a date/time parsing or formatting error occurs."""
 
-    pass
+    def __init__(self, value: Any) -> None:
+        super().__init__(
+            f"Tag value is not a valid datetime: '{value}'. "
+            "Expected format is 'YYYY:MM:DD HH:MM:SS'."
+        )
 
 
 class InvalidTagName(TagkitError):
@@ -74,5 +80,15 @@ class TagNotFound(TagkitError):
         tag_name (str): The name of the tag that was not found.
     """
 
-    def __init__(self, tag_name: str):
-        super().__init__(f"Tag '{tag_name}' not found in image.")
+    def __init__(self, tag_name: Union[str, Iterable[str]]):
+        first_word = "Tag" if isinstance(tag_name, str) else "Tags"
+        if isinstance(tag_name, list):
+            tag_name = ", ".join(tag_name)
+        super().__init__(f"{first_word} '{tag_name}' not found in image.")
+
+
+class FileNotInCollection(TagkitError):
+    """Raised when a filename requested is not present in an ExifImageCollection."""
+
+    def __init__(self, file_name: str) -> None:
+        super().__init__(f"File not found in ExifImageCollection: '{file_name}'")

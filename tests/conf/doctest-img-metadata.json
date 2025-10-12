@@ -47,6 +47,12 @@
         "ifd": "Exif"
       },
       {
+        "id": 306,
+        "name": "DateTime",
+        "value": "2025:05:01 14:30:00",
+        "ifd": "0th"
+      },
+      {
         "id": 36867,
         "name": "DateTimeOriginal",
         "value": "2025:05:01 14:30:00",
@@ -85,6 +91,12 @@
         "id": 271,
         "name": "Make",
         "value": "Tagkit",
+        "ifd": "0th"
+      },
+      {
+        "id": 306,
+        "name": "DateTime",
+        "value": "2025:05:02 14:30:00",
         "ifd": "0th"
       }
     ]
