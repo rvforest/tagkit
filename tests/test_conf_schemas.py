@@ -1,28 +1,51 @@
 import json
 from pathlib import Path
 
-import jsonschema
+import yaml
+
+from tagkit.conf.models import (
+    FormattingConfig,
+    ImageMetadataConfig,
+    RegistryConfig,
+)
 
 
 HERE = Path(__file__).parent
-SCHEMA_PATH = HERE / "conf" / "img-metadata.schema.json"
 CONFIG_FILES = [
     HERE / "conf" / "test-img-metadata.json",
     HERE / "conf" / "doctest-img-metadata.json",
 ]
 
 
-def load(path: Path):
+def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_yaml(path: Path):
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
 def test_image_metadata_configs_against_schema():
-    schema = load(SCHEMA_PATH)
-    resolver = jsonschema.RefResolver(base_uri=f"file://{SCHEMA_PATH}", referrer=schema)
-    validator = jsonschema.Draft7Validator(schema, resolver=resolver)
+    """Validate image metadata configs using Pydantic models."""
     for cfg in CONFIG_FILES:
-        data = load(cfg)
-        errors = sorted(validator.iter_errors(data), key=lambda e: e.path)
-        assert not errors, "Schema validation errors: " + "; ".join(
-            [str(e) for e in errors]
-        )
+        data = load_json(cfg)
+        # This will raise ValidationError if the data is invalid
+        ImageMetadataConfig.model_validate(data)
+
+
+def test_registry_yaml_config():
+    """Validate registry.yaml using Pydantic models."""
+    registry_path = Path(__file__).parents[1] / "src" / "tagkit" / "conf" / "registry.yaml"
+    data = load_yaml(registry_path)
+    # This will raise ValidationError if the data is invalid
+    RegistryConfig.model_validate(data)
+
+
+def test_formatting_yaml_config():
+    """Validate formatting.yaml using Pydantic models."""
+    formatting_path = (
+        Path(__file__).parents[1] / "src" / "tagkit" / "conf" / "formatting.yaml"
+    )
+    data = load_yaml(formatting_path)
+    # This will raise ValidationError if the data is invalid
+    FormattingConfig.model_validate(data)

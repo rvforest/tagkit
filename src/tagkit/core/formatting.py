@@ -12,6 +12,7 @@ from typing import Any, Callable, Optional, Self, TYPE_CHECKING, Union, cast
 
 import yaml
 
+from tagkit.conf.models import FormattingConfig
 from tagkit.core.types import (
     Rational,
     Rational3,
@@ -73,12 +74,24 @@ class ValueFormatter:
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
+            pydantic.ValidationError: If the YAML structure is invalid.
         """
         if file is None:
             prj_root = Path(__file__).parents[2]
             file = prj_root / "tagkit/conf/formatting.yaml"
         with open(file, "r") as f:
-            conf = yaml.safe_load(f)
+            raw_conf = yaml.safe_load(f)
+        
+        # Validate with Pydantic
+        validated_conf = FormattingConfig.model_validate(raw_conf)
+        
+        # Convert to dict format expected by __init__
+        conf = {
+            tag_name: {
+                k: v for k, v in tag_config.model_dump().items() if v is not None
+            }
+            for tag_name, tag_config in validated_conf.root.items()
+        }
         return cls(conf)
 
     # -------------------------------------------------------------------------
