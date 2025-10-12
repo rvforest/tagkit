@@ -134,10 +134,18 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 
 ### Configuration Files
 
+All configuration files use Pydantic for validation:
+
 - **pyproject.toml**: Project metadata, dependencies, tool configuration
 - **noxfile.py**: Task automation (testing, linting, docs, etc.)
 - **cspell.json**: Spell checking configuration for documentation
 - **.pre-commit-config.yaml**: Pre-commit hook configuration
+- **src/tagkit/conf/registry.yaml**: EXIF tag registry (validated by `RegistryConfig` model)
+- **src/tagkit/conf/formatting.yaml**: Tag formatting rules (validated by `FormattingConfig` model)
+- **tests/conf/test-img-metadata.json**: Test image metadata (validated by `ImageMetadataConfig` model)
+- **tests/conf/doctest-img-metadata.json**: Doctest image metadata (validated by `ImageMetadataConfig` model)
+
+Pydantic models are defined in `src/tagkit/conf/models.py` and provide type-safe validation with clear error messages.
 
 ## Making Changes
 
@@ -154,8 +162,8 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 This repository includes machine-readable validation for the JSON files used to generate test images (`tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`). When working on features or docs that add or change test images, follow these steps:
 
 - Edit or add image metadata only in `tests/conf/test-img-metadata.json` (for pytest) or `tests/conf/doctest-img-metadata.json` (for doctests).
-- The repository includes a JSON Schema at `tests/conf/img-metadata.schema.json`. Use it to ensure new entries match the required structure.
-- A pytest (`tests/test_conf_schemas.py`) validates both config files against the schema in CI. Run this test locally after changes.
+- The repository uses Pydantic models in `src/tagkit/conf/models.py` to validate configuration structure. Use these models to ensure new entries match the required structure.
+- A pytest (`tests/test_conf_schemas.py`) validates both config files using Pydantic models in CI. Run this test locally after changes.
 
 Quick local validation:
 
@@ -163,7 +171,7 @@ Quick local validation:
 uv run pytest tests/test_conf_schemas.py -q
 ```
 
-If you (the agent) modify the schema, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
+If you (the agent) modify the Pydantic models, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
 
 ### Common Commands
 

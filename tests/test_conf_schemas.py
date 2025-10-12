@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
 import yaml
 
 from tagkit.conf.models import (
@@ -49,3 +51,85 @@ def test_formatting_yaml_config():
     data = load_yaml(formatting_path)
     # This will raise ValidationError if the data is invalid
     FormattingConfig.model_validate(data)
+
+
+# Negative test cases for malformed configs
+
+
+def test_image_metadata_invalid_filename():
+    """Test that invalid filenames are rejected."""
+    invalid_data = {
+        "not_a_jpg_file.txt": {
+            "tags": [
+                {"id": 271, "name": "Make", "value": "Test", "ifd": "0th"}
+            ]
+        }
+    }
+    with pytest.raises(ValidationError, match="must end with .jpg or .jpeg"):
+        ImageMetadataConfig.model_validate(invalid_data)
+
+
+def test_image_metadata_missing_required_field():
+    """Test that missing required fields are rejected."""
+    invalid_data = {
+        "test.jpg": {
+            "tags": [
+                {"id": 271, "name": "Make", "ifd": "0th"}  # missing 'value'
+            ]
+        }
+    }
+    with pytest.raises(ValidationError, match="Field required"):
+        ImageMetadataConfig.model_validate(invalid_data)
+
+
+def test_image_metadata_invalid_ifd():
+    """Test that invalid IFD values are rejected."""
+    invalid_data = {
+        "test.jpg": {
+            "tags": [
+                {"id": 271, "name": "Make", "value": "Test", "ifd": "InvalidIFD"}
+            ]
+        }
+    }
+    with pytest.raises(ValidationError):
+        ImageMetadataConfig.model_validate(invalid_data)
+
+
+def test_registry_invalid_type():
+    """Test that invalid EXIF types are rejected."""
+    invalid_data = {
+        "Image": {
+            271: {
+                "name": "Make",
+                "type": "INVALID_TYPE"  # Not a valid ExifType
+            }
+        }
+    }
+    with pytest.raises(ValidationError):
+        RegistryConfig.model_validate(invalid_data)
+
+
+def test_registry_missing_name():
+    """Test that missing tag name is rejected."""
+    invalid_data = {
+        "Image": {
+            271: {
+                "type": "ASCII"  # missing 'name'
+            }
+        }
+    }
+    with pytest.raises(ValidationError, match="Field required"):
+        RegistryConfig.model_validate(invalid_data)
+
+
+def test_formatting_extra_field():
+    """Test that extra fields in formatting config are rejected."""
+    invalid_data = {
+        "ExposureTime": {
+            "display": "fraction",
+            "unit": "s",
+            "extra_field": "not_allowed"  # Extra field not in schema
+        }
+    }
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        FormattingConfig.model_validate(invalid_data)
