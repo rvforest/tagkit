@@ -72,15 +72,9 @@ class ExifRegistry:
         # Validate with Pydantic
         validated_conf = RegistryConfig.model_validate(raw_conf)
         
-        # Convert to the format expected by __init__, excluding empty sections
-        conf: RegistryConf = {}
-        for ifd_name in ["Image", "Exif", "GPS", "Interop"]:
-            ifd_data = getattr(validated_conf, ifd_name).root
-            if ifd_data:  # Only include non-empty sections
-                conf[ifd_name] = {  # type: ignore
-                    tag_id: {"name": entry.name, "type": entry.type}
-                    for tag_id, entry in ifd_data.items()
-                }
+        # Convert to the format expected by __init__
+        # exclude_defaults=True removes empty IFD sections (which have default empty dicts)
+        conf: RegistryConf = validated_conf.model_dump(exclude_defaults=True)  # type: ignore
         return cls(conf)
 
     @property

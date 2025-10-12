@@ -86,10 +86,9 @@ class ValueFormatter:
         validated_conf = FormattingConfig.model_validate(raw_conf)
         
         # Convert to dict format expected by __init__
+        # For RootModel, we need to access .root and convert nested models to dicts
         conf = {
-            tag_name: {
-                k: v for k, v in tag_config.model_dump().items() if v is not None
-            }
+            tag_name: tag_config.model_dump()
             for tag_name, tag_config in validated_conf.root.items()
         }
         return cls(conf)
