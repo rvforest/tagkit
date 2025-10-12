@@ -438,11 +438,14 @@ class ExifImage:
         # Offset each tag that exists
         tag_found = False
         for tag_name in tags_to_process:
-            if tag_name in self.tags:
+            try:
                 current_dt = self.get_datetime(tag=tag_name)
-                new_dt = current_dt + delta
-                self.write_tag(tag_name, format_exif_datetime(new_dt))
-                tag_found = True
+            except TagNotFound:
+                continue
+
+            new_dt = current_dt + delta
+            self.write_tag(tag_name, format_exif_datetime(new_dt))
+            tag_found = True
 
         if not tag_found:
             raise TagNotFound(tags_to_process)
