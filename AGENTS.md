@@ -82,6 +82,26 @@ src/tagkit/
   - Build docs: `uv run nox -s docs`
   - Live docs: `uv run nox -s livedocs`
 
+#### Naming Conventions
+
+The codebase follows a consistent naming convention for tag-related parameters:
+
+- **`tag_key: Union[int, str]`**: Single tag identifier that may be either a tag name (str) or tag ID (int)
+  - Used in: `read_tag()`, `write_tag()`, `delete_tag()`, `get_ifd()`, `resolve_tag_id()`, `resolve_tag_name()`
+  - Example: `exif.read_tag('Make')` or `exif.read_tag(271)`
+
+- **`tag_keys: Iterable[Union[int, str]]`**: Sequence of tag identifiers (names or IDs)
+  - Used in: `read_tags()`, `delete_tags()`
+  - Example: `exif.read_tags(['Make', 'Model'])` or `exif.delete_tags([271, 272])`
+
+- **`tags: dict[Union[int, str], Value]`**: Mapping from tag identifiers to values
+  - Used in: `write_tags()`
+  - Example: `exif.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})`
+
+- **Other existing names remain unchanged**: `ifd`, `files`, `tag_filter`, etc.
+
+This convention makes it explicit that parameters accept both numeric IDs and textual names, improving API clarity and consistency.
+
 ### Testing Standards
 
 #### Framework and Coverage
