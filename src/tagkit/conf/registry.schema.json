@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tagkit EXIF tag registry schema",
+  "description": "Schema for validating the EXIF tag registry configuration file (registry.yaml)",
+  "type": "object",
+  "properties": {
+    "Image": {
+      "$ref": "#/definitions/ifdSection"
+    },
+    "Exif": {
+      "$ref": "#/definitions/ifdSection"
+    },
+    "GPS": {
+      "$ref": "#/definitions/ifdSection"
+    },
+    "Interop": {
+      "$ref": "#/definitions/ifdSection"
+    }
+  },
+  "required": ["Image", "Exif", "GPS", "Interop"],
+  "additionalProperties": false,
+  "definitions": {
+    "ifdSection": {
+      "type": "object",
+      "description": "A section representing an Image File Directory (IFD)",
+      "patternProperties": {
+        "^[0-9]+$": {
+          "$ref": "#/definitions/tagEntry"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tagEntry": {
+      "type": "object",
+      "description": "An individual EXIF tag entry with name and type",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the EXIF tag",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "description": "EXIF data type",
+          "enum": ["ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "LONG", "FLOAT", "UNDEFINED"]
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    }
+  }
+}
