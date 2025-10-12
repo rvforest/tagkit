@@ -85,3 +85,10 @@ class TagNotFound(TagkitError):
         if isinstance(tag_name, list):
             tag_name = ", ".join(tag_name)
         super().__init__(f"{first_word} '{tag_name}' not found in image.")
+
+
+class FileNotInCollection(TagkitError):
+    """Raised when a filename requested is not present in an ExifImageCollection."""
+
+    def __init__(self, file_name: str) -> None:
+        super().__init__(f"File not found in ExifImageCollection: '{file_name}'")
