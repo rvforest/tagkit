@@ -510,6 +510,43 @@ class TestOffsetDatetime:
         assert datetimes["DateTime"] == base_dt
         assert datetimes["DateTimeDigitized"] == base_dt
 
+    def test_offset_datetime_invalid_tag(self, test_images):
+        """Test offsetting datetime with an invalid tag raises error."""
+        image_path = test_images / "minimal.jpg"
+        base_dt = datetime(2025, 6, 15, 10, 0, 0)
+
+        exif = ExifImage(image_path)
+        exif.set_datetime(base_dt)
+
+        delta = timedelta(hours=2)
+        with pytest.raises(InvalidTagName):
+            exif.offset_datetime(delta, tags=["InvalidTag"])
+
+    def test_offset_datetime_non_datetime_tag(self, test_images):
+        """Test offsetting datetime on a non-datetime tag raises error."""
+        image_path = test_images / "minimal.jpg"
+        base_dt = datetime(2025, 6, 15, 10, 0, 0)
+
+        exif = ExifImage(image_path)
+        exif.set_datetime(base_dt)
+
+        delta = timedelta(hours=2)
+        with pytest.raises(Exception):
+            exif.offset_datetime(delta, tags=["Make"])
+
+    def test_offset_datetime_no_tags(self, test_images):
+        """Test offsetting datetime when no datetime tags exist raises error."""
+        image_path = test_images / "minimal.jpg"
+
+        exif = ExifImage(image_path)
+        # Ensure no datetime tags exist
+        datetimes = exif.get_all_datetimes()
+        assert len(datetimes) == 0
+
+        delta = timedelta(hours=2)
+        with pytest.raises(TagNotFound):
+            exif.offset_datetime(delta)
+
 
 class TestDatetimePrecedence:
     """Tests for datetime tag precedence logic in ExifImage.get_datetime()."""

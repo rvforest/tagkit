@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from tagkit import ExifImageCollection
-from tagkit.core.exceptions import InvalidTagName, TagNotFound
+from tagkit.core.exceptions import FileNotInCollection, InvalidTagName, TagNotFound
 from tagkit.core.types import TagValue
 from tagkit.image.exif import ExifImage
 
@@ -116,12 +116,12 @@ class TestImageCollection:
 
     def test_write_tag_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.write_tag("Artist", "X", files=["not_a_file"])
 
     def test_delete_tag_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.delete_tag("Artist", files=["not_a_file"])
 
     def test_write_tag_selected_files_accepts_path(self, mock_exif_w_patch):
@@ -175,7 +175,7 @@ class TestImageCollection:
         files = ["foo_0"]
         tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.write_tags(tags, files=["not_a_file"])
 
     def test_delete_tags_all_files(self, mock_exif_w_patch: dict):
@@ -193,7 +193,7 @@ class TestImageCollection:
 
     def test_delete_tags_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.delete_tags(["Artist"], files=["not_a_file"])
 
     @pytest.mark.parametrize("file_type", [str, Path])
@@ -259,13 +259,13 @@ class TestImageCollection:
     def test_normalize_filenames_with_invalid_file(self, mock_exif_w_patch):
         files = ["foo_0"]
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+        with pytest.raises(FileNotInCollection):
             collection._normalize_filenames(["not_found"])
 
     def test_normalize_filenames_with_path_invalid_file(self, mock_exif_w_patch):
         files = ["foo_0"]
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+        with pytest.raises(FileNotInCollection):
             collection._normalize_filenames([Path("not_found")])
 
 
@@ -330,7 +330,7 @@ class TestImageCollectionDatetime:
     def test_get_datetime_missing_file_raises_keyerror(self, collection_factory):
         collection, _ = collection_factory(["foo.jpg"])
 
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.get_datetime(files=["missing.jpg"])
 
     def test_set_datetime_calls_each_target(self, collection_factory):
@@ -550,7 +550,7 @@ class TestImageCollectionRead:
     def test_read_tag_invalid_file_raises(self, mock_exif_w_patch):
         files = ["foo_0"]
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError, match="File 'not_found' not found in collection."):
+        with pytest.raises(FileNotInCollection):
             collection.read_tag("Make", files=["not_found"])
 
     def test_read_tags_all_files(self, mock_exif_w_patch):
