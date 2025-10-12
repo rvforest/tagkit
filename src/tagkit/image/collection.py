@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable, Mapping, Optional, Union
 
-from tagkit.core.exceptions import TagNotFound
+from tagkit.core.exceptions import FileNotInCollection, TagNotFound
 from tagkit.core.registry import tag_registry
 from tagkit.core.types import FilePath, IfdName, TagValue
 from tagkit.image.exif import ExifImage
@@ -109,7 +109,7 @@ class ExifImageCollection:
         """
         return len(self.files)
 
-    def _normalize_filenames(self, files: Iterable[FilePath]) -> list[str]:
+    def _normalize_filenames(self, files: Optional[Iterable[FilePath]]) -> list[str]:
         """
         Normalize file names to string keys and validate their presence in the collection.
 
@@ -122,13 +122,15 @@ class ExifImageCollection:
         Raises:
             KeyError: If a file is not found in the collection.
         """
+        if files is None:
+            return list(self.files.keys())
         normalized = []
         for fname in files:
             # Normalize fname to string key
             if isinstance(fname, Path):
                 fname = fname.name
             if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
+                raise FileNotInCollection(fname)
             normalized.append(fname)
         return normalized
 
@@ -157,9 +159,8 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
+
         for fname in targets:
             self.files[fname].write_tag(tag, value, ifd=ifd)
 
@@ -181,9 +182,7 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
         """
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
         for fname in targets:
             self.files[fname].write_tags(tags, ifd=ifd)
 
@@ -212,14 +211,9 @@ class ExifImageCollection:
             >>> collection.write_tag('Artist', 'John Doe', ifd='IFD0')
             >>> collection.delete_tag('Artist', ifd='IFD0')
         """
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
         for fname in targets:
-            try:
-                self.files[fname].delete_tag(tag_key, ifd=ifd)
-            except KeyError:
-                pass  # Ignore if tag is missing
+            self.files[fname].delete_tag(tag_key, ifd=ifd)
 
     def delete_tags(
         self,
@@ -240,9 +234,8 @@ class ExifImageCollection:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.delete_tags(['Artist', 'Copyright'])
         """
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
+
         for fname in targets:
             self.files[fname].delete_tags(tags, ifd=ifd)
 
@@ -289,17 +282,8 @@ class ExifImageCollection:
             image1.jpg: 2025-05-01 14:30:00
             image2.jpg: 2025-05-02 14:30:00
         """
-        targets = self.files.keys() if files is None else files
-        result = {}
-
-        for fname in targets:
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
-            result[fname] = self.files[fname].get_datetime(tag=tag)
-
-        return result
+        targets = self._normalize_filenames(files)
+        return {fname: self.files[fname].get_datetime(tag=tag) for fname in targets}
 
     def set_datetime(
         self,
@@ -321,13 +305,9 @@ class ExifImageCollection:
             >>> collection.set_datetime(datetime(2025, 6, 15, 10, 30, 0))
             >>> collection.save_all()
         """
-        targets = self.files.keys() if files is None else files
+        targets = self._normalize_filenames(files)
 
         for fname in targets:
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].set_datetime(dt, tags=tags)
 
     def offset_datetime(
@@ -350,13 +330,9 @@ class ExifImageCollection:
             >>> collection.offset_datetime(timedelta(hours=-5))
             >>> collection.save_all()
         """
-        targets = self.files.keys() if files is None else files
+        targets = self._normalize_filenames(files)
 
         for fname in targets:
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
             self.files[fname].offset_datetime(delta, tags=tags)
 
     def get_all_datetimes(
@@ -384,17 +360,8 @@ class ExifImageCollection:
             image2.jpg:
               DateTime: 2025-05-02 14:30:00
         """
-        targets = self.files.keys() if files is None else files
-        result = {}
-
-        for fname in targets:
-            if isinstance(fname, Path):
-                fname = fname.name
-            if fname not in self.files:
-                raise KeyError(f"File '{fname}' not found in collection.")
-            result[fname] = self.files[fname].get_all_datetimes()
-
-        return result
+        targets = self._normalize_filenames(files)
+        return {fname: self.files[fname].get_all_datetimes() for fname in targets}
 
     def read_tag(
         self,
@@ -431,9 +398,8 @@ class ExifImageCollection:
             >>> collection.read_tag('Artist', skip_missing=True)
             {}
         """
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
+
         result = {}
         for fname in targets:
             try:
@@ -483,9 +449,7 @@ class ExifImageCollection:
             {'image1.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}, 'image20.jpg': {'Make': 'Tagkit', 'Model': 'Tagkit Camera'}}
         """
 
-        targets = (
-            self.files.keys() if files is None else self._normalize_filenames(files)
-        )
+        targets = self._normalize_filenames(files)
 
         # Pre-resolve tag names; respect skip_missing for invalid tags
         resolved_tags: list[tuple[Union[str, int], str]] = []
