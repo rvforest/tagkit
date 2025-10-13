@@ -37,9 +37,9 @@ def test_format_coordinates_with_fract_min(formatter: ValueFormatter):
 
 
 def test_exif_entry_formatted_value_b64():
-    # Use a valid tag id (271 is used in doc examples, e.g. 'Make')
-    tag_id = 271
-    ifd: IfdName = "IFD0"
+    # Use UserComment (37510) which is UNDEFINED and accepts bytes
+    tag_id = 37510
+    ifd: IfdName = "Exif"
     raw_bytes = b"\xff\xfe\xfd\xfc"
     entry = ExifTag(id=tag_id, value=raw_bytes, ifd=ifd)
 
@@ -119,24 +119,28 @@ def test_format_value(formatter: ValueFormatter):
 
 
 def test_format_value_with_bytes_base64(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    # Use UserComment (37510) which is UNDEFINED and accepts bytes
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format="base64") == "base64://79/A=="
 
 
 def test_format_value_with_bytes_hex(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    # Use UserComment (37510) which is UNDEFINED and accepts bytes
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format="hex") == "hex:fffefdfc"
 
 
 def test_format_value_with_bytes_bytes(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    # Use UserComment (37510) which is UNDEFINED and accepts bytes
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert (
         formatter.format_value(tag, binary_format="bytes") == "b'\\xff\\xfe\\xfd\\xfc'"
     )
 
 
 def test_format_value_with_bytes_no_render(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    # Use UserComment (37510) which is UNDEFINED and accepts bytes
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format=None) == "<bytes: 4>"
 
 

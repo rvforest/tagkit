@@ -33,7 +33,7 @@ def test_tag_is_ascii():
 def test_load_tags_and_save_tags():
     backend = PiexifBackend()
     fake_path = "fake.jpg"
-    fake_raw = {"0th": {271: b"Canon"}, "Exif": {33434: 123.0}}
+    fake_raw = {"0th": {271: b"Canon"}, "Exif": {33434: (1, 100)}}  # Changed to rational
     # Patch piexif.load, piexif.dump, piexif.insert
     with (
         patch("piexif.load", return_value=fake_raw) as mock_load,
@@ -44,7 +44,7 @@ def test_load_tags_and_save_tags():
         # Should decode ASCII bytes
         assert tags[(271, "IFD0")].value == "Canon"
         # Should keep non-ASCII as is
-        assert tags[(33434, "Exif")].value == 123.0
+        assert tags[(33434, "Exif")].value == (1, 100)  # Changed to rational
         # Now test save_tags
         tags_list = [tags[(271, "IFD0")], tags[(33434, "Exif")]]
         # ExifTagDict is iterable over keys, not values, so we need to pass the dict

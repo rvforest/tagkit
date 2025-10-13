@@ -11,6 +11,7 @@ from typing import Optional
 from tagkit.core.registry import tag_registry
 from tagkit.core.types import TagValue, ExifType, IfdName
 from tagkit.core.formatting import ValueFormatter
+from tagkit.core.validation import validate_tag_value
 
 
 @dataclass
@@ -30,6 +31,8 @@ class ExifTag:
 
     def __post_init__(self):
         self.formatter = ValueFormatter.from_yaml()
+        # Validate the tag value against its EXIF type
+        validate_tag_value(self.id, self.name, self.exif_type, self.value)
 
     @property
     def name(self) -> str:

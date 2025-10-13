@@ -92,3 +92,28 @@ class FileNotInCollection(TagkitError):
 
     def __init__(self, file_name: str) -> None:
         super().__init__(f"File not found in ExifImageCollection: '{file_name}'")
+
+
+class TagTypeError(ValidationError):
+    """Raised when a tag value has an invalid type for the tag's EXIF type.
+
+    Args:
+        tag_id: The tag ID.
+        tag_name: The tag name.
+        exif_type: The expected EXIF type.
+        value: The invalid value provided.
+        detail: Additional detail about the validation error.
+    """
+
+    def __init__(
+        self,
+        tag_id: int,
+        tag_name: str,
+        exif_type: str,
+        value: Any,
+        detail: str,
+    ) -> None:
+        super().__init__(
+            f"Invalid value type for tag '{tag_name}' (ID: {tag_id}, Type: {exif_type}). "
+            f"Received: {type(value).__name__}. {detail}"
+        )
