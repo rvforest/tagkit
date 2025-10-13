@@ -20,9 +20,9 @@ class RegistryTagEntry(BaseModel):
     """Entry for a single EXIF tag in the registry."""
 
     name: str = Field(description="Tag name (e.g., 'Make', 'Model')")
-    type: Literal["ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "LONG", "UNDEFINED", "FLOAT"] = Field(
-        description="EXIF data type"
-    )
+    type: Literal[
+        "ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "LONG", "UNDEFINED", "FLOAT"
+    ] = Field(description="EXIF data type")
 
     model_config = {"extra": "forbid"}
 
@@ -30,7 +30,7 @@ class RegistryTagEntry(BaseModel):
 class RegistryIfdSection(RootModel[dict[int, RegistryTagEntry]]):
     """
     IFD section in the registry, mapping tag IDs to tag entries.
-    
+
     Each key is a tag ID (integer), and each value is a RegistryTagEntry.
     """
 
@@ -40,7 +40,7 @@ class RegistryIfdSection(RootModel[dict[int, RegistryTagEntry]]):
 class RegistryConfig(BaseModel):
     """
     Complete registry configuration for EXIF tags.
-    
+
     Contains sections for Image (IFD0/IFD1), Exif, GPS, and Interop tags.
     All sections are optional to allow partial configurations for testing.
     """
@@ -75,8 +75,12 @@ class FormattingTagConfig(BaseModel):
         None,
         description="Display format (e.g., 'fraction', 'decimal', 'f_number', 'shutter_speed')",
     )
-    unit: str | None = Field(None, description="Unit to display (e.g., 's', 'mm', 'dpi')")
-    show_plus: bool | None = Field(None, description="Whether to show '+' for positive values")
+    unit: str | None = Field(
+        None, description="Unit to display (e.g., 's', 'mm', 'dpi')"
+    )
+    show_plus: bool | None = Field(
+        None, description="Whether to show '+' for positive values"
+    )
     mapping: dict[Union[int, str], str] | None = Field(
         None,
         description="Value mapping for enumerated types (e.g., {1: 'Top-left', 2: 'Top-right'})",
@@ -88,7 +92,7 @@ class FormattingTagConfig(BaseModel):
 class FormattingConfig(RootModel[dict[str, FormattingTagConfig]]):
     """
     Complete formatting configuration.
-    
+
     Maps tag names to their formatting configuration.
     """
 
@@ -125,7 +129,7 @@ class ImageMetadata(BaseModel):
 class ImageMetadataConfig(RootModel[dict[str, ImageMetadata]]):
     """
     Complete test image metadata configuration.
-    
+
     Maps image filenames (ending in .jpg or .jpeg) to their metadata.
     """
 
@@ -133,7 +137,9 @@ class ImageMetadataConfig(RootModel[dict[str, ImageMetadata]]):
 
     @field_validator("root")
     @classmethod
-    def validate_filenames(cls, v: dict[str, ImageMetadata]) -> dict[str, ImageMetadata]:
+    def validate_filenames(
+        cls, v: dict[str, ImageMetadata]
+    ) -> dict[str, ImageMetadata]:
         """Validate that all filenames end with .jpg or .jpeg."""
         for filename in v.keys():
             if not (filename.endswith(".jpg") or filename.endswith(".jpeg")):

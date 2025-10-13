@@ -37,7 +37,9 @@ def test_image_metadata_configs_against_schema():
 
 def test_registry_yaml_config():
     """Validate registry.yaml using Pydantic models."""
-    registry_path = Path(__file__).parents[1] / "src" / "tagkit" / "conf" / "registry.yaml"
+    registry_path = (
+        Path(__file__).parents[1] / "src" / "tagkit" / "conf" / "registry.yaml"
+    )
     data = load_yaml(registry_path)
     # This will raise ValidationError if the data is invalid
     RegistryConfig.model_validate(data)
@@ -60,9 +62,7 @@ def test_image_metadata_invalid_filename():
     """Test that invalid filenames are rejected."""
     invalid_data = {
         "not_a_jpg_file.txt": {
-            "tags": [
-                {"id": 271, "name": "Make", "value": "Test", "ifd": "0th"}
-            ]
+            "tags": [{"id": 271, "name": "Make", "value": "Test", "ifd": "0th"}]
         }
     }
     with pytest.raises(ValidationError, match="must end with .jpg or .jpeg"):
@@ -86,9 +86,7 @@ def test_image_metadata_invalid_ifd():
     """Test that invalid IFD values are rejected."""
     invalid_data = {
         "test.jpg": {
-            "tags": [
-                {"id": 271, "name": "Make", "value": "Test", "ifd": "InvalidIFD"}
-            ]
+            "tags": [{"id": 271, "name": "Make", "value": "Test", "ifd": "InvalidIFD"}]
         }
     }
     with pytest.raises(ValidationError):
@@ -101,7 +99,7 @@ def test_registry_invalid_type():
         "Image": {
             271: {
                 "name": "Make",
-                "type": "INVALID_TYPE"  # Not a valid ExifType
+                "type": "INVALID_TYPE",  # Not a valid ExifType
             }
         }
     }
@@ -128,7 +126,7 @@ def test_formatting_extra_field():
         "ExposureTime": {
             "display": "fraction",
             "unit": "s",
-            "extra_field": "not_allowed"  # Extra field not in schema
+            "extra_field": "not_allowed",  # Extra field not in schema
         }
     }
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):

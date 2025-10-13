@@ -81,10 +81,10 @@ class ValueFormatter:
             file = prj_root / "tagkit/conf/formatting.yaml"
         with open(file, "r") as f:
             raw_conf = yaml.safe_load(f)
-        
+
         # Validate with Pydantic
         validated_conf = FormattingConfig.model_validate(raw_conf)
-        
+
         # Convert to dict format expected by __init__
         # For RootModel, we need to access .root and convert nested models to dicts
         conf = {

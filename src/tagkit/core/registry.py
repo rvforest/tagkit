@@ -68,10 +68,10 @@ class ExifRegistry:
             path = here / "conf/registry.yaml"
         with open(path, "r") as f:
             raw_conf = yaml.safe_load(f)
-        
+
         # Validate with Pydantic
         validated_conf = RegistryConfig.model_validate(raw_conf)
-        
+
         # Convert to the format expected by __init__
         # exclude_defaults=True removes empty IFD sections (which have default empty dicts)
         conf: RegistryConf = validated_conf.model_dump(exclude_defaults=True)  # type: ignore
