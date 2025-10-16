@@ -1,14 +1,14 @@
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Optional, Union
 from unittest import mock
 
 import pytest
 
 from tagkit import ExifImageCollection
-import os
-from pathlib import Path
-from tagkit.image.exif import ExifImage
-from typing import Union
+from tagkit.core.exceptions import FileNotInCollection, InvalidTagName, TagNotFound
 from tagkit.core.types import TagValue
-from tagkit.core.exceptions import InvalidTagName
+from tagkit.image.exif import ExifImage
 
 
 @pytest.fixture
@@ -116,12 +116,12 @@ class TestImageCollection:
 
     def test_write_tag_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.write_tag("Artist", "X", files=["not_a_file"])
 
     def test_delete_tag_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.delete_tag("Artist", files=["not_a_file"])
 
     def test_write_tag_selected_files_accepts_path(self, mock_exif_w_patch):
@@ -175,7 +175,7 @@ class TestImageCollection:
         files = ["foo_0"]
         tags: dict[Union[str, int], TagValue] = {"Artist": "Jane Doe"}
         collection = ExifImageCollection(files)
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.write_tags(tags, files=["not_a_file"])
 
     def test_delete_tags_all_files(self, mock_exif_w_patch: dict):
@@ -193,7 +193,7 @@ class TestImageCollection:
 
     def test_delete_tags_file_not_found(self, mock_exif_w_patch):
         collection = ExifImageCollection(["foo_0"])
-        with pytest.raises(KeyError):
+        with pytest.raises(FileNotInCollection):
             collection.delete_tags(["Artist"], files=["not_a_file"])
 
     @pytest.mark.parametrize("file_type", [str, Path])
@@ -237,6 +237,159 @@ class TestImageCollection:
         files = [f"foo_{i}" for i in range(4)]
         collection = ExifImageCollection(files)
         assert collection.n_files == 4
+
+    def test_normalize_filenames_with_string_keys(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames(["foo_0", "foo_1"])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_path_objects(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames([Path("foo_0"), Path("foo_1")])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_mixed_types(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection._normalize_filenames(["foo_0", Path("foo_1")])
+        assert result == ["foo_0", "foo_1"]
+
+    def test_normalize_filenames_with_invalid_file(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(FileNotInCollection):
+            collection._normalize_filenames(["not_found"])
+
+    def test_normalize_filenames_with_path_invalid_file(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(FileNotInCollection):
+            collection._normalize_filenames([Path("not_found")])
+
+
+@pytest.fixture
+def collection_factory(monkeypatch):
+    def _create(
+        files: list[str],
+        *,
+        datetime_returns: Optional[dict[str, Optional[datetime]]] = None,
+        all_datetime_returns: Optional[dict[str, dict[str, datetime]]] = None,
+    ):
+        instances: dict[str, mock.Mock] = {}
+
+        def fake_exif(path, **kwargs):
+            name = Path(path).name
+            exif_mock = mock.Mock()
+            exif_mock.get_datetime.return_value = (datetime_returns or {}).get(name)
+            exif_mock.get_all_datetimes.return_value = (all_datetime_returns or {}).get(
+                name, {}
+            )
+            exif_mock.set_datetime = mock.Mock()
+            exif_mock.offset_datetime = mock.Mock()
+            instances[name] = exif_mock
+            return exif_mock
+
+        monkeypatch.setattr("tagkit.image.collection.ExifImage", fake_exif)
+        collection = ExifImageCollection(files)
+        return collection, instances
+
+    return _create
+
+
+class TestImageCollectionDatetime:
+    def test_get_datetime_returns_mapping(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        dt_map = {
+            "foo.jpg": datetime(2020, 1, 1, 12, 0, 0),
+            "bar.jpg": None,
+        }
+        collection, instances = collection_factory(files, datetime_returns=dt_map)
+
+        result = collection.get_datetime()
+
+        assert result == dt_map
+        for instance in instances.values():
+            instance.get_datetime.assert_called_once_with(tag=None)
+
+    def test_get_datetime_filters_and_accepts_path(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        dt_map = {
+            "foo.jpg": datetime(2021, 5, 1, 8, 30, 0),
+            "bar.jpg": datetime(2021, 5, 1, 9, 45, 0),
+        }
+        collection, instances = collection_factory(files, datetime_returns=dt_map)
+
+        result = collection.get_datetime(files=[Path("bar.jpg")], tag="DateTime")
+
+        assert result == {"bar.jpg": dt_map["bar.jpg"]}
+        instances["bar.jpg"].get_datetime.assert_called_once_with(tag="DateTime")
+        assert not instances["foo.jpg"].get_datetime.called
+
+    def test_get_datetime_missing_file_raises_keyerror(self, collection_factory):
+        collection, _ = collection_factory(["foo.jpg"])
+
+        with pytest.raises(FileNotInCollection):
+            collection.get_datetime(files=["missing.jpg"])
+
+    def test_set_datetime_calls_each_target(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        dt_value = datetime(2022, 7, 4, 15, 0, 0)
+
+        collection.set_datetime(dt_value, tags=["DateTimeOriginal"])
+
+        for instance in instances.values():
+            instance.set_datetime.assert_called_once_with(
+                dt_value, tags=["DateTimeOriginal"]
+            )
+
+    def test_set_datetime_with_path_filter(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        dt_value = datetime(2023, 3, 10, 18, 45, 0)
+
+        collection.set_datetime(dt_value, files=[Path("bar.jpg")])
+
+        instances["bar.jpg"].set_datetime.assert_called_once_with(dt_value, tags=None)
+        assert not instances["foo.jpg"].set_datetime.called
+
+    def test_offset_datetime_calls_each_target(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        delta = timedelta(hours=2)
+
+        collection.offset_datetime(delta, tags=["DateTime"])
+
+        for instance in instances.values():
+            instance.offset_datetime.assert_called_once_with(delta, tags=["DateTime"])
+
+    def test_offset_datetime_with_path_filter(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        collection, instances = collection_factory(files)
+        delta = timedelta(minutes=30)
+
+        collection.offset_datetime(delta, files=[Path("foo.jpg")])
+
+        instances["foo.jpg"].offset_datetime.assert_called_once_with(delta, tags=None)
+        assert not instances["bar.jpg"].offset_datetime.called
+
+    def test_get_all_datetimes_returns_mapping(self, collection_factory):
+        files = ["foo.jpg", "bar.jpg"]
+        all_dt_map = {
+            "foo.jpg": {"DateTime": datetime(2020, 1, 1, 12, 0, 0)},
+            "bar.jpg": {},
+        }
+        collection, instances = collection_factory(
+            files, all_datetime_returns=all_dt_map
+        )
+
+        result = collection.get_all_datetimes()
+
+        assert result == all_dt_map
+        for instance in instances.values():
+            instance.get_all_datetimes.assert_called_once_with()
 
 
 class TestImageCollectionIntegration:
@@ -337,3 +490,139 @@ class TestImageCollectionIntegration:
         for exif in reloaded.files.values():
             assert "Artist" not in exif.tags
             assert "Copyright" not in exif.tags
+
+
+# Tests for read_tag and read_tags collection methods
+class TestImageCollectionRead:
+    def test_read_tag_all_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make")
+        assert len(result) == 2
+        assert result["foo_0"] == "TestMake"
+        assert result["foo_1"] == "TestMake"
+
+    def test_read_tag_selected_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1", "foo_2"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", files=["foo_0", "foo_2"])
+        assert len(result) == 2
+        assert "foo_0" in result
+        assert "foo_2" in result
+        assert "foo_1" not in result
+
+    def test_read_tag_by_id(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag(271)  # Make tag
+        assert len(result) == 2
+        assert result["foo_0"] == "TestMake"
+
+    def test_read_tag_formatted(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", format_value=True)
+        assert isinstance(result["foo_0"], str)
+
+    def test_read_tag_raw(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tag("Make", format_value=False)
+        assert result["foo_0"] == "TestMake"
+
+    def test_read_tag_missing_raises(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
+            collection.read_tag("Artist")
+
+    def test_read_tag_missing_with_skip(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        # Write tag to only one file
+        collection.files["foo_0"].write_tag("Artist", "John")
+        result = collection.read_tag("Artist", skip_missing=True)
+        # Only foo_0 should be in result
+        assert len(result) == 1
+        assert "foo_0" in result
+        assert "foo_1" not in result
+
+    def test_read_tag_invalid_file_raises(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(FileNotInCollection):
+            collection.read_tag("Make", files=["not_found"])
+
+    def test_read_tags_all_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"])
+        # Result should be organized by file
+        assert "foo_0" in result
+        assert "foo_1" in result
+        assert result["foo_0"]["Make"] == "TestMake"
+        assert result["foo_0"]["Model"] == "TestModel"
+        assert result["foo_1"]["Make"] == "TestMake"
+
+    def test_read_tags_selected_files(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"], files=["foo_1"])
+        assert len(result) == 1
+        assert "foo_1" in result
+        assert "foo_0" not in result
+
+    def test_read_tags_with_missing_tags(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(TagNotFound, match="Tag 'Artist' not found in image"):
+            collection.read_tags(["Make", "Artist"], skip_missing=False)
+
+    def test_read_tags_with_missing_tags_skip(self, mock_exif_w_patch):
+        files = ["foo_0", "foo_1"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Artist"], skip_missing=True)
+
+        assert "foo_0" in result
+        assert "foo_1" in result
+        assert "Artist" not in result["foo_0"]
+        assert "Artist" not in result["foo_1"]
+
+    def test_read_tags_empty_list(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([])
+        assert "foo_0" in result
+        assert result["foo_0"] == {}
+
+    def test_read_tags_by_id(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([271, 272])  # Make, Model
+        assert "Make" in result["foo_0"]
+        assert "Model" in result["foo_0"]
+
+    def test_read_tags_formatted(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", 37385], format_value=True)
+        assert all(isinstance(v, str) for v in result["foo_0"].values())
+
+    def test_read_tags_raw(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags([37385], format_value=False)
+        assert all(not isinstance(v, str) for v in result["foo_0"].values())
+
+    def test_read_tags_with_ifd(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        result = collection.read_tags(["Make", "Model"], ifd="IFD0")
+        assert "Make" in result["foo_0"]
+        assert "Model" in result["foo_0"]
+
+    def test_read_tags_with_invalid_tag(self, mock_exif_w_patch):
+        files = ["foo_0"]
+        collection = ExifImageCollection(files)
+        with pytest.raises(InvalidTagName, match="Invalid tag name"):
+            collection.read_tags(["Make", "NonExistentTag"])

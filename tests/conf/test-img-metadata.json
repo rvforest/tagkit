@@ -37,5 +37,20 @@
     "unicode.jpg": {
         "tags": [{"id": 315, "name": "Artist", "value": "测试用户", "ifd": "0th"}]
     },
-    "corrupt.jpg": {"corrupt": true}
+    "datetime.jpg": {
+        "tags": [
+            {
+                "id": 306,
+                "name": "DateTime",
+                "value": "2025:05:01 14:30:00",
+                "ifd": "0th"
+            },
+            {
+                "id": 36867,
+                "name": "DateTimeOriginal",
+                "value": "2025:05:01 14:30:00",
+                "ifd": "Exif"
+            }
+        ]
+    }
 }

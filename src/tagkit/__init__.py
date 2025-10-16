@@ -1,7 +1,27 @@
-import importlib.metadata
+import importlib.metadata as _importlib_metadata
 
-__version__ = importlib.metadata.version(__name__)
+try:
+    __version__ = _importlib_metadata.version(__name__)
+except _importlib_metadata.PackageNotFoundError:
+    # editable/dev installs won't have package metadata
+    __version__ = "0+unknown"
 
+from tagkit.core.datetime_utils import (
+    DATETIME_FORMAT,
+    format_exif_datetime,
+    parse_exif_datetime,
+)
 from tagkit.image import ExifImageCollection, ExifImage
+from tagkit.image.exif import (
+    DATETIME_TAG_PRECEDENCE,
+)
 
-__all__ = ["ExifImageCollection", "ExifImage"]
+__all__ = [
+    "ExifImageCollection",
+    "ExifImage",
+    "parse_exif_datetime",
+    "format_exif_datetime",
+    "DATETIME_TAG_PRECEDENCE",
+    "DATETIME_FORMAT",
+    "__version__",
+]
