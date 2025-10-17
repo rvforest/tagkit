@@ -11,6 +11,7 @@ from typing import Literal, Optional, Self, TypedDict, Union
 import yaml
 import warnings
 
+from tagkit.conf.models import RegistryConfig
 from tagkit.core.exceptions import InvalidTagId, InvalidTagName
 from tagkit.core.types import ExifType, IfdName
 
@@ -60,12 +61,20 @@ class ExifRegistry:
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the YAML file is invalid.
+            pydantic.ValidationError: If the YAML structure is invalid.
         """
         if path is None:
             here = Path(__file__).parents[1]  # Go up to tagkit package root
             path = here / "conf/registry.yaml"
         with open(path, "r") as f:
-            conf = yaml.safe_load(f)
+            raw_conf = yaml.safe_load(f)
+
+        # Validate with Pydantic
+        validated_conf = RegistryConfig.model_validate(raw_conf)
+
+        # Convert to the format expected by __init__
+        # exclude_defaults=True removes empty IFD sections (which have default empty dicts)
+        conf: RegistryConf = validated_conf.model_dump(exclude_defaults=True)  # type: ignore
         return cls(conf)
 
     @property

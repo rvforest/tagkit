@@ -60,7 +60,7 @@ class ExifImage:
 
     def write_tag(
         self,
-        tag: Union[str, int],
+        tag_key: Union[str, int],
         value: TagValue,
         ifd: Optional[IfdName] = None,
     ):
@@ -68,7 +68,7 @@ class ExifImage:
         Set the value of a specific EXIF tag.
 
         Args:
-            tag: Tag name or tag ID.
+            tag_key: Tag name or tag ID.
             value: Value to set.
             ifd: Specific IFD to use.
 
@@ -81,8 +81,8 @@ class ExifImage:
             >>> exif.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
         if ifd is None:
-            ifd = tag_registry.get_ifd(tag)
-        tag_id = tag_registry.resolve_tag_id(tag)
+            ifd = tag_registry.get_ifd(tag_key)
+        tag_id = tag_registry.resolve_tag_id(tag_key)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
     def write_tags(
@@ -101,8 +101,8 @@ class ExifImage:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})
         """
-        for tag, value in tags.items():
-            self.write_tag(tag, value, ifd=ifd)
+        for tag_key, value in tags.items():
+            self.write_tag(tag_key, value, ifd=ifd)
 
     def delete_tag(
         self,
@@ -132,26 +132,26 @@ class ExifImage:
 
     def delete_tags(
         self,
-        tags: Iterable[Union[str, int]],
+        tag_keys: Iterable[Union[str, int]],
         ifd: Optional[IfdName] = None,
     ):
         """
         Remove multiple EXIF tags at once.
 
         Args:
-            tags: A list of tag names or tag IDs to remove.
+            tag_keys: A list of tag names or tag IDs to remove.
             ifd: Specific IFD to use for all tags (overrides default logic).
 
         Example:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.delete_tags(['Artist', 'Copyright'])
         """
-        for tag in tags:
-            self.delete_tag(tag, ifd=ifd)
+        for tag_key in tag_keys:
+            self.delete_tag(tag_key, ifd=ifd)
 
     def read_tag(
         self,
-        tag: Union[str, int],
+        tag_key: Union[str, int],
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
@@ -160,7 +160,7 @@ class ExifImage:
         Read the value of a specific EXIF tag.
 
         Args:
-            tag: Tag name or tag ID.
+            tag_key: Tag name or tag ID.
             ifd: Specific IFD to use.
             format_value: If True, return formatted string value; if False, return raw value.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
@@ -190,7 +190,7 @@ class ExifImage:
                 "binary_format must be one of 'bytes', 'hex', 'base64' or None"
             )
 
-        tag_id = tag_registry.resolve_tag_id(tag)
+        tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_id)
 
@@ -207,7 +207,7 @@ class ExifImage:
 
     def read_tags(
         self,
-        tags: list[Union[str, int]],
+        tag_keys: list[Union[str, int]],
         ifd: Optional[IfdName] = None,
         format_value: bool = False,
         binary_format: Optional[str] = None,
@@ -217,7 +217,7 @@ class ExifImage:
         Read multiple EXIF tags at once.
 
         Args:
-            tags: A list of tag names or tag IDs to read.
+            tag_keys: A list of tag names or tag IDs to read.
             ifd: Specific IFD to use for all tags (overrides default logic).
             format_value: If True, return formatted string values; if False, return raw values.
             binary_format: How to format binary data - 'bytes', 'hex', or 'base64'. Only used when format_value=True.
@@ -245,11 +245,11 @@ class ExifImage:
 
         result: dict[str, TagValue] = {}
 
-        for tag in tags:
-            tag_name = tag_registry.resolve_tag_name(tag)
+        for tag_key in tag_keys:
+            tag_name = tag_registry.resolve_tag_name(tag_key)
             try:
                 value = self.read_tag(
-                    tag,
+                    tag_key,
                     ifd=ifd,
                     format_value=format_value,
                     binary_format=binary_format,

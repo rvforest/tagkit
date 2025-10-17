@@ -82,6 +82,26 @@ src/tagkit/
   - Build docs: `uv run nox -s docs`
   - Live docs: `uv run nox -s livedocs`
 
+#### Naming Conventions
+
+The codebase follows a consistent naming convention for tag-related parameters:
+
+- **`tag_key: Union[int, str]`**: Single tag identifier that may be either a tag name (str) or tag ID (int)
+  - Used in: `read_tag()`, `write_tag()`, `delete_tag()`, `get_ifd()`, `resolve_tag_id()`, `resolve_tag_name()`
+  - Example: `exif.read_tag('Make')` or `exif.read_tag(271)`
+
+- **`tag_keys: Iterable[Union[int, str]]`**: Sequence of tag identifiers (names or IDs)
+  - Used in: `read_tags()`, `delete_tags()`
+  - Example: `exif.read_tags(['Make', 'Model'])` or `exif.delete_tags([271, 272])`
+
+- **`tags: dict[Union[int, str], Value]`**: Mapping from tag identifiers to values
+  - Used in: `write_tags()`
+  - Example: `exif.write_tags({'Artist': 'Jane', 'Copyright': '2025 John'})`
+
+- **Other existing names remain unchanged**: `ifd`, `files`, `tag_filter`, etc.
+
+This convention makes it explicit that parameters accept both numeric IDs and textual names, improving API clarity and consistency.
+
 ### Testing Standards
 
 #### Framework and Coverage
@@ -114,10 +134,18 @@ src/tagkit/
 
 ### Configuration Files
 
+All configuration files use Pydantic for validation:
+
 - **pyproject.toml**: Project metadata, dependencies, tool configuration
 - **noxfile.py**: Task automation (testing, linting, docs, etc.)
 - **cspell.json**: Spell checking configuration for documentation
 - **.pre-commit-config.yaml**: Pre-commit hook configuration
+- **src/tagkit/conf/registry.yaml**: EXIF tag registry (validated by `RegistryConfig` model)
+- **src/tagkit/conf/formatting.yaml**: Tag formatting rules (validated by `FormattingConfig` model)
+- **tests/conf/test-img-metadata.json**: Test image metadata (validated by `ImageMetadataConfig` model)
+- **tests/conf/doctest-img-metadata.json**: Doctest image metadata (validated by `ImageMetadataConfig` model)
+
+Pydantic models are defined in `src/tagkit/conf/models.py` and provide type-safe validation with clear error messages.
 
 ## Making Changes
 
@@ -134,8 +162,8 @@ src/tagkit/
 This repository includes machine-readable validation for the JSON files used to generate test images (`tests/conf/test-img-metadata.json` and `tests/conf/doctest-img-metadata.json`). When working on features or docs that add or change test images, follow these steps:
 
 - Edit or add image metadata only in `tests/conf/test-img-metadata.json` (for pytest) or `tests/conf/doctest-img-metadata.json` (for doctests).
-- The repository includes a JSON Schema at `tests/conf/img-metadata.schema.json`. Use it to ensure new entries match the required structure.
-- A pytest (`tests/test_conf_schemas.py`) validates both config files against the schema in CI. Run this test locally after changes.
+- The repository uses Pydantic models in `src/tagkit/conf/models.py` to validate configuration structure. Use these models to ensure new entries match the required structure.
+- A pytest (`tests/test_conf_schemas.py`) validates both config files using Pydantic models in CI. Run this test locally after changes.
 
 Quick local validation:
 
@@ -143,7 +171,7 @@ Quick local validation:
 uv run pytest tests/test_conf_schemas.py -q
 ```
 
-If you (the agent) modify the schema, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
+If you (the agent) modify the Pydantic models, update the pytest and the human-friendly summary in `docs/source/development/contributing.md`.
 
 ### Common Commands
 

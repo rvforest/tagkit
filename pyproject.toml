@@ -28,6 +28,7 @@ requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
   "piexif>=1.1.3",
+  "pydantic>=2.0.0",
   "pyyaml>=6.0.2",
   "rich>=14.0.0",
   "typer>=0.15.2",
@@ -41,7 +42,6 @@ Issues = "https://github.com/rvforest/tagkit/issues"
 
 [dependency-groups]
 dev = [
-  "jsonschema>=4.25.1",
   "mypy>=1.15.0",
   "nox>=2025.2.9",
   "pillow>=11.2.1", # For dynamically generating test jpg files
@@ -49,7 +49,6 @@ dev = [
   "pytest>=8.3.5",
   "pytest-cov>=6.1.1",
   "ruff>=0.11.6",
-  "types-jsonschema>=4.25.1.20251009",
   "types-pyyaml>=6.0.12.20250516",
 ]
 docs = [

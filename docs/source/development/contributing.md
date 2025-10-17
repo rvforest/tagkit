@@ -110,6 +110,23 @@ def example_function(param1: str, param2: int) -> bool:
     return len(param1) > param2
 ```
 
+### Configuration Validation
+
+All configuration files in the project are validated using [Pydantic](https://docs.pydantic.dev/) models. This ensures that configuration errors are caught early with clear error messages.
+
+**Configuration files:**
+- `src/tagkit/conf/registry.yaml` — EXIF tag registry (validated by `RegistryConfig`)
+- `src/tagkit/conf/formatting.yaml` — Tag value formatting rules (validated by `FormattingConfig`)
+- `tests/conf/test-img-metadata.json` — Test image metadata (validated by `ImageMetadataConfig`)
+- `tests/conf/doctest-img-metadata.json` — Doctest image metadata (validated by `ImageMetadataConfig`)
+
+**Pydantic models** are defined in `src/tagkit/conf/models.py`. When modifying configuration files:
+1. Ensure your changes conform to the Pydantic models
+2. Run `uv run pytest tests/test_conf_schemas.py` to validate all configs
+3. Update the Pydantic models if you need to change the schema
+
+The validation happens automatically when configs are loaded and during CI testing.
+
 ## Pre-commit Hooks
 
 We optionally support [pre-commit](https://pre-commit.com/) hooks to help catch formatting and linting issues before you commit.
@@ -216,8 +233,8 @@ Usage in tests and doctests:
 - Doctests (in MyST docs and docstrings) run in a temporary directory pre-populated with images from `tests/conf/doctest-img-metadata.json`. Reference these files by filename in examples so doctests remain stable.
 
 Schema validation:
-- The machine-readable schema is at `tests/conf/img-metadata.schema.json`.
-- CI validates both config files against that schema using `tests/test_conf_schemas.py`.
+- The schema is defined using Pydantic models in `src/tagkit/conf/models.py`.
+- CI validates both config files using `tests/test_conf_schemas.py`.
 - Quick local validation:
 
 ```bash
