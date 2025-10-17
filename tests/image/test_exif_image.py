@@ -166,13 +166,13 @@ def test_write_tags_multiple_tags(test_images, file_type: Callable):
     """Test writing multiple tags at once with both str and Path file_path types."""
     tags: dict[Union[str, int], TagValue] = {
         "Artist": "Jane Doe",
-        "Copyright": b"2025 John",
+        "Copyright": "2025 John",  # Changed from bytes to str (ASCII type)
     }
     file_path = file_type(test_images / "minimal.jpg")
     exif = ExifImage(file_path)
     exif.write_tags(tags)
     assert exif.tags["Artist"].value == "Jane Doe"
-    assert exif.tags["Copyright"].value == b"2025 John"
+    assert exif.tags["Copyright"].value == "2025 John"
 
 
 @pytest.mark.parametrize("file_type", [str, Path])

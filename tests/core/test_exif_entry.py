@@ -53,6 +53,7 @@ def test_binary_format_none():
 
 def test_invalid_binary_format():
     """Test that an invalid binary format raises a ValueError."""
-    entry = ExifTag(id=271, value=b"test", ifd="IFD0")
+    # Use UserComment (37510) which is UNDEFINED type and accepts bytes
+    entry = ExifTag(id=37510, value=b"test", ifd="Exif")
     with pytest.raises(ValueError, match="Unsupported binary format"):
         entry.format(binary_format="invalid_format")

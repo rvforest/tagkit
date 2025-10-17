@@ -146,13 +146,13 @@ class TestImageCollection:
         files = [f"foo_{i}" for i in range(2)]
         tags: dict[Union[str, int], TagValue] = {
             "Artist": "Jane Doe",
-            "Copyright": b"2025 John",
+            "Copyright": "2025 John",  # Changed from bytes to str (ASCII type)
         }
         collection = ExifImageCollection(files)
         collection.write_tags(tags)
         for fname in files:
             assert collection.files[fname].tags["Artist"].value == "Jane Doe"
-            assert collection.files[fname].tags["Copyright"].value == b"2025 John"
+            assert collection.files[fname].tags["Copyright"].value == "2025 John"
 
     @pytest.mark.parametrize("file_type", [str, Path])
     def test_write_tags_selected_files(self, mock_exif_w_patch: dict, file_type):
