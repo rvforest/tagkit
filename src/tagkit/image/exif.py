@@ -13,6 +13,7 @@ from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
 from tagkit.core.registry import tag_registry
 from tagkit.core.tag import ExifTag
 from tagkit.core.types import TagValue, FilePath, IfdName
+from tagkit.core.validation import validate_tag_value
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
@@ -75,6 +76,7 @@ class ExifImage:
         Raises:
             KeyError: If the tag is not found.
             ValueError: If the tag or IFD is invalid.
+            TagTypeError: If the value type does not match the expected EXIF type.
 
         Example:
             >>> exif = ExifImage('image1.jpg')
@@ -83,6 +85,10 @@ class ExifImage:
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_key)
         tag_id = tag_registry.resolve_tag_id(tag_key)
+        
+        # Validate the tag value against its expected EXIF type
+        validate_tag_value(tag_id, value)
+        
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
     def write_tags(

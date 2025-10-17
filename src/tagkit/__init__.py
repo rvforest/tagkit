@@ -11,6 +11,7 @@ from tagkit.core.datetime_utils import (
     format_exif_datetime,
     parse_exif_datetime,
 )
+from tagkit.core.exceptions import TagTypeError
 from tagkit.image import ExifImageCollection, ExifImage
 from tagkit.image.exif import (
     DATETIME_TAG_PRECEDENCE,
@@ -23,5 +24,6 @@ __all__ = [
     "format_exif_datetime",
     "DATETIME_TAG_PRECEDENCE",
     "DATETIME_FORMAT",
+    "TagTypeError",
     "__version__",
 ]
