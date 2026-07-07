@@ -28,7 +28,17 @@ TagValue = Union[
     RationalCollection,
 ]
 ExifIfdCollection = dict[str, dict[int, TagValue]]
-ExifType = Literal["ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "UNDEFINED"]
+ExifType = Literal[
+    "ASCII",
+    "BYTE",
+    "FLOAT",
+    "LONG",
+    "RATIONAL",
+    "SHORT",
+    "SRATIONAL",
+    "UNDEFINED",
+]
+ExifCount = Union[int, Literal["any"]]
 IfdName = Literal["IFD0", "IFD1", "Exif", "GPS", "Interop"]
 
 

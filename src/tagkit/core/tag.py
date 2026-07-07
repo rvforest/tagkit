@@ -34,12 +34,12 @@ class ExifTag:
     @property
     def name(self) -> str:
         """Get the human-readable name of this tag."""
-        return tag_registry.resolve_tag_name(self.id)
+        return tag_registry.resolve_tag_name(self.id, ifd=self.ifd)
 
     @property
     def exif_type(self) -> ExifType:
         """Get the EXIF data type of this tag."""
-        return tag_registry.get_exif_type(self.id)
+        return tag_registry.get_exif_type(self.id, ifd=self.ifd)
 
     def format(self, binary_format: Optional[str] = None) -> str:
         """

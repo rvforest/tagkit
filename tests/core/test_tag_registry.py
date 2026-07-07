@@ -1,9 +1,7 @@
 import pytest
 from pathlib import Path
-import warnings
-
 from tagkit.core.registry import ExifRegistry, tag_registry
-from tagkit.core.exceptions import InvalidTagId, InvalidTagName
+from tagkit.core.exceptions import AmbiguousTagKey, InvalidTagId, InvalidTagName
 from tagkit.core.types import ExifType
 
 
@@ -36,8 +34,7 @@ def registry(sample_registry_conf):
 def test_init(registry, sample_registry_conf):
     """Test registry initialization"""
     assert registry.tags_by_ifd == sample_registry_conf
-    assert len(registry._name_to_id) == 7  # Total unique tag names
-    assert len(registry._tag_ids) == 6  # Total unique tag IDs
+    assert len(registry.tag_names) == 7  # Total unique tag names
 
 
 def test_from_yaml():
@@ -175,11 +172,18 @@ def test_get_exif_type_invalid_name(registry):
 
 
 def test_get_ifd_warns_on_multiple_ifds():
-    # Create a registry with a tag in multiple IFDs
     conf = {
         "Image": {123: {"name": "TestTag", "type": "ASCII"}},
         "Exif": {123: {"name": "TestTag", "type": "ASCII"}},
     }  # type: ignore
     reg = ExifRegistry(conf)  # type: ignore
-    with pytest.warns(UserWarning, match="multiple IFDs"):
+    with pytest.raises(AmbiguousTagKey, match="Provide an explicit ifd"):
         reg.get_ifd(123)
+
+
+def test_get_definition_by_ambiguous_id_requires_ifd(registry):
+    with pytest.raises(AmbiguousTagKey):
+        registry.get_definition(1)
+    definition = registry.get_definition(1, ifd="GPS")
+    assert definition.name == "GPSLatitudeRef"
+    assert definition.ifd == "GPS"

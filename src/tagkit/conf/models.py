@@ -20,9 +20,101 @@ class RegistryTagEntry(BaseModel):
     """Entry for a single EXIF tag in the registry."""
 
     name: str = Field(description="Tag name (e.g., 'Make', 'Model')")
-    type: Literal[
-        "ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "LONG", "UNDEFINED", "FLOAT"
-    ] = Field(description="EXIF data type")
+    type: Union[
+        Literal[
+            "ASCII",
+            "BYTE",
+            "FLOAT",
+            "LONG",
+            "RATIONAL",
+            "SHORT",
+            "SRATIONAL",
+            "UNDEFINED",
+        ],
+        list[
+            Literal[
+                "ASCII",
+                "BYTE",
+                "FLOAT",
+                "LONG",
+                "RATIONAL",
+                "SHORT",
+                "SRATIONAL",
+                "UNDEFINED",
+            ]
+        ],
+    ] = Field(description="Allowed EXIF data type or types")
+    count: Union[int, Literal["any"], None] = Field(
+        default=None,
+        description="Expected EXIF component count, or 'any' for variable count",
+    )
+
+    @field_validator("type")
+    @classmethod
+    def validate_type_list(
+        cls,
+        v: Union[
+            Literal[
+                "ASCII",
+                "BYTE",
+                "FLOAT",
+                "LONG",
+                "RATIONAL",
+                "SHORT",
+                "SRATIONAL",
+                "UNDEFINED",
+            ],
+            list[
+                Literal[
+                    "ASCII",
+                    "BYTE",
+                    "FLOAT",
+                    "LONG",
+                    "RATIONAL",
+                    "SHORT",
+                    "SRATIONAL",
+                    "UNDEFINED",
+                ]
+            ],
+        ],
+    ) -> Union[
+        Literal[
+            "ASCII",
+            "BYTE",
+            "FLOAT",
+            "LONG",
+            "RATIONAL",
+            "SHORT",
+            "SRATIONAL",
+            "UNDEFINED",
+        ],
+        list[
+            Literal[
+                "ASCII",
+                "BYTE",
+                "FLOAT",
+                "LONG",
+                "RATIONAL",
+                "SHORT",
+                "SRATIONAL",
+                "UNDEFINED",
+            ]
+        ],
+    ]:
+        """Validate that multi-type definitions are not empty."""
+        if isinstance(v, list) and not v:
+            raise ValueError("type list must contain at least one EXIF type")
+        return v
+
+    @field_validator("count")
+    @classmethod
+    def validate_count(
+        cls, v: Union[int, Literal["any"], None]
+    ) -> Union[int, Literal["any"], None]:
+        """Validate fixed counts are positive."""
+        if isinstance(v, int) and v <= 0:
+            raise ValueError("count must be a positive integer or 'any'")
+        return v
 
     model_config = {"extra": "forbid"}
 

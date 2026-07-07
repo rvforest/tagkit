@@ -107,6 +107,40 @@ def test_registry_invalid_type():
         RegistryConfig.model_validate(invalid_data)
 
 
+def test_registry_accepts_count_and_multi_type():
+    """Test that registry entries can define count and multiple allowed types."""
+    data = {
+        "Image": {
+            256: {
+                "name": "ImageWidth",
+                "type": ["SHORT", "LONG"],
+                "count": 1,
+            },
+            271: {
+                "name": "Make",
+                "type": "ASCII",
+                "count": "any",
+            },
+        }
+    }
+    RegistryConfig.model_validate(data)
+
+
+def test_registry_rejects_invalid_count():
+    """Test that malformed count definitions are rejected."""
+    invalid_data = {
+        "Image": {
+            271: {
+                "name": "Make",
+                "type": "ASCII",
+                "count": 0,
+            }
+        }
+    }
+    with pytest.raises(ValidationError, match="count must be a positive integer"):
+        RegistryConfig.model_validate(invalid_data)
+
+
 def test_registry_missing_name():
     """Test that missing tag name is rejected."""
     invalid_data = {

@@ -1,4 +1,4 @@
-from typing import Union, cast
+from typing import cast
 import piexif
 
 from tagkit.tag_io.base import ExifIOBackend, ExifTagDict
@@ -31,11 +31,8 @@ class PiexifBackend(ExifIOBackend):
         for ifd, ifd_tags in conformed_dict.items():
             for tag_id, val in ifd_tags.items():
                 # Decode if ascii
-                val = (
-                    cast(bytes, val).decode(STR_ENCODING)
-                    if _tag_is_ascii(tag_id)
-                    else val
-                )
+                if _tag_is_ascii(tag_id, ifd) and isinstance(val, bytes):
+                    val = val.decode(STR_ENCODING)
                 result_dict[tag_id, ifd] = ExifTag(tag_id, val, ifd)
 
         return ExifTagDict(result_dict)
@@ -69,7 +66,7 @@ class PiexifBackend(ExifIOBackend):
 
             # Prepare the tag value - encode strings for ASCII tags
             tag_value = tag.value
-            if _tag_is_ascii(tag.id) and isinstance(tag_value, str):
+            if _tag_is_ascii(tag) and isinstance(tag_value, str):
                 tag_value = cast(str, tag_value).encode(STR_ENCODING)
 
             # Add the tag to the piexif data structure
@@ -82,10 +79,11 @@ class PiexifBackend(ExifIOBackend):
         piexif.insert(exif_bytes, str(image_path))
 
 
-def _tag_is_ascii(tag: Union[ExifTag, int]) -> bool:
+def _tag_is_ascii(tag: ExifTag | int, ifd: IfdName | None = None) -> bool:
     if isinstance(tag, ExifTag):
+        ifd = tag.ifd
         tag = tag.id
-    return tag_registry.get_exif_type(tag) == "ASCII"
+    return tag_registry.get_exif_type(tag, ifd=ifd) == "ASCII"
 
 
 def _conform_ifd_names(raw_piexif: PiexifTags) -> dict[IfdName, dict[int, TagValue]]:

@@ -73,6 +73,17 @@ class InvalidTagId(TagkitError):
         super().__init__(msg)
 
 
+class AmbiguousTagKey(TagkitError):
+    """Raised when a tag name or ID matches more than one IFD definition."""
+
+    def __init__(self, tag_key: Union[int, str], matches: Iterable[str]) -> None:
+        match_list = ", ".join(matches)
+        super().__init__(
+            f"Ambiguous tag key '{tag_key}' matches multiple IFD definitions: "
+            f"{match_list}. Provide an explicit ifd."
+        )
+
+
 class TagNotFound(TagkitError):
     """Raised when a specified tag is not found in an image.
 
