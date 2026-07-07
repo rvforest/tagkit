@@ -125,6 +125,10 @@ All configuration files in the project are validated using [Pydantic](https://do
 2. Run `uv run pytest tests/test_conf_schemas.py` to validate all configs
 3. Update the Pydantic models if you need to change the schema
 
+Registry entries include a tag `name`, one EXIF `type` or a list of allowed
+types, and optional `count` metadata. Use a positive integer for fixed-count
+tags and `any` for variable-count values.
+
 The validation happens automatically when configs are loaded and during CI testing.
 
 ## Pre-commit Hooks

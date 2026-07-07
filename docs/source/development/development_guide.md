@@ -93,7 +93,9 @@ src/tagkit/
 
 To add support for a new tag:
 
-1. Update the tag registry configuration in `conf/registry.yaml`.
+1. Update the tag registry configuration in `conf/registry.yaml`, including
+   the tag name, EXIF type or allowed types, and count metadata when the tag is
+   writable or otherwise validated.
 2. If needed, add custom formatting in `core/formatting.py` and register it in the configuration (`conf/formatting.yaml`).
 
 ## Testing
