@@ -17,6 +17,7 @@ Image:
   258:
     name: BitsPerSample
     type: SHORT
+    count: any
   259:
     name: Compression
     type: SHORT
@@ -44,9 +45,11 @@ Image:
   271:
     name: Make
     type: ASCII
+    count: any
   272:
     name: Model
     type: ASCII
+    count: any
   273:
     name: StripOffsets
     type: LONG
@@ -65,9 +68,11 @@ Image:
   282:
     name: XResolution
     type: RATIONAL
+    count: 1
   283:
     name: YResolution
     type: RATIONAL
+    count: 1
   284:
     name: PlanarConfiguration
     type: SHORT
@@ -92,12 +97,15 @@ Image:
   305:
     name: Software
     type: ASCII
+    count: any
   306:
     name: DateTime
     type: ASCII
+    count: 20
   315:
     name: Artist
     type: ASCII
+    count: any
   316:
     name: HostComputer
     type: ASCII
@@ -107,9 +115,11 @@ Image:
   318:
     name: WhitePoint
     type: RATIONAL
+    count: 2
   319:
     name: PrimaryChromaticities
     type: RATIONAL
+    count: 6
   320:
     name: ColorMap
     type: SHORT
@@ -212,12 +222,14 @@ Image:
   530:
     name: YCbCrSubSampling
     type: SHORT
+    count: 2
   531:
     name: YCbCrPositioning
     type: SHORT
   532:
     name: ReferenceBlackWhite
     type: RATIONAL
+    count: 6
   700:
     name: XMLPacket
     type: BYTE
@@ -236,15 +248,18 @@ Image:
   33422:
     name: CFAPattern
     type: BYTE
+    count: any
   33423:
     name: BatteryLevel
     type: RATIONAL
   33432:
     name: Copyright
     type: ASCII
+    count: any
   33434:
     name: ExposureTime
     type: RATIONAL
+    count: 1
   34377:
     name: ImageResources
     type: BYTE
@@ -555,9 +570,11 @@ Exif:
   33434:
     name: ExposureTime
     type: RATIONAL
+    count: 1
   33437:
     name: FNumber
     type: RATIONAL
+    count: 1
   34850:
     name: ExposureProgram
     type: SHORT
@@ -567,6 +584,7 @@ Exif:
   34855:
     name: ISOSpeedRatings
     type: SHORT
+    count: any
   34856:
     name: OECF
     type: UNDEFINED
@@ -594,9 +612,11 @@ Exif:
   36867:
     name: DateTimeOriginal
     type: ASCII
+    count: 20
   36868:
     name: DateTimeDigitized
     type: ASCII
+    count: 20
   36880:
     name: OffsetTime
     type: ASCII
@@ -639,18 +659,22 @@ Exif:
   37385:
     name: Flash
     type: SHORT
+    count: 1
   37386:
     name: FocalLength
     type: RATIONAL
+    count: 1
   37396:
     name: SubjectArea
     type: SHORT
   37500:
     name: MakerNote
     type: UNDEFINED
+    count: any
   37510:
     name: UserComment
     type: UNDEFINED
+    count: any
   37520:
     name: SubSecTime
     type: ASCII
@@ -729,6 +753,7 @@ Exif:
   41730:
     name: CFAPattern
     type: UNDEFINED
+    count: any
   41985:
     name: CustomRendered
     type: SHORT
@@ -793,27 +818,35 @@ GPS:
   0:
     name: GPSVersionID
     type: BYTE
+    count: 4
   1:
     name: GPSLatitudeRef
     type: ASCII
+    count: 2
   2:
     name: GPSLatitude
     type: RATIONAL
+    count: 3
   3:
     name: GPSLongitudeRef
     type: ASCII
+    count: 2
   4:
     name: GPSLongitude
     type: RATIONAL
+    count: 3
   5:
     name: GPSAltitudeRef
     type: BYTE
+    count: 1
   6:
     name: GPSAltitude
     type: RATIONAL
+    count: 1
   7:
     name: GPSTimeStamp
     type: RATIONAL
+    count: 3
   8:
     name: GPSSatellites
     type: ASCII
