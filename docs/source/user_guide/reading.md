@@ -57,8 +57,19 @@ exif = ExifImage("image1.jpg")
 tags = exif.tags
 
 # Print all tags
-for tag_id, tag in tags.items():
+for tag_name, tag in tags.items():
     print(f"{tag.name}: {tag.value}")
+```
+
+`exif.tags` is a convenience view keyed by tag name. For EXIF-correct access that can always represent duplicate names and IDs across IFDs, use `exif.tag_entries`, which is keyed by `(ifd, tag_id)`:
+
+```{testcode}
+from tagkit.image.exif import ExifImage
+
+exif = ExifImage("image1.jpg")
+
+for (ifd, tag_id), tag in exif.tag_entries.items():
+    print(f"{ifd}:{tag_id} {tag.name}: {tag.value}")
 ```
 
 ### Reading Specific Tags

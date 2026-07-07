@@ -11,15 +11,12 @@ Writing tag values via the CLI is not yet supported.
 ### Writing Single Tags
 
 Use the `write_tag` method to write a single tag to an image. You can specify the tag by name or integer ID, along with its value. If the tag does not exist, it will be created.
-You may specify an explicit IFD (Image File Directory) using the `ifd` argument. If not specified, the IFD is determined based on the tag name or ID. For tags associated with both the main and thumbnail IFDs, the main IFD is used by default unless the `thumbnail` argument is set to `True`.
+You may specify an explicit IFD (Image File Directory) using the `ifd` argument. If not specified, the tag name or ID must resolve to exactly one EXIF definition.
 If the tag already exists, it will be updated with the new value.
 
-If a tag id or tag name is provided that is present in both the main and thumbnail IFDs, the tag will be written to the main IFD only unless you specify `ifd='IFD1'`. If a tag id or tag name
-is provided that is present in two other IFDs and the ifd is not specified, the tag
-will be written to the first IFD that contains the tag and a warning is emitted.
-IFD's are searched in the order of IFD0, Exif, GPS, Interop. In general, there is much
-less chance of overlap when specifying tags by name rather than by ID, but explicitly
-specifying the IFD eliminates this issue.
+Some EXIF tag IDs and names appear in more than one IFD. Low-level calls now raise an ambiguity error for those tags unless you pass `ifd`. For example, tag ID `1` exists in both GPS and Interop metadata, so use `exif.write_tag(1, "N", ifd="GPS")` rather than `exif.write_tag(1, "N")`.
+
+Low-level writes expect EXIF-shaped values. Tagkit validates the value type, numeric range, rational shape, and count before changing the in-memory tag. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`.
 
 **Note:** Changes are not saved to disk until you call the `save()` method.
 
@@ -55,7 +52,7 @@ exif = ExifImage("image1.jpg")
 # Write multiple tags (in-memory)
 tags_to_write = {
     "Artist": "Jane Doe",
-    "Copyright": "© 2025 Jane Doe"
+    "Copyright": "2025 Jane Doe"
 }
 exif.write_tags(tags_to_write)
 
