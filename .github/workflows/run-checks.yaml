@@ -11,6 +11,9 @@ on:
 env:
   FORCE_COLOR: 1
 
+permissions:
+  contents: read
+
 jobs:
   run-checks:
     name: Run checks
@@ -33,6 +36,9 @@ jobs:
   run-tests:
     name: Run tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for Codecov OIDC uploads
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
