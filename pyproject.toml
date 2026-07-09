@@ -50,6 +50,7 @@ dev = [
   "pytest-cov>=6.1.1",
   "ruff>=0.11.6",
   "types-pyyaml>=6.0.12.20250516",
+  "zizmor>=1.26.1",
 ]
 docs = [
   "furo>=2024.8.6",
