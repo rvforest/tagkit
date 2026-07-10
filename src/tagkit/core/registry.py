@@ -6,10 +6,11 @@ all supported EXIF tags, their IDs, names, and types.
 """
 
 from pathlib import Path
-from typing import Literal, Optional, Self, TypedDict, Union
+from typing import Literal, Optional, TypedDict, Union
 
 import yaml
 import warnings
+from typing_extensions import Self
 
 from tagkit.conf.models import RegistryConfig
 from tagkit.core.exceptions import InvalidTagId, InvalidTagName
