@@ -14,7 +14,15 @@ Use the `write_tag` method to write a single tag to an image. You can specify th
 You may specify an explicit IFD (Image File Directory) using the `ifd` argument. If not specified, the tag name or ID must resolve to exactly one EXIF definition.
 If the tag already exists, it will be updated with the new value.
 
-Some EXIF tag IDs and names appear in more than one IFD. Low-level calls now raise an ambiguity error for those tags unless you pass `ifd`. For example, tag ID `1` exists in both GPS and Interop metadata, so use `exif.write_tag(1, "N", ifd="GPS")` rather than `exif.write_tag(1, "N")`.
+Some EXIF tag IDs and names identify different definitions in different namespaces. Low-level calls raise an ambiguity error for those tags unless you pass `ifd`. For example, tag ID `1` exists in both GPS and Interop metadata, so use `exif.write_tag(1, "N", ifd="GPS")` rather than `exif.write_tag(1, "N")`.
+
+A definition can support more than one directory without being ambiguous.
+For example, `Orientation` uses the shared Image definition in both `IFD0`
+(primary image) and `IFD1` (thumbnail). An unqualified write uses its configured
+default, normally `IFD0`; pass `ifd="IFD1"` to target the thumbnail. Only that
+occurrence is updated. Exif, GPS, and Interop definitions default to their
+namesake directories. Unsupported placements are rejected before changing tags.
+Registry defaults select a target; they do not relocate existing occurrences.
 
 Low-level writes expect EXIF-shaped values. Tagkit validates the value type, numeric range, rational shape, and count before changing the in-memory tag. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`.
 

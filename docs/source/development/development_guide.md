@@ -20,6 +20,13 @@ The `core/` modules provide the foundational logic: tag representation, registry
 - `core/types.py`: Type definitions
 - `core/exceptions.py`: Custom exceptions
 
+Definitions are identified by `(namespace, tag_id)`, while occurrences in an
+image are identified by `(ifd, tag_id)`. The Image namespace shares definitions
+across IFD0 and IFD1. The registry tracks supported placements and default
+selection separately: `get_definition()` returns shared metadata, and
+`resolve_tag()` pairs it with a selected directory. Backend-specific names such
+as piexif's `0th` and `1st` stay in the backend adapter.
+
 ### Image Handling
 
 The `image/` modules use the core logic to provide high-level EXIF image handling and batch operations.

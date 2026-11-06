@@ -72,6 +72,13 @@ for (ifd, tag_id), tag in exif.tag_entries.items():
     print(f"{ifd}:{tag_id} {tag.name}: {tag.value}")
 ```
 
+A tag can have separate values in the primary and thumbnail directories.
+`tag_entries` preserves both actual locations; `tags` raises an ambiguity error
+when more than one occurrence has the same name. Single-tag reads use the
+configured default directory (normally `IFD0` for Image definitions). Pass
+`ifd="IFD1"` to read a thumbnail value explicitly. A missing primary value does
+not cause a fallback to the thumbnail.
+
 ### Reading Specific Tags
 
 If you're only interested in certain tags, you can get them directly:
