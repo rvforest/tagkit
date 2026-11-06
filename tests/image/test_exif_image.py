@@ -848,3 +848,62 @@ def test_read_tags_invalid_binary_entry(test_images):
     exif = ExifImage(test_images / "minimal.jpg")
     with pytest.raises(ValueError):
         exif.read_tags(["Make", "Model"], binary_format="invalid_format")
+
+
+@pytest.mark.parametrize("tag_key", ["GPSLatitude", "ExifVersion"])
+def test_write_rejects_thumbnail_placement_before_mutation(test_images, tag_key):
+    exif = ExifImage(test_images / "minimal.jpg")
+    original = dict(exif.tag_entries)
+    with pytest.raises(InvalidTagName):
+        exif.write_tag(tag_key, b"test", ifd="IFD1")
+    assert exif.tag_entries == original
+
+
+def test_shared_definition_operations_preserve_occurrence_locations(test_images):
+    from unittest.mock import Mock
+    from tagkit.tag_io.base import ExifIOBackend
+
+    backend = Mock(spec=ExifIOBackend)
+    primary = ExifTag(274, 1, "IFD0")
+    thumbnail = ExifTag(274, 6, "IFD1")
+    backend.load_tags.return_value = {(274, "IFD0"): primary, (274, "IFD1"): thumbnail}
+    exif = ExifImage(test_images / "minimal.jpg", io_backend=backend)
+
+    assert exif.read_tag("Orientation") == 1
+    assert exif.read_tag("Orientation", ifd="IFD1") == 6
+    assert exif.tag_entries["IFD0", 274] is primary
+    assert exif.tag_entries["IFD1", 274] is thumbnail
+    with pytest.raises(AmbiguousTagKey):
+        _ = exif.tags
+
+    exif.write_tag("Orientation", 3, ifd="IFD1")
+    assert exif.read_tag("Orientation") == 1
+    assert exif.read_tag("Orientation", ifd="IFD1") == 3
+    exif.delete_tag("Orientation")
+    assert ("IFD0", 274) not in exif.tag_entries
+    assert exif.read_tag("Orientation", ifd="IFD1") == 3
+    exif.save()
+    saved = backend.save_tags.call_args.args[1]
+    assert set(saved) == {(274, "IFD1")}
+    assert saved[274, "IFD1"].ifd == "IFD1"
+    assert saved[274, "IFD1"].value == 3
+
+
+def test_image_operations_follow_configured_default_without_relocating_tags(
+    test_images, monkeypatch
+):
+    from tagkit.core.registry import ExifRegistry
+
+    registry = ExifRegistry(
+        {"Image": {274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}}}
+    )
+    monkeypatch.setattr("tagkit.image.exif.tag_registry", registry)
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag("Orientation", 1, ifd="IFD0")
+    exif.write_tag("Orientation", 6)
+    assert exif.read_tag("Orientation") == 6
+    assert exif.read_tag("Orientation", ifd="IFD0") == 1
+    assert exif.tag_entries["IFD0", 274].ifd == "IFD0"
+    exif.delete_tag("Orientation")
+    assert ("IFD1", 274) not in exif.tag_entries
+    assert exif.read_tag("Orientation", ifd="IFD0") == 1

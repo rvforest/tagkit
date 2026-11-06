@@ -81,12 +81,13 @@ class ExifImage:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
-        definition = tag_registry.get_definition(tag_key, ifd=ifd)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
         normalized_value = validate_tag_value(definition, value)
-        self._tag_dict[definition.tag_id, definition.ifd] = ExifTag(
+        self._tag_dict[definition.tag_id, resolved.ifd] = ExifTag(
             definition.tag_id,
             normalized_value,
-            definition.ifd,
+            resolved.ifd,
         )
 
     def write_tags(
@@ -127,9 +128,10 @@ class ExifImage:
             >>> exif = ExifImage('image10.jpg')
             >>> exif.delete_tag('Make', ifd='IFD0')
         """
-        definition = tag_registry.get_definition(tag_key, ifd=ifd)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
         tag_id = definition.tag_id
-        ifd = definition.ifd
+        ifd = resolved.ifd
         # Only delete if present; do not raise if missing
         if (tag_id, ifd) in self._tag_dict:
             del self._tag_dict[tag_id, ifd]
@@ -194,9 +196,10 @@ class ExifImage:
                 "binary_format must be one of 'bytes', 'hex', 'base64' or None"
             )
 
-        definition = tag_registry.get_definition(tag_key, ifd=ifd)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
         tag_id = definition.tag_id
-        ifd = definition.ifd
+        ifd = resolved.ifd
 
         # Check if tag exists in the image
         if (tag_id, ifd) not in self._tag_dict:

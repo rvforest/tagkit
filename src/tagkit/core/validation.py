@@ -27,7 +27,7 @@ def validate_tag_value(definition: ExifTagDefinition, value: TagValue) -> TagVal
     received = f"{type(value).__name__}: {value!r}"
     raise ValidationError(
         f"Invalid value for {definition.name} "
-        f"(IFD {definition.ifd}, tag ID {definition.tag_id}). "
+        f"(namespace {definition.namespace}, tag ID {definition.tag_id}). "
         f"Expected {expected}; received {received}. "
         f"Details: {'; '.join(errors)}"
     )
