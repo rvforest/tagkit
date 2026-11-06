@@ -9,9 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, TypedDict, Union
 
-from typing_extensions import Self
-
 import yaml
+from typing_extensions import Self
 
 from tagkit.conf.models import RegistryConfig
 from tagkit.core.exceptions import AmbiguousTagKey, InvalidTagId, InvalidTagName
