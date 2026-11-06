@@ -93,6 +93,15 @@ def test_image_metadata_invalid_ifd():
         ImageMetadataConfig.model_validate(invalid_data)
 
 
+@pytest.mark.parametrize("section", ["IFD0", "IFD1"])
+def test_registry_rejects_unsupported_sections(section):
+    """Registry sections describe namespaces rather than image directories."""
+    with pytest.raises(ValidationError):
+        RegistryConfig.model_validate(
+            {section: {271: {"name": "Make", "type": "ASCII"}}}
+        )
+
+
 def test_registry_invalid_type():
     """Test that invalid EXIF types are rejected."""
     invalid_data = {
@@ -104,6 +113,40 @@ def test_registry_invalid_type():
         }
     }
     with pytest.raises(ValidationError):
+        RegistryConfig.model_validate(invalid_data)
+
+
+def test_registry_accepts_count_and_multi_type():
+    """Test that registry entries can define count and multiple allowed types."""
+    data = {
+        "Image": {
+            256: {
+                "name": "ImageWidth",
+                "type": ["SHORT", "LONG"],
+                "count": 1,
+            },
+            271: {
+                "name": "Make",
+                "type": "ASCII",
+                "count": "any",
+            },
+        }
+    }
+    RegistryConfig.model_validate(data)
+
+
+def test_registry_rejects_invalid_count():
+    """Test that malformed count definitions are rejected."""
+    invalid_data = {
+        "Image": {
+            271: {
+                "name": "Make",
+                "type": "ASCII",
+                "count": 0,
+            }
+        }
+    }
+    with pytest.raises(ValidationError, match="count must be a positive integer"):
         RegistryConfig.model_validate(invalid_data)
 
 
@@ -131,3 +174,39 @@ def test_formatting_extra_field():
     }
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         FormattingConfig.model_validate(invalid_data)
+
+
+@pytest.mark.parametrize(
+    "placement",
+    [
+        {"ifds": []},
+        {"ifds": ["IFD0", "IFD0"]},
+        {"ifds": ["GPS"]},
+        {"ifds": ["IFD1"]},
+        {"default_ifd": "GPS"},
+        {"ifds": ["IFD0"], "default_ifd": "IFD1"},
+    ],
+)
+def test_registry_rejects_inconsistent_placement_policy(placement):
+    with pytest.raises(ValidationError):
+        RegistryConfig.model_validate(
+            {"Image": {274: {"name": "Orientation", "type": "SHORT", **placement}}}
+        )
+
+
+def test_registry_accepts_explicit_thumbnail_only_policy():
+    config = RegistryConfig.model_validate(
+        {
+            "Image": {
+                513: {
+                    "name": "JPEGInterchangeFormat",
+                    "type": "LONG",
+                    "ifds": ["IFD1"],
+                    "default_ifd": "IFD1",
+                }
+            }
+        }
+    )
+    entry = config.root["Image"].root[513]
+    assert entry.ifds == ["IFD1"]
+    assert entry.default_ifd == "IFD1"

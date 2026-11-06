@@ -56,7 +56,17 @@ class ExifImage:
 
     def __len__(self) -> int:
         """Return the number of tags in this image."""
-        return len(self.tags)
+        tag_filter_set = (
+            {tag_registry.resolve_tag_id(tag, ifd=self.ifd) for tag in self.tag_filter}
+            if self.tag_filter is not None
+            else None
+        )
+        return sum(
+            1
+            for (tag_id, ifd) in self._tag_dict
+            if (tag_filter_set is None or tag_id in tag_filter_set)
+            and (self.ifd is None or ifd == self.ifd)
+        )
 
     def write_tag(
         self,
@@ -82,7 +92,7 @@ class ExifImage:
         """
         if ifd is None:
             ifd = tag_registry.get_ifd(tag_key)
-        tag_id = tag_registry.resolve_tag_id(tag_key)
+        tag_id = tag_registry.resolve_tag_id(tag_key, ifd=ifd)
         self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
 
     def write_tags(
@@ -123,9 +133,9 @@ class ExifImage:
             >>> exif = ExifImage('image10.jpg')
             >>> exif.delete_tag('Make', ifd='IFD0')
         """
-        tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:
-            ifd = tag_registry.get_ifd(tag_id)
+            ifd = tag_registry.get_ifd(tag_key)
+        tag_id = tag_registry.resolve_tag_id(tag_key, ifd=ifd)
         # Only delete if present; do not raise if missing
         if (tag_id, ifd) in self._tag_dict:
             del self._tag_dict[tag_id, ifd]
@@ -190,13 +200,13 @@ class ExifImage:
                 "binary_format must be one of 'bytes', 'hex', 'base64' or None"
             )
 
-        tag_id = tag_registry.resolve_tag_id(tag_key)
         if ifd is None:
-            ifd = tag_registry.get_ifd(tag_id)
+            ifd = tag_registry.get_ifd(tag_key)
+        tag_id = tag_registry.resolve_tag_id(tag_key, ifd=ifd)
 
         # Check if tag exists in the image
         if (tag_id, ifd) not in self._tag_dict:
-            tag_name = tag_registry.resolve_tag_name(tag_id)
+            tag_name = tag_registry.resolve_tag_name(tag_id, ifd=ifd)
             raise TagNotFound(tag_name)
 
         exif_tag = self._tag_dict[tag_id, ifd]
@@ -246,7 +256,7 @@ class ExifImage:
         result: dict[str, TagValue] = {}
 
         for tag_key in tag_keys:
-            tag_name = tag_registry.resolve_tag_name(tag_key)
+            tag_name = tag_registry.get_definition(tag_key, ifd=ifd).name
             try:
                 value = self.read_tag(
                     tag_key,
@@ -270,13 +280,13 @@ class ExifImage:
             dict: A dictionary of filtered tags with tag names as keys.
         """
         tag_filter_set = (
-            {tag_registry.resolve_tag_id(tag) for tag in self.tag_filter}
+            {tag_registry.resolve_tag_id(tag, ifd=self.ifd) for tag in self.tag_filter}
             if self.tag_filter is not None
             else None
         )
 
         return {
-            tag_registry.resolve_tag_name(tag_id): tag
+            tag_registry.resolve_tag_name(tag_id, ifd=ifd): tag
             for (tag_id, ifd), tag in self._tag_dict.items()
             if (tag_filter_set is None or tag_id in tag_filter_set)
             and (self.ifd is None or ifd == self.ifd)

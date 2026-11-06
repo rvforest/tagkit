@@ -27,7 +27,7 @@ def test_tag_is_ascii():
     entry = ExifTag(271, "Canon", "IFD0")
     assert _tag_is_ascii(entry) is True
     # 33434 is 'ExposureTime', which is RATIONAL
-    assert _tag_is_ascii(33434) is False
+    assert _tag_is_ascii(33434, "Exif") is False
 
 
 def test_load_tags_and_save_tags():

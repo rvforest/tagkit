@@ -185,9 +185,13 @@ Image:
   513:
     name: JPEGInterchangeFormat
     type: LONG
+    ifds: [IFD1]
+    default_ifd: IFD1
   514:
     name: JPEGInterchangeFormatLength
     type: LONG
+    ifds: [IFD1]
+    default_ifd: IFD1
   515:
     name: JPEGRestartInterval
     type: SHORT
