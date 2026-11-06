@@ -8,7 +8,7 @@ from tagkit.core.types import ExifType
 @pytest.fixture
 def sample_registry_conf():
     return {
-        "IFD0": {
+        "Image": {
             271: {"name": "Make", "type": "ASCII"},
             272: {"name": "Model", "type": "ASCII"},
         },
@@ -33,23 +33,23 @@ def registry(sample_registry_conf):
 
 def test_init(registry, sample_registry_conf):
     """Test registry initialization"""
-    assert registry.tags_by_ifd == sample_registry_conf
+    assert registry.tags_by_namespace == sample_registry_conf
     assert len(registry.tag_names) == 7  # Total unique tag names
 
 
 def test_from_yaml():
     """Test loading registry from default YAML file"""
     registry = ExifRegistry.from_yaml()
-    assert len(registry.tags_by_ifd) > 0
+    assert len(registry.tags_by_namespace) > 0
     assert all(
-        key in registry.tags_by_ifd for key in ["IFD0", "Exif", "GPS", "Interop"]
+        key in registry.tags_by_namespace for key in ["Image", "Exif", "GPS", "Interop"]
     )
 
 
 def test_from_yaml_custom_path(tmp_path):
     """Test loading registry from custom YAML file"""
     yaml_content = """
-    IFD0:
+    Image:
       271:
         name: Make
         type: ASCII
@@ -57,8 +57,8 @@ def test_from_yaml_custom_path(tmp_path):
     yaml_path = tmp_path / "test_registry.yaml"
     yaml_path.write_text(yaml_content)
     registry = ExifRegistry.from_yaml(yaml_path)
-    assert len(registry.tags_by_ifd) == 1
-    assert registry.tags_by_ifd["IFD0"][271]["name"] == "Make"
+    assert len(registry.tags_by_namespace) == 1
+    assert registry.tags_by_namespace["Image"][271]["name"] == "Make"
 
 
 def test_tag_names(registry):
@@ -73,9 +73,8 @@ def test_get_ifd_by_id(registry):
     """Test getting IFD by tag ID"""
     assert registry.get_ifd(271) == "IFD0"
     assert registry.get_ifd(33434) == "Exif"  # Exif tag -> Exif
-    assert (
-        registry.get_ifd(1, thumbnail=True) == "IFD1"
-    )  # Any tag with thumbnail=True -> IFD1
+    with pytest.raises(InvalidTagId):
+        registry.get_ifd(1, thumbnail=True)
 
 
 def test_get_ifd_by_name(registry):
@@ -173,7 +172,7 @@ def test_get_exif_type_invalid_name(registry):
 
 def test_get_ifd_warns_on_multiple_ifds():
     conf = {
-        "IFD0": {123: {"name": "TestTag", "type": "ASCII"}},
+        "Image": {123: {"name": "TestTag", "type": "ASCII"}},
         "Exif": {123: {"name": "TestTag", "type": "ASCII"}},
     }  # type: ignore
     reg = ExifRegistry(conf)  # type: ignore
@@ -186,19 +185,24 @@ def test_get_definition_by_ambiguous_id_requires_ifd(registry):
         registry.get_definition(1)
     definition = registry.get_definition(1, ifd="GPS")
     assert definition.name == "GPSLatitudeRef"
-    assert definition.ifd == "GPS"
+    assert definition.namespace == "GPS"
+    assert definition.allowed_ifds == ("GPS",)
 
 
 @pytest.mark.parametrize("tag_key", [256, "ImageWidth"])
 def test_ifd1_shares_ifd0_definitions(tag_key):
     registry = ExifRegistry(
-        {"IFD0": {256: {"name": "ImageWidth", "type": ["SHORT", "LONG"], "count": 1}}}
+        {"Image": {256: {"name": "ImageWidth", "type": ["SHORT", "LONG"], "count": 1}}}
     )
     main = registry.get_definition(tag_key)
     thumbnail = registry.get_definition(tag_key, ifd="IFD1")
 
-    assert main.ifd == "IFD0"
-    assert thumbnail.ifd == "IFD1"
+    assert thumbnail is main
+    assert main.namespace == "Image"
+    assert main.allowed_ifds == ("IFD0", "IFD1")
+    assert registry.resolve_tag(tag_key).ifd == "IFD0"
+    assert registry.resolve_tag(tag_key, ifd="IFD1").ifd == "IFD1"
+    assert registry.resolve_tag(tag_key, ifd="IFD1").definition is main
     assert thumbnail.tag_id == main.tag_id == 256
     assert thumbnail.name == main.name == "ImageWidth"
     assert thumbnail.allowed_types == main.allowed_types == ("SHORT", "LONG")
@@ -214,3 +218,48 @@ def test_ifd1_shares_ifd0_definitions(tag_key):
 def test_ifd1_does_not_use_exif_definitions(registry, tag_key, error):
     with pytest.raises(error):
         registry.get_definition(tag_key, ifd="IFD1")
+
+
+@pytest.mark.parametrize(
+    "tag_key", [513, "JPEGInterchangeFormat", 514, "JPEGInterchangeFormatLength"]
+)
+def test_thumbnail_location_tags_have_no_primary_placement(tag_key):
+    resolved = tag_registry.resolve_tag(tag_key)
+    assert resolved.ifd == "IFD1"
+    assert resolved.definition.namespace == "Image"
+    assert resolved.definition.allowed_ifds == ("IFD1",)
+    assert tag_registry.get_ifd(tag_key) == "IFD1"
+    with pytest.raises((InvalidTagId, InvalidTagName)):
+        tag_registry.resolve_tag(tag_key, ifd="IFD0")
+
+
+@pytest.mark.parametrize("tag_key", ["ExposureTime", "GPSLatitude", "InteropIndex"])
+def test_thumbnail_selection_rejects_other_namespaces(registry, tag_key):
+    with pytest.raises(InvalidTagName):
+        registry.get_ifd(tag_key, thumbnail=True)
+
+
+def test_default_policy_does_not_change_definition_identity():
+    conf = {
+        "Image": {274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}}
+    }
+    registry = ExifRegistry(conf)
+    assert registry.resolve_tag("Orientation").ifd == "IFD1"
+    assert registry.resolve_tag("Orientation", ifd="IFD0").ifd == "IFD0"
+    assert registry.get_definition("Orientation") is registry.get_definition(
+        "Orientation", ifd="IFD1"
+    )
+
+
+def test_explicit_directory_disambiguates_shared_name_and_id():
+    registry = ExifRegistry(
+        {
+            "Image": {123: {"name": "TestTag", "type": "SHORT"}},
+            "Exif": {123: {"name": "TestTag", "type": "LONG"}},
+        }
+    )
+    for key in (123, "TestTag"):
+        with pytest.raises(AmbiguousTagKey):
+            registry.resolve_tag(key)
+        assert registry.resolve_tag(key, ifd="IFD1").definition.namespace == "Image"
+        assert registry.resolve_tag(key, ifd="Exif").definition.namespace == "Exif"
