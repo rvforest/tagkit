@@ -53,10 +53,10 @@ def fix(session: nox.Session) -> None:
 
 
 @nox.session(
-    venv_backend="uv", tags=[TEST_TAG], python=["3.10", "3.11", "3.12", "3.13", "3.14"]
+    venv_backend="uv", tags=[TEST_TAG], python=["3.11", "3.12", "3.13", "3.14", "3.15"]
 )
 def test(session: nox.Session) -> None:
-    """Run tests with pytest across multiple Python versions (3.10-3.14)."""
+    """Run tests with pytest across multiple Python versions (3.11-3.15)."""
     _run_install(session)
     session.run("pytest", *session.posargs)
 
@@ -90,7 +90,7 @@ def doctest_docs(session: nox.Session) -> None:
 
 
 @nox.session(
-    venv_backend="uv", tags=[TEST_TAG], python=["3.10", "3.11", "3.12", "3.13", "3.14"]
+    venv_backend="uv", tags=[TEST_TAG], python=["3.11", "3.12", "3.13", "3.14", "3.15"]
 )
 def coverage(session: nox.Session) -> None:
     """Run tests with coverage reporting."""
@@ -172,6 +172,8 @@ def _run_install(
     session: nox.Session, groups: list[Literal["main", "dev", "docs"]] = ["main", "dev"]
 ) -> None:
     cmd = ["uv", "sync"]
+    if isinstance(session.python, str):
+        cmd.extend(["--python", session.python])
     group_arg = "--group" if "main" in groups else "--only-group"
     if "dev" in groups:
         cmd.append(f"{group_arg}=dev")

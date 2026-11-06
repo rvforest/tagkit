@@ -9,10 +9,8 @@ import base64
 import math
 from pathlib import Path
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union, cast
-
-from typing_extensions import Self
-
 import yaml
+from typing_extensions import Self
 
 from tagkit.conf.models import FormattingConfig
 from tagkit.core.types import (
