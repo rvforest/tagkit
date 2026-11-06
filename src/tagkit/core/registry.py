@@ -23,7 +23,7 @@ class RegistryConfValue(TypedDict, total=False):
     count: ExifCount | None
 
 
-RegistryConfKey = Literal["Image", "Exif", "GPS", "Interop"]
+RegistryConfKey = Literal["IFD0", "Exif", "GPS", "Interop"]
 RegistryConf = dict[RegistryConfKey, dict[int, RegistryConfValue]]
 
 
@@ -43,18 +43,9 @@ class ExifTagDefinition:
         return self.allowed_types[0]
 
 
-def _registry_ifd_to_tagkit_ifd(ifd: RegistryConfKey) -> IfdName:
-    return "IFD0" if ifd == "Image" else ifd
-
-
-def _tagkit_ifd_to_registry_ifd(ifd: IfdName) -> RegistryConfKey:
-    if ifd in ("IFD0", "IFD1"):
-        return "Image"
-    if ifd == "Exif":
-        return "Exif"
-    if ifd == "GPS":
-        return "GPS"
-    return "Interop"
+def _definition_ifd(ifd: IfdName) -> RegistryConfKey:
+    """Use IFD0's tag definitions for IFD1 lookups."""
+    return "IFD0" if ifd == "IFD1" else ifd
 
 
 class ExifRegistry:
@@ -75,14 +66,13 @@ class ExifRegistry:
         self._definitions_by_id: dict[int, list[ExifTagDefinition]] = {}
 
         for registry_ifd, ifd_tags in self.tags_by_ifd.items():
-            tagkit_ifd = _registry_ifd_to_tagkit_ifd(registry_ifd)
             for tag_id, tag in ifd_tags.items():
                 raw_type = tag["type"]
                 allowed_types = (
                     tuple(raw_type) if isinstance(raw_type, list) else (raw_type,)
                 )
                 definition = ExifTagDefinition(
-                    ifd=tagkit_ifd,
+                    ifd=registry_ifd,
                     tag_id=tag_id,
                     name=tag["name"],
                     allowed_types=allowed_types,
@@ -137,7 +127,7 @@ class ExifRegistry:
         exactly one definition.
         """
         if ifd is not None:
-            registry_ifd = _tagkit_ifd_to_registry_ifd(ifd)
+            registry_ifd = _definition_ifd(ifd)
             tag_id = self.resolve_tag_id(tag_key, ifd=ifd)
             try:
                 definition = self._definitions_by_key[registry_ifd, tag_id]
@@ -192,7 +182,7 @@ class ExifRegistry:
         """
         if isinstance(tag_key, int):
             if ifd is not None:
-                registry_ifd = _tagkit_ifd_to_registry_ifd(ifd)
+                registry_ifd = _definition_ifd(ifd)
                 if (registry_ifd, tag_key) not in self._definitions_by_key:
                     raise InvalidTagId(tag_key)
                 return tag_key
@@ -202,9 +192,9 @@ class ExifRegistry:
         if not matches:
             raise InvalidTagName(tag_key)
         if ifd is not None:
-            registry_ifd = _tagkit_ifd_to_registry_ifd(ifd)
+            registry_ifd = _definition_ifd(ifd)
             for definition in matches:
-                if _tagkit_ifd_to_registry_ifd(definition.ifd) == registry_ifd:
+                if definition.ifd == registry_ifd:
                     return definition.tag_id
             raise InvalidTagName(tag_key)
         if len(matches) > 1:

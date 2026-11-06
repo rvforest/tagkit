@@ -93,10 +93,19 @@ def test_image_metadata_invalid_ifd():
         ImageMetadataConfig.model_validate(invalid_data)
 
 
+@pytest.mark.parametrize("section", ["Image", "IFD1"])
+def test_registry_rejects_unsupported_sections(section):
+    """Only IFD0 defines the tags shared by the main and thumbnail IFDs."""
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        RegistryConfig.model_validate(
+            {section: {271: {"name": "Make", "type": "ASCII"}}}
+        )
+
+
 def test_registry_invalid_type():
     """Test that invalid EXIF types are rejected."""
     invalid_data = {
-        "Image": {
+        "IFD0": {
             271: {
                 "name": "Make",
                 "type": "INVALID_TYPE",  # Not a valid ExifType
@@ -110,7 +119,7 @@ def test_registry_invalid_type():
 def test_registry_accepts_count_and_multi_type():
     """Test that registry entries can define count and multiple allowed types."""
     data = {
-        "Image": {
+        "IFD0": {
             256: {
                 "name": "ImageWidth",
                 "type": ["SHORT", "LONG"],
@@ -129,7 +138,7 @@ def test_registry_accepts_count_and_multi_type():
 def test_registry_rejects_invalid_count():
     """Test that malformed count definitions are rejected."""
     invalid_data = {
-        "Image": {
+        "IFD0": {
             271: {
                 "name": "Make",
                 "type": "ASCII",
@@ -144,7 +153,7 @@ def test_registry_rejects_invalid_count():
 def test_registry_missing_name():
     """Test that missing tag name is rejected."""
     invalid_data = {
-        "Image": {
+        "IFD0": {
             271: {
                 "type": "ASCII"  # missing 'name'
             }

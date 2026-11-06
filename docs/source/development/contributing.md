@@ -120,6 +120,10 @@ All configuration files in the project are validated using [Pydantic](https://do
 - `tests/conf/test-img-metadata.json` — Test image metadata (validated by `ImageMetadataConfig`)
 - `tests/conf/doctest-img-metadata.json` — Doctest image metadata (validated by `ImageMetadataConfig`)
 
+The registry sections are `IFD0`, `Exif`, `GPS`, and `Interop`. `IFD1` shares
+the definitions in `IFD0` and has no separate configuration section. Custom
+registry files must use `IFD0` in place of the former `Image` section.
+
 **Pydantic models** are defined in `src/tagkit/conf/models.py`. When modifying configuration files:
 1. Ensure your changes conform to the Pydantic models
 2. Run `uv run pytest tests/test_conf_schemas.py` to validate all configs
