@@ -9,7 +9,7 @@ This page is automatically generated from the contents of `conf/registry.yaml` a
 ## Tag Table
 
 :::{note}
-If the IFD is `Image`, it can refer to either `IFD0` (main image) or `IFD1` (thumbnail image).
+Tags listed under `IFD0` (main image) also apply to `IFD1` (thumbnail image), which shares the same tag definitions.
 :::
 
 :::{note}

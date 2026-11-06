@@ -133,13 +133,14 @@ class RegistryConfig(BaseModel):
     """
     Complete registry configuration for EXIF tags.
 
-    Contains sections for Image (IFD0/IFD1), Exif, GPS, and Interop tags.
+    Contains sections for IFD0, Exif, GPS, and Interop tags.
+    IFD1 shares the tag definitions in IFD0.
     All sections are optional to allow partial configurations for testing.
     """
 
-    Image: RegistryIfdSection = Field(
+    IFD0: RegistryIfdSection = Field(
         default_factory=lambda: RegistryIfdSection.model_validate({}),
-        description="Image IFD tags (IFD0/IFD1)",
+        description="IFD0 tag definitions, also used for IFD1",
     )
     Exif: RegistryIfdSection = Field(
         default_factory=lambda: RegistryIfdSection.model_validate({}),
