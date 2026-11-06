@@ -1,7 +1,7 @@
 # EXIF Tag Reference
 
 :::{note}
-This page is automatically generated from the contents of `conf/registry.yaml` and lists all supported EXIF tags, their IDs, types, and IFD categories.
+This page is automatically generated from the contents of `conf/registry.yaml` and lists all supported EXIF tags, their IDs, types, namespaces, and supported directories.
 :::
 
 ---
@@ -9,7 +9,11 @@ This page is automatically generated from the contents of `conf/registry.yaml` a
 ## Tag Table
 
 :::{note}
-Tags listed under `IFD0` (main image) also apply to `IFD1` (thumbnail image), which shares the same tag definitions.
+`Image` is a shared tag namespace for `IFD0` (main image) and `IFD1` (thumbnail).
+Individual definitions can restrict their supported directories. An omitted
+`ifds` entry uses the namespace default: `IFD0, IFD1` for Image, or the namesake
+directory for Exif, GPS, and Interop. These placements do not express every
+compression-dependent rule in the EXIF standard.
 :::
 
 :::{note}
@@ -20,11 +24,11 @@ For detailed descriptions of EXIF tags, see the [Exif 2.3 specification](https:/
 :::
 
 ```{jinja} tag_reference
-| IFD | Tag ID | Name | Type |
-|-----|--------|------|------|
-{% for ifd, tags in yaml.items() -%}
+| Namespace | Tag ID | Name | Type | IFDs |
+|-----------|--------|------|------|------|
+{% for namespace, tags in yaml.items() -%}
 {% for tag_id, tag_info in tags.items() -%}
-| {{ ifd }} | {{ tag_id }} | {{ tag_info.name }} | {{ tag_info.type }}
+| {{ namespace }} | {{ tag_id }} | {{ tag_info.name }} | {{ tag_info.type }} | {{ tag_info.ifds | join(", ") if tag_info.ifds is defined else ("IFD0, IFD1" if namespace == "Image" else namespace) }} |
 {% endfor %}
 {%- endfor %}
 ```

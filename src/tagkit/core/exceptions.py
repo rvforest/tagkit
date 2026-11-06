@@ -74,12 +74,12 @@ class InvalidTagId(TagkitError):
 
 
 class AmbiguousTagKey(TagkitError):
-    """Raised when a tag name or ID matches more than one IFD definition."""
+    """Raised when a tag name or ID matches definitions in multiple namespaces."""
 
     def __init__(self, tag_key: Union[int, str], matches: Iterable[str]) -> None:
         match_list = ", ".join(matches)
         super().__init__(
-            f"Ambiguous tag key '{tag_key}' matches multiple IFD definitions: "
+            f"Ambiguous tag key '{tag_key}' matches multiple tag definitions: "
             f"{match_list}. Provide an explicit ifd."
         )
 

@@ -40,6 +40,15 @@ ExifType = Literal[
 ]
 ExifCount = Union[int, Literal["any"]]
 IfdName = Literal["IFD0", "IFD1", "Exif", "GPS", "Interop"]
+TagNamespace = Literal["Image", "Exif", "GPS", "Interop"]
+
+# Supported directory vocabulary by tag family. The first IFD is tagkit's default.
+NAMESPACE_IFDS: dict[TagNamespace, tuple[IfdName, ...]] = {
+    "Image": ("IFD0", "IFD1"),
+    "Exif": ("Exif",),
+    "GPS": ("GPS",),
+    "Interop": ("Interop",),
+}
 
 
 class TagValueInfo(TypedDict):

@@ -93,10 +93,10 @@ def test_image_metadata_invalid_ifd():
         ImageMetadataConfig.model_validate(invalid_data)
 
 
-@pytest.mark.parametrize("section", ["Image", "IFD1"])
+@pytest.mark.parametrize("section", ["IFD0", "IFD1"])
 def test_registry_rejects_unsupported_sections(section):
-    """Only IFD0 defines the tags shared by the main and thumbnail IFDs."""
-    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+    """Registry sections describe namespaces rather than image directories."""
+    with pytest.raises(ValidationError):
         RegistryConfig.model_validate(
             {section: {271: {"name": "Make", "type": "ASCII"}}}
         )
@@ -105,7 +105,7 @@ def test_registry_rejects_unsupported_sections(section):
 def test_registry_invalid_type():
     """Test that invalid EXIF types are rejected."""
     invalid_data = {
-        "IFD0": {
+        "Image": {
             271: {
                 "name": "Make",
                 "type": "INVALID_TYPE",  # Not a valid ExifType
@@ -119,7 +119,7 @@ def test_registry_invalid_type():
 def test_registry_accepts_count_and_multi_type():
     """Test that registry entries can define count and multiple allowed types."""
     data = {
-        "IFD0": {
+        "Image": {
             256: {
                 "name": "ImageWidth",
                 "type": ["SHORT", "LONG"],
@@ -138,7 +138,7 @@ def test_registry_accepts_count_and_multi_type():
 def test_registry_rejects_invalid_count():
     """Test that malformed count definitions are rejected."""
     invalid_data = {
-        "IFD0": {
+        "Image": {
             271: {
                 "name": "Make",
                 "type": "ASCII",
@@ -153,7 +153,7 @@ def test_registry_rejects_invalid_count():
 def test_registry_missing_name():
     """Test that missing tag name is rejected."""
     invalid_data = {
-        "IFD0": {
+        "Image": {
             271: {
                 "type": "ASCII"  # missing 'name'
             }
@@ -174,3 +174,39 @@ def test_formatting_extra_field():
     }
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         FormattingConfig.model_validate(invalid_data)
+
+
+@pytest.mark.parametrize(
+    "placement",
+    [
+        {"ifds": []},
+        {"ifds": ["IFD0", "IFD0"]},
+        {"ifds": ["GPS"]},
+        {"ifds": ["IFD1"]},
+        {"default_ifd": "GPS"},
+        {"ifds": ["IFD0"], "default_ifd": "IFD1"},
+    ],
+)
+def test_registry_rejects_inconsistent_placement_policy(placement):
+    with pytest.raises(ValidationError):
+        RegistryConfig.model_validate(
+            {"Image": {274: {"name": "Orientation", "type": "SHORT", **placement}}}
+        )
+
+
+def test_registry_accepts_explicit_thumbnail_only_policy():
+    config = RegistryConfig.model_validate(
+        {
+            "Image": {
+                513: {
+                    "name": "JPEGInterchangeFormat",
+                    "type": "LONG",
+                    "ifds": ["IFD1"],
+                    "default_ifd": "IFD1",
+                }
+            }
+        }
+    )
+    entry = config.root["Image"].root[513]
+    assert entry.ifds == ["IFD1"]
+    assert entry.default_ifd == "IFD1"
