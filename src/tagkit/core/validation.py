@@ -56,13 +56,17 @@ def _validate_for_type(
         return value
 
     if exif_type == "BYTE":
-        return _validate_integer_value(definition.count, value, 0, 255, "BYTE")
+        return _validate_integer_value(definition.count, value, 0, (1 << 8) - 1, "BYTE")
 
     if exif_type == "SHORT":
-        return _validate_integer_value(definition.count, value, 0, 65535, "SHORT")
+        return _validate_integer_value(
+            definition.count, value, 0, (1 << 16) - 1, "SHORT"
+        )
 
     if exif_type == "LONG":
-        return _validate_integer_value(definition.count, value, 0, 4294967295, "LONG")
+        return _validate_integer_value(
+            definition.count, value, 0, (1 << 32) - 1, "LONG"
+        )
 
     if exif_type == "RATIONAL":
         return _validate_rational_value(definition.count, value, signed=False)
