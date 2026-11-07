@@ -21,13 +21,23 @@ We assume you are familiar with basic git workflows (forking, cloning, branching
 ### Create a Development Environment
 
 1. Download and install uv. See the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/) for instructions.
-2. Create and activate a virtual environment and install project and dev dependencies:
+2. Create a virtual environment and install project and dev dependencies:
 
    ```bash
    uv sync
    ```
 
    This sets up a virtual environment, installs the required dependencies, and configures nox for running tests and other tasks.
+
+3. Install the Git hooks for commits and pushes:
+
+   ```bash
+   uv run pre-commit install --hook-type pre-commit --hook-type pre-push
+   ```
+
+   Repeat this step in each fresh checkout. `uv sync` installs dependencies but
+   does not install Git hooks; hooks are local to the checkout and are not
+   included when cloning the repository.
 
 ## Development Workflow
 
@@ -39,11 +49,14 @@ We assume you are familiar with basic git workflows (forking, cloning, branching
    uv run nox -s tests
    ```
 
-- Check code quality:
+- Run the complete hook suite before pushing, using the same checks as CI:
 
    ```bash
-   uv run nox -s lint
+   uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
    ```
+
+   If a hook changes files, review and stage the changes, then rerun until all
+   hooks pass. This checks the whole repository, including test files.
 
 - Commit and push your changes to your fork.
 - Open a pull request on GitHub and fill out the pull request template.
@@ -129,15 +142,14 @@ The validation happens automatically when configs are loaded and during CI testi
 
 ## Pre-commit Hooks
 
-We optionally support [pre-commit](https://pre-commit.com/) hooks to help catch formatting and linting issues before you commit.
-To enable pre-commit hooks locally, install pre-commit and run:
+Install [pre-commit](https://pre-commit.com/) hooks as part of the development
+setup above. Git then runs the configured checks on staged files before each
+commit and on changes being pushed before each push. The first run installs
+the tools needed by the hooks, which may take a few minutes.
 
-```bash
-uv run pre-commit install
-```
-
-This will automatically run code quality checks on staged files before each commit.
-Use of pre-commit is optional; the GitHub Actions workflow is the final gatekeeper for code quality. All code must pass the checks enforced by CI before it is accepted, regardless of local pre-commit usage.
+Use the all-files command in the development workflow for final verification.
+Resolve hook setup failures before relying on the checks, and report any checks
+you could not run. All required CI checks must pass before merging.
 
 ## GitHub Actions
 
