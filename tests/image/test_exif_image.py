@@ -902,7 +902,11 @@ def test_image_operations_follow_configured_default_without_relocating_tags(
     from tagkit.core.registry import ExifRegistry
 
     registry = ExifRegistry(
-        {"Image": {274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}}}
+        {
+            "Image": {
+                274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}
+            }
+        }
     )
     monkeypatch.setattr("tagkit.image.exif.tag_registry", registry)
     exif = ExifImage(test_images / "minimal.jpg")
