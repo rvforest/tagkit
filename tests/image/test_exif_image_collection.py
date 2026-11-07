@@ -42,6 +42,20 @@ def mock_exif_w_patch(mock_exif_data):
 
 
 class TestImageCollection:
+    def test_as_dict_preserves_duplicate_tag_names(self, mock_exif_w_patch):
+        collection = ExifImageCollection(["foo"])
+        image = collection.files["foo"]
+        image.write_tag("Orientation", 1, ifd="IFD0")
+        image.write_tag("Orientation", 6, ifd="IFD1")
+
+        result = collection.as_dict()["foo"]
+
+        assert result["IFD0:Orientation"]["ifd"] == "IFD0"
+        assert result["IFD1:Orientation"]["ifd"] == "IFD1"
+        assert result["IFD0:Orientation"]["value"] == "Top-left"
+        assert result["IFD1:Orientation"]["value"] == "Right-top"
+        assert len(result) == collection.n_tags
+
     def test_image_collection_files_loaded(self, mock_exif_w_patch):
         n_files_expected = 3
 

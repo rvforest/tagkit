@@ -95,7 +95,7 @@ def _validate_integer_value(
         _validate_count(count, 1)
         _validate_integer_range(value, minimum, maximum, label)
         return value
-    if _is_plain_sequence(value):
+    if isinstance(value, (list, tuple)):
         values = tuple(value)
         _validate_count(count, len(values))
         for item in values:
@@ -112,7 +112,7 @@ def _validate_float_value(count: ExifCount | None, value: Any) -> TagValue:
     if isinstance(value, (int, float)):
         _validate_count(count, 1)
         return float(value)
-    if _is_plain_sequence(value):
+    if isinstance(value, (list, tuple)):
         values = tuple(value)
         _validate_count(count, len(values))
         if any(
@@ -134,7 +134,7 @@ def _validate_rational_value(
         rational = cast(Rational, value)
         _validate_rational_components(rational, signed=signed)
         return rational
-    if _is_plain_sequence(value):
+    if isinstance(value, (list, tuple)):
         values = tuple(value)
         if not values or not all(_is_rational(item) for item in values):
             raise ValidationError("rational sequences must contain rational tuples")
@@ -158,6 +158,11 @@ def _validate_rational_components(rational: Rational, *, signed: bool) -> None:
         raise ValidationError("rational denominator must not be zero")
     if not signed and (numerator < 0 or denominator < 0):
         raise ValidationError("RATIONAL components must be non-negative")
+    minimum = -(1 << 31) if signed else 0
+    maximum = (1 << 31) - 1 if signed else (1 << 32) - 1
+    label = "SRATIONAL" if signed else "RATIONAL"
+    for component in rational:
+        _validate_integer_range(component, minimum, maximum, label)
 
 
 def _validate_integer_range(value: int, minimum: int, maximum: int, label: str) -> None:
@@ -180,10 +185,6 @@ def _is_rational(value: Any) -> bool:
         and len(value) == 2
         and all(isinstance(item, int) and not isinstance(item, bool) for item in value)
     )
-
-
-def _is_plain_sequence(value: Any) -> bool:
-    return isinstance(value, (list, tuple)) and not _is_rational(value)
 
 
 def _format_expected(definition: ExifTagDefinition) -> str:

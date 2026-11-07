@@ -5,6 +5,7 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
+from collections import Counter
 from datetime import datetime, timedelta
 from typing import Iterable, Optional, Union, Mapping
 
@@ -337,20 +338,24 @@ class ExifImage:
                 If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
-            dict: A nested dictionary containing the EXIF data for the image.
+            A dictionary keyed by tag name. Repeated names are qualified with
+            their IFD, such as ``IFD0:Orientation`` and ``IFD1:Orientation``,
+            so every occurrence is preserved.
 
         Example:
             >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
             {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}
         """
+        entries = self.tag_entries
+        name_counts = Counter(tag.name for tag in entries.values())
         return {
-            tag_name: {
+            (f"{ifd}:{tag.name}" if name_counts[tag.name] > 1 else tag.name): {
                 "id": tag.id,
                 "value": tag.format(binary_format=binary_format),
                 "ifd": tag.ifd,
             }
-            for tag_name, tag in self.tags.items()
+            for (ifd, _), tag in entries.items()
         }
 
     # DateTime operations
