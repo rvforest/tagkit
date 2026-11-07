@@ -208,6 +208,13 @@ def test_write_gps_coordinate_normalizes_lists(test_images):
     assert exif.read_tag("GPSLatitude") == ((40, 1), (44, 1), (52, 1))
 
 
+def test_write_rejects_other_sequence_types(test_images):
+    """Low-level writes accept list and tuple sequence shapes only."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValidationError, match="BYTE value must be"):
+        exif.write_tag("GPSVersionID", range(4))
+
+
 def test_write_gps_coordinate_rejects_wrong_count_without_mutation(test_images):
     """Invalid fixed-count writes fail before mutating existing values."""
     exif = ExifImage(test_images / "minimal.jpg")

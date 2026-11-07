@@ -1,6 +1,5 @@
 """Validation helpers for EXIF-shaped tag values."""
 
-from collections.abc import Sequence
 from typing import Any, cast
 
 from tagkit.core.exceptions import ValidationError
@@ -180,11 +179,7 @@ def _is_rational(value: Any) -> bool:
 
 
 def _is_plain_sequence(value: Any) -> bool:
-    return (
-        isinstance(value, Sequence)
-        and not isinstance(value, (bytes, str))
-        and not _is_rational(value)
-    )
+    return isinstance(value, (list, tuple)) and not _is_rational(value)
 
 
 def _format_expected(definition: ExifTagDefinition) -> str:
