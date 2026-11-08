@@ -18,6 +18,13 @@ Glob patterns *must* be enclosed in quotes, for example: `tagkit view "*.jpg"`.
 
 The default output is a table. Use the `--json` option for JSON output, which is useful for downstream processing.
 
+The table includes an IFD column to distinguish tag occurrences in different
+directories. JSON output and the API's `as_dict()` methods keep unique tag names
+as keys. When a name occurs in multiple IFDs, each key includes its IFD, such as
+`IFD0:Orientation` and `IFD1:Orientation`, preserving both occurrences. The
+name-keyed `.tags` property still raises an ambiguity error for repeated names;
+use `.tag_entries` to access all occurrences by `(ifd, tag_id)`.
+
 Use `--tags` to filter for specific tags.
 
 ### Examples

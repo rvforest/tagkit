@@ -4,10 +4,7 @@ import piexif
 from tagkit.tag_io.base import ExifIOBackend, ExifTagDict
 from tagkit.core.tag import ExifTag
 from tagkit.core.registry import tag_registry
-from tagkit.core.types import TagValue, FilePath, IfdName, Literal
-
-# While the exif standard only allows ascii, utf-8 is commonly used
-STR_ENCODING = "utf-8"
+from tagkit.core.types import TagValue, FilePath, IfdName, Literal, STR_ENCODING
 
 PiexifIfdName = Literal["0th", "1st", "Exif", "GPS", "Interop"]
 PiexifTags = dict[PiexifIfdName, dict[int, TagValue]]

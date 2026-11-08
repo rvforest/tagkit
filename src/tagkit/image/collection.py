@@ -68,6 +68,8 @@ class ExifImageCollection:
 
         Returns:
             Dictionary mapping file paths to their EXIF data dictionaries.
+            Repeated tag names in each image are qualified with their IFD,
+            such as ``IFD0:Orientation`` and ``IFD1:Orientation``.
 
         Example:
             >>> collection = ExifImageCollection(["image2.jpg", "image3.jpg"])

@@ -52,6 +52,7 @@ def create_test_images_from_metadata(img_dir: Path, metadata_path: str | Path) -
             "0th": {},
             "Exif": {},
             "GPS": {},
+            "Interop": {},
             "1st": {},
             "thumbnail": None,
         }

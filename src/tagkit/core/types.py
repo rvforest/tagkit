@@ -9,6 +9,9 @@ from typing import Literal, TypedDict, Union
 
 FilePath = Union[str, Path]
 
+# EXIF specifies ASCII, but UTF-8 is commonly used for text values.
+STR_ENCODING = "utf-8"
+
 # ExifTypes
 IntCollection = tuple[int, ...]
 FloatCollection = tuple[float, ...]

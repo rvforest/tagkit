@@ -5,6 +5,7 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
+from collections import Counter
 from datetime import datetime, timedelta
 from typing import Iterable, Optional, Union, Mapping
 
@@ -275,19 +276,19 @@ class ExifImage:
         Returns:
             Mapping of IFD-aware tag keys to tags.
         """
-        tag_filter_set = (
-            {
-                tag_registry.get_definition(tag, ifd=self.ifd).tag_id
-                for tag in self.tag_filter
-            }
-            if self.tag_filter is not None
-            else None
-        )
+        tag_filter_set: set[tuple[IfdName, int]] | None = None
+        if self.tag_filter is not None:
+            tag_filter_set = set()
+            for tag_key in self.tag_filter:
+                definition = tag_registry.get_definition(tag_key, ifd=self.ifd)
+                tag_filter_set.update(
+                    (ifd, definition.tag_id) for ifd in definition.allowed_ifds
+                )
 
         return {
             (ifd, tag_id): tag
             for (tag_id, ifd), tag in self._tag_dict.items()
-            if (tag_filter_set is None or tag_id in tag_filter_set)
+            if (tag_filter_set is None or (ifd, tag_id) in tag_filter_set)
             and (self.ifd is None or ifd == self.ifd)
         }
 
@@ -337,20 +338,24 @@ class ExifImage:
                 If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
-            dict: A nested dictionary containing the EXIF data for the image.
+            A dictionary keyed by tag name. Repeated names are qualified with
+            their IFD, such as ``IFD0:Orientation`` and ``IFD1:Orientation``,
+            so every occurrence is preserved.
 
         Example:
             >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
             {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}
         """
+        entries = self.tag_entries
+        name_counts = Counter(tag.name for tag in entries.values())
         return {
-            tag_name: {
+            (f"{ifd}:{tag.name}" if name_counts[tag.name] > 1 else tag.name): {
                 "id": tag.id,
                 "value": tag.format(binary_format=binary_format),
                 "ifd": tag.ifd,
             }
-            for tag_name, tag in self.tags.items()
+            for (ifd, _), tag in entries.items()
         }
 
     # DateTime operations

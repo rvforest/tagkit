@@ -93,6 +93,23 @@ def test_image_metadata_invalid_ifd():
         ImageMetadataConfig.model_validate(invalid_data)
 
 
+def test_image_metadata_accepts_interop_ifd():
+    ImageMetadataConfig.model_validate(
+        {
+            "interop.jpg": {
+                "tags": [
+                    {
+                        "id": 1,
+                        "name": "InteroperabilityIndex",
+                        "value": "R98",
+                        "ifd": "Interop",
+                    }
+                ]
+            }
+        }
+    )
+
+
 @pytest.mark.parametrize("section", ["IFD0", "IFD1"])
 def test_registry_rejects_unsupported_sections(section):
     """Registry sections describe namespaces rather than image directories."""
