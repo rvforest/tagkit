@@ -69,11 +69,21 @@ occurrences share a name. Code that iterated `exif.tags.items()` should use
 `tag_entries` if it needs to handle every occurrence:
 
 ```{testcode}
+try:
+    thumbnail.tags
+except AmbiguousTagKey:
+    pass
+else:
+    raise AssertionError("The name view must reject repeated names")
+
 entries = thumbnail.tag_entries
 assert entries[("IFD0", 274)].value == 1
 assert entries[("IFD1", 274)].value == 3
 for (ifd, tag_id), tag in entries.items():
     print(ifd, tag_id, tag.name, tag.value)
+assert "Orientation" not in thumbnail.as_dict()
+assert "IFD0:Orientation" in thumbnail.as_dict()
+assert "IFD1:Orientation" in thumbnail.as_dict()
 ```
 
 `tag_entries` is a read-only mapping keyed by `(ifd, tag_id)`. Use `write_tag`
