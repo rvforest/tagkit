@@ -34,6 +34,12 @@
             }
         ]
     },
+    "with_interop.jpg": {
+        "tags": [
+            {"id": 1, "name": "GPSLatitudeRef", "value": "N", "ifd": "GPS"},
+            {"id": 1, "name": "InteroperabilityIndex", "value": "R98", "ifd": "Interop"}
+        ]
+    },
     "unicode.jpg": {
         "tags": [{"id": 315, "name": "Artist", "value": "测试用户", "ifd": "0th"}]
     },

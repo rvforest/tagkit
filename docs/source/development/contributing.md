@@ -120,6 +120,9 @@ All configuration files in the project are validated using [Pydantic](https://do
 - `tests/conf/test-img-metadata.json` — Test image metadata (validated by `ImageMetadataConfig`)
 - `tests/conf/doctest-img-metadata.json` — Doctest image metadata (validated by `ImageMetadataConfig`)
 
+Test image metadata uses piexif directory names: `0th`, `1st`, `Exif`, `GPS`,
+and `Interop` are supported by the schema and image generator.
+
 The registry groups definitions by namespace: `Image`, `Exif`, `GPS`, and
 `Interop`. These groups describe tag families, not occurrences in a file.
 Image definitions support `IFD0` and `IFD1` by default; the other namespaces

@@ -52,3 +52,33 @@ def test_two_component_sequences_still_validate_each_item(exif_type, value):
 
     with pytest.raises(ValidationError):
         validate_tag_value(definition, value)
+
+
+@pytest.mark.parametrize("count", [3, "any", None])
+def test_ascii_count_uses_encoded_bytes_and_terminator(count):
+    definition = ExifTagDefinition(
+        namespace="Image",
+        tag_id=271,
+        name="TextField",
+        allowed_types=("ASCII",),
+        allowed_ifds=("IFD0",),
+        count=count,
+    )
+
+    assert validate_tag_value(definition, "é") == "é"
+
+
+def test_ascii_count_rejects_multibyte_value_with_too_many_bytes():
+    definition = ExifTagDefinition(
+        namespace="GPS",
+        tag_id=1,
+        name="GPSLatitudeRef",
+        allowed_types=("ASCII",),
+        allowed_ifds=("GPS",),
+        count=2,
+    )
+
+    with pytest.raises(
+        ValidationError, match="count 3 does not match expected count 2"
+    ):
+        validate_tag_value(definition, "é")

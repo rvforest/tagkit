@@ -1,10 +1,11 @@
 """Validation helpers for EXIF-shaped tag values."""
 
+import struct
 from typing import Any, cast
 
 from tagkit.core.exceptions import ValidationError
 from tagkit.core.registry import ExifTagDefinition
-from tagkit.core.types import ExifCount, ExifType, Rational, TagValue
+from tagkit.core.types import ExifCount, ExifType, Rational, TagValue, STR_ENCODING
 
 
 def validate_tag_value(definition: ExifTagDefinition, value: TagValue) -> TagValue:
@@ -81,9 +82,13 @@ def _validate_for_type(
 
 
 def _validate_ascii_count(count: ExifCount | None, value: str) -> None:
-    if count is None or count == "any":
-        return
-    _validate_count(count, len(value) + 1)
+    try:
+        encoded = value.encode(STR_ENCODING)
+    except UnicodeEncodeError as exc:
+        raise ValidationError(
+            f"ASCII values must be encodable as {STR_ENCODING}"
+        ) from exc
+    _validate_count(count, len(encoded) + 1)
 
 
 def _validate_integer_value(
@@ -111,7 +116,7 @@ def _validate_float_value(count: ExifCount | None, value: Any) -> TagValue:
         raise ValidationError("FLOAT scalar must be int or float")
     if isinstance(value, (int, float)):
         _validate_count(count, 1)
-        return float(value)
+        return _validate_float_component(value)
     if isinstance(value, (list, tuple)):
         values = tuple(value)
         _validate_count(count, len(values))
@@ -122,8 +127,17 @@ def _validate_float_value(count: ExifCount | None, value: Any) -> TagValue:
             raise ValidationError(
                 "FLOAT sequences must contain only int or float values"
             )
-        return tuple(float(item) for item in values)
+        return tuple(_validate_float_component(item) for item in values)
     raise ValidationError("FLOAT value must be float or tuple[float, ...]")
+
+
+def _validate_float_component(value: int | float) -> float:
+    try:
+        normalized = float(value)
+        struct.pack(">f", normalized)
+    except (OverflowError, struct.error) as exc:
+        raise ValidationError("FLOAT value outside representable 32-bit range") from exc
+    return normalized
 
 
 def _validate_rational_value(

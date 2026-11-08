@@ -141,7 +141,9 @@ class ImageMetadataTag(BaseModel):
     value: Union[str, int, float, list[Any]] = Field(
         description="Tag value (string, number, or array)"
     )
-    ifd: Literal["0th", "1st", "Exif", "GPS"] = Field(description="IFD location")
+    ifd: Literal["0th", "1st", "Exif", "GPS", "Interop"] = Field(
+        description="IFD location"
+    )
 
     model_config = {"extra": "forbid"}
 

@@ -276,19 +276,19 @@ class ExifImage:
         Returns:
             Mapping of IFD-aware tag keys to tags.
         """
-        tag_filter_set = (
-            {
-                tag_registry.get_definition(tag, ifd=self.ifd).tag_id
-                for tag in self.tag_filter
-            }
-            if self.tag_filter is not None
-            else None
-        )
+        tag_filter_set: set[tuple[IfdName, int]] | None = None
+        if self.tag_filter is not None:
+            tag_filter_set = set()
+            for tag_key in self.tag_filter:
+                definition = tag_registry.get_definition(tag_key, ifd=self.ifd)
+                tag_filter_set.update(
+                    (ifd, definition.tag_id) for ifd in definition.allowed_ifds
+                )
 
         return {
             (ifd, tag_id): tag
             for (tag_id, ifd), tag in self._tag_dict.items()
-            if (tag_filter_set is None or tag_id in tag_filter_set)
+            if (tag_filter_set is None or (ifd, tag_id) in tag_filter_set)
             and (self.ifd is None or ifd == self.ifd)
         }
 
