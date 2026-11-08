@@ -1,266 +1,205 @@
-"""
-Registry of EXIF tags and their metadata.
+"""Shared EXIF tag definitions and directory resolution policy."""
 
-This module provides the ExifRegistry class which maintains information about
-all supported EXIF tags, their IDs, names, and types.
-"""
-
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Optional, TypedDict, Union
+from typing import TypedDict, Union, cast
 
 import yaml
-import warnings
 from typing_extensions import Self
 
 from tagkit.conf.models import RegistryConfig
-from tagkit.core.exceptions import InvalidTagId, InvalidTagName
-from tagkit.core.types import ExifType, IfdName
+from tagkit.core.exceptions import AmbiguousTagKey, InvalidTagId, InvalidTagName
+from tagkit.core.types import ExifCount, ExifType, IfdName, NAMESPACE_IFDS, TagNamespace
 
 
-class RegistryConfValue(TypedDict):
+class RegistryConfValue(TypedDict, total=False):
     name: str
-    type: ExifType
+    type: ExifType | list[ExifType]
+    count: ExifCount | None
+    ifds: list[IfdName] | None
+    default_ifd: IfdName | None
 
 
-RegistryConfKey = Literal["Image", "Exif", "GPS", "Interop"]
-RegistryConf = dict[RegistryConfKey, dict[int, RegistryConfValue]]
+RegistryConf = dict[TagNamespace, dict[int, RegistryConfValue]]
+
+
+@dataclass(frozen=True)
+class ExifTagDefinition:
+    """Shared tag meaning, value constraints, and supported directory placements.
+
+    A definition's identity is its namespace and numeric tag ID. It does not
+    describe an occurrence in an image or choose a target directory.
+    """
+
+    namespace: TagNamespace
+    tag_id: int
+    name: str
+    allowed_types: tuple[ExifType, ...]
+    allowed_ifds: tuple[IfdName, ...]
+    count: ExifCount | None = None
+
+    @property
+    def exif_type(self) -> ExifType:
+        """Return the primary EXIF type for compatibility helpers."""
+        return self.allowed_types[0]
+
+
+@dataclass(frozen=True)
+class ResolvedTag:
+    """A shared definition paired with a selected directory."""
+
+    definition: ExifTagDefinition
+    ifd: IfdName
 
 
 class ExifRegistry:
-    """
-    Registry of all EXIF tags compatible with tagkit.
+    """Registry of shared tag definitions and default directory policy.
 
     Args:
-        registry_conf (RegistryConf): The EXIF tag registry configuration.
+        registry_conf: Definitions grouped by tag namespace.
     """
 
-    def __init__(self, registry_conf: RegistryConf):
-        self.tags_by_ifd = registry_conf
+    def __init__(self, registry_conf: RegistryConf) -> None:
+        config = RegistryConfig.model_validate(registry_conf)
+        self.tags_by_namespace = cast(
+            RegistryConf, config.model_dump(exclude_none=True)
+        )
+        self._definitions_by_name: dict[str, list[ExifTagDefinition]] = {}
+        self._definitions_by_id: dict[int, list[ExifTagDefinition]] = {}
+        self._default_ifds: dict[tuple[TagNamespace, int], IfdName] = {}
 
-        name_to_id = {}
-        name_to_type = {}
-        for ifd_tags in self.tags_by_ifd.values():
-            name_to_id.update({tag["name"]: tag_id for tag_id, tag in ifd_tags.items()})
-            name_to_type.update({tag["name"]: tag["type"] for tag in ifd_tags.values()})
-        self._name_to_id = name_to_id
-        self._name_to_type = name_to_type
-        self._tag_ids = {
-            tag_id for exif_tags in registry_conf.values() for tag_id in exif_tags
-        }
+        for namespace, section in config.root.items():
+            for tag_id, tag in section.root.items():
+                allowed_types = (
+                    tuple(tag.type) if isinstance(tag.type, list) else (tag.type,)
+                )
+                definition = ExifTagDefinition(
+                    namespace=namespace,
+                    tag_id=tag_id,
+                    name=tag.name,
+                    allowed_types=allowed_types,
+                    allowed_ifds=tuple(tag.ifds)
+                    if tag.ifds is not None
+                    else NAMESPACE_IFDS[namespace],
+                    count=tag.count,
+                )
+                self._default_ifds[namespace, tag_id] = (
+                    tag.default_ifd or NAMESPACE_IFDS[namespace][0]
+                )
+                self._definitions_by_name.setdefault(definition.name, []).append(
+                    definition
+                )
+                self._definitions_by_id.setdefault(tag_id, []).append(definition)
 
     @classmethod
     def from_yaml(cls, path: Union[Path, str, None] = None) -> Self:
-        """
-        Load the EXIF tag registry from a YAML file.
+        """Load and validate registry YAML from a custom path or the bundled file.
 
         Args:
-            path (Union[Path, str, None]): Path to the YAML file. If None, uses default.
+            path: Registry YAML path. None uses the bundled registry.
 
         Returns:
-            ExifRegistry: The loaded registry instance.
-
-        Raises:
-            FileNotFoundError: If the YAML file does not exist.
-            yaml.YAMLError: If the YAML file is invalid.
-            pydantic.ValidationError: If the YAML structure is invalid.
+            The loaded registry.
         """
         if path is None:
-            here = Path(__file__).parents[1]  # Go up to tagkit package root
-            path = here / "conf/registry.yaml"
-        with open(path, "r") as f:
-            raw_conf = yaml.safe_load(f)
-
-        # Validate with Pydantic
-        validated_conf = RegistryConfig.model_validate(raw_conf)
-
-        # Convert to the format expected by __init__
-        # exclude_defaults=True removes empty IFD sections (which have default empty dicts)
-        conf: RegistryConf = validated_conf.model_dump(exclude_defaults=True)  # type: ignore
-        return cls(conf)
+            path = Path(__file__).parents[1] / "conf/registry.yaml"
+        with open(path) as f:
+            return cls(yaml.safe_load(f))
 
     @property
     def tag_names(self) -> list[str]:
-        """
-        List all tag names in the registry.
+        """Return all unique tag names in the registry."""
+        return list(self._definitions_by_name)
+
+    def get_definition(
+        self, tag_key: Union[int, str], ifd: IfdName | None = None
+    ) -> ExifTagDefinition:
+        """Find a shared definition, optionally constrained by directory.
+
+        Args:
+            tag_key: Tag name or numeric ID.
+            ifd: Supported directory used to disambiguate definitions.
 
         Returns:
-            list[str]: All tag names.
+            The same immutable definition for every supported placement.
 
-        Example:
-            >>> tag_registry.tag_names[:5]
-            ['ProcessingSoftware', 'NewSubfileType', 'SubfileType', 'ImageWidth', 'ImageLength']
+        Raises:
+            InvalidTagId: No definition matches a numeric key and directory.
+            InvalidTagName: No definition matches a name and directory.
+            AmbiguousTagKey: Multiple definitions match the supplied key.
         """
-        return list(self._name_to_id)
+        matches = (
+            self._definitions_by_id.get(tag_key, [])
+            if isinstance(tag_key, int)
+            else self._definitions_by_name.get(tag_key, [])
+        )
+        if ifd is not None:
+            matches = [
+                definition for definition in matches if ifd in definition.allowed_ifds
+            ]
+        if not matches:
+            if isinstance(tag_key, int):
+                raise InvalidTagId(tag_key)
+            raise InvalidTagName(tag_key)
+        if len(matches) > 1:
+            raise AmbiguousTagKey(
+                tag_key,
+                [
+                    f"{match.namespace}:{match.tag_id} ({match.name})"
+                    for match in matches
+                ],
+            )
+        return matches[0]
+
+    def resolve_tag(
+        self, tag_key: Union[int, str], ifd: IfdName | None = None
+    ) -> ResolvedTag:
+        """Select a definition and a directory using explicit or default policy.
+
+        Args:
+            tag_key: Tag name or numeric ID.
+            ifd: Explicit directory; None uses the definition's configured default.
+
+        Returns:
+            The shared definition and selected directory.
+        """
+        definition = self.get_definition(tag_key, ifd=ifd)
+        target = (
+            ifd
+            if ifd is not None
+            else self._default_ifds[definition.namespace, definition.tag_id]
+        )
+        return ResolvedTag(definition, target)
 
     def get_ifd(self, tag_key: Union[int, str], thumbnail: bool = False) -> IfdName:
-        """
-        Get the IFD (Image File Directory) for a tag. If a tag id is provided that is
-        present in multiple IFDs, a warning is raised and the first found IFD is
-        returned. IFD's are searched in the order of IFD0, Exif, GPS, Interop. If
-        the thumbnail argument is True, IFD1 is always returned.
+        """Select a tag's default directory or validate thumbnail placement.
 
         Args:
-            tag_key (Union[int, str]): Tag name or tag ID.
-            thumbnail (bool): If True, return the thumbnail IFD (IFD1).
+            tag_key: Tag name or numeric ID.
+            thumbnail: If True, require a definition supporting IFD1.
 
         Returns:
-            IfdName: The IFD name.
-
-        Raises:
-            ValueError: If the tag or IFD is invalid.
-
-        Example:
-            >>> tag_registry.get_ifd('Make')
-            'IFD0'
+            The selected directory.
         """
-        self._validate_tag_key(tag_key)
+        return self.resolve_tag(tag_key, ifd="IFD1" if thumbnail else None).ifd
 
-        if thumbnail:
-            return "IFD1"
-
-        found_ifds: list[Literal["IFD0", "Exif", "GPS", "Interop"]] = []
-        ifd0: Literal["IFD0"] = "IFD0"
-        for ifd_category, tags in self.tags_by_ifd.items():
-            tag_names = [tag["name"] for tag in tags.values()]
-            if tag_key in tag_names or tag_key in tags:
-                ifd = ifd0 if ifd_category == "Image" else ifd_category
-                found_ifds.append(ifd)
-        if len(found_ifds) > 1:
-            warnings.warn(f"Tag ID {tag_key} found in multiple IFDs: {found_ifds}")
-        if found_ifds:
-            return found_ifds[0]
-
-        # Execution shouldn't make it this far because if tag_key is in self
-        # then there should always be a result. However, as a guardrail we
-        # raise here anyway.
-        raise ValueError(f"Could not find ifd for tag '{tag_key}'")
-
-    def resolve_tag_id(self, tag_key: Union[int, str]) -> int:
-        """
-        Get tag ID for a given tag name or return the ID unchanged if already an int.
-
-        Args:
-            tag_key (Union[int, str]): Tag name or tag ID.
-
-        Returns:
-            int: Tag ID for the given tag name.
-
-        Raises:
-            InvalidTagName: If the tag name is invalid.
-            InvalidTagId: If the tag ID is invalid.
-
-        Example:
-            >>> tag_registry.resolve_tag_id('Make')
-            271
-        """
-        if isinstance(tag_key, int):
-            self._validate_tag_id(tag_key)
-            return tag_key
-
-        self._validate_tag_name(tag_key)
-        return self._name_to_id[tag_key]
+    def resolve_tag_id(
+        self, tag_key: Union[int, str], ifd: IfdName | None = None
+    ) -> int:
+        """Return the numeric ID of a matching, unambiguous definition."""
+        return self.get_definition(tag_key, ifd=ifd).tag_id
 
     def resolve_tag_name(
-        self, tag_key: Union[int, str], ifd: Optional[IfdName] = None
+        self, tag_key: Union[int, str], ifd: IfdName | None = None
     ) -> str:
-        """
-        Get tag name for a given tag name or tag ID. If given a tag ID, returns the name.
+        """Return the name of a matching, unambiguous definition."""
+        return self.get_definition(tag_key, ifd=ifd).name
 
-        Args:
-            tag_key (Union[int, str]): Tag name or tag ID.
-            ifd (Optional[IfdName]): Specific IFD to use.
-
-        Returns:
-            str: Tag name for the given tag ID.
-
-        Raises:
-            InvalidTagName: If the tag name is invalid.
-            InvalidTagId: If the tag ID is invalid.
-            ValueError: If the tag or IFD is invalid.
-
-        Example:
-            >>> tag_registry.resolve_tag_name(271)
-            'Make'
-        """
-        if isinstance(tag_key, str):
-            self._validate_tag_name(tag_key)
-            return tag_key
-
-        self._validate_tag_id(tag_key)
-
-        ifd_key = "Image" if ifd in ("IFD0", "IFD1") else ifd
-
-        if ifd_key is not None:
-            return self.tags_by_ifd[ifd_key][tag_key]["name"]  # type: ignore
-
-        # If IFD not given then try all IFD's
-        for ifd_tags in self.tags_by_ifd.values():
-            if tag_key in ifd_tags:
-                return ifd_tags[tag_key]["name"]
-
-        # Execution shouldn't make it this far because if tag_id is in self
-        # then there should always be a result. However, as a guardrail we
-        # raise here anyway.
-        raise ValueError(f"Could not find ifd for tag '{tag_key}'")
-
-    def _validate_tag_key(self, tag_key: Union[int, str]) -> None:
-        """
-        Validate the tag key (either ID or name).
-
-        Args:
-            tag_key (Union[int, str]): Tag name or tag ID.
-
-        Raises:
-            InvalidTagName: If the tag name is invalid.
-            InvalidTagId: If the tag ID is invalid.
-        """
-        if isinstance(tag_key, int):
-            self._validate_tag_id(tag_key)
-        else:
-            self._validate_tag_name(tag_key)
-
-    def _validate_tag_id(self, tag_id: int) -> None:
-        if tag_id not in self._tag_ids:
-            raise InvalidTagId(tag_id)
-
-    def _validate_tag_name(self, tag_name: str) -> None:
-        if tag_name not in self._name_to_id:
-            raise InvalidTagName(tag_name)
-
-    def get_exif_type(self, tag_key: Union[int, str]) -> ExifType:
-        """
-        Get the EXIF type for a tag.
-
-        Args:
-            tag_key (Union[int, str]): Tag name or tag ID.
-
-        Returns:
-            ExifType: The EXIF type for the tag.
-
-        Raises:
-            InvalidTagName: If the tag name is invalid.
-            InvalidTagId: If the tag ID is invalid.
-
-        Example:
-            >>> tag_registry.get_exif_type('Make')
-            'ASCII'
-        """
-        if isinstance(tag_key, str):
-            self._validate_tag_name(tag_key)
-            return self._name_to_type[tag_key]
-
-        self._validate_tag_id(tag_key)
-
-        # Find the tag in any IFD
-        for ifd_tags in self.tags_by_ifd.values():
-            if tag_key in ifd_tags:
-                return ifd_tags[tag_key]["type"]
-
-        # Execution shouldn't make it this far because if tag_id is in self
-        # then there should always be a result. However, as a guardrail we
-        # raise here anyway.
-        raise ValueError(f"Could not find type for tag '{tag_key}'")
+    def get_exif_type(
+        self, tag_key: Union[int, str], ifd: IfdName | None = None
+    ) -> ExifType:
+        """Return the primary EXIF type for a matching definition."""
+        return self.get_definition(tag_key, ifd=ifd).exif_type
 
 
-# Create a singleton instance
 tag_registry = ExifRegistry.from_yaml()

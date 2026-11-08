@@ -9,6 +9,9 @@ from typing import Literal, TypedDict, Union
 
 FilePath = Union[str, Path]
 
+# EXIF specifies ASCII, but UTF-8 is commonly used for text values.
+STR_ENCODING = "utf-8"
+
 # ExifTypes
 IntCollection = tuple[int, ...]
 FloatCollection = tuple[float, ...]
@@ -28,8 +31,27 @@ TagValue = Union[
     RationalCollection,
 ]
 ExifIfdCollection = dict[str, dict[int, TagValue]]
-ExifType = Literal["ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "UNDEFINED"]
+ExifType = Literal[
+    "ASCII",
+    "BYTE",
+    "FLOAT",
+    "LONG",
+    "RATIONAL",
+    "SHORT",
+    "SRATIONAL",
+    "UNDEFINED",
+]
+ExifCount = Union[int, Literal["any"]]
 IfdName = Literal["IFD0", "IFD1", "Exif", "GPS", "Interop"]
+TagNamespace = Literal["Image", "Exif", "GPS", "Interop"]
+
+# Supported directory vocabulary by tag family. The first IFD is tagkit's default.
+NAMESPACE_IFDS: dict[TagNamespace, tuple[IfdName, ...]] = {
+    "Image": ("IFD0", "IFD1"),
+    "Exif": ("Exif",),
+    "GPS": ("GPS",),
+    "Interop": ("Interop",),
+}
 
 
 class TagValueInfo(TypedDict):

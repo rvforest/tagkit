@@ -18,6 +18,13 @@ Glob patterns *must* be enclosed in quotes, for example: `tagkit view "*.jpg"`.
 
 The default output is a table. Use the `--json` option for JSON output, which is useful for downstream processing.
 
+The table includes an IFD column to distinguish tag occurrences in different
+directories. JSON output and the API's `as_dict()` methods keep unique tag names
+as keys. When a name occurs in multiple IFDs, each key includes its IFD, such as
+`IFD0:Orientation` and `IFD1:Orientation`, preserving both occurrences. The
+name-keyed `.tags` property still raises an ambiguity error for repeated names;
+use `.tag_entries` to access all occurrences by `(ifd, tag_id)`.
+
 Use `--tags` to filter for specific tags.
 
 ### Examples
@@ -57,9 +64,27 @@ exif = ExifImage("image1.jpg")
 tags = exif.tags
 
 # Print all tags
-for tag_id, tag in tags.items():
+for tag_name, tag in tags.items():
     print(f"{tag.name}: {tag.value}")
 ```
+
+`exif.tags` is a convenience view keyed by tag name. For EXIF-correct access that can always represent duplicate names and IDs across IFDs, use `exif.tag_entries`, which is keyed by `(ifd, tag_id)`:
+
+```{testcode}
+from tagkit.image.exif import ExifImage
+
+exif = ExifImage("image1.jpg")
+
+for (ifd, tag_id), tag in exif.tag_entries.items():
+    print(f"{ifd}:{tag_id} {tag.name}: {tag.value}")
+```
+
+A tag can have separate values in the primary and thumbnail directories.
+`tag_entries` preserves both actual locations; `tags` raises an ambiguity error
+when more than one occurrence has the same name. Single-tag reads use the
+configured default directory (normally `IFD0` for Image definitions). Pass
+`ifd="IFD1"` to read a thumbnail value explicitly. A missing primary value does
+not cause a fallback to the thumbnail.
 
 ### Reading Specific Tags
 

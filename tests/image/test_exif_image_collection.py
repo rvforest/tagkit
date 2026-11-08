@@ -42,6 +42,20 @@ def mock_exif_w_patch(mock_exif_data):
 
 
 class TestImageCollection:
+    def test_as_dict_preserves_duplicate_tag_names(self, mock_exif_w_patch):
+        collection = ExifImageCollection(["foo"])
+        image = collection.files["foo"]
+        image.write_tag("Orientation", 1, ifd="IFD0")
+        image.write_tag("Orientation", 6, ifd="IFD1")
+
+        result = collection.as_dict()["foo"]
+
+        assert result["IFD0:Orientation"]["ifd"] == "IFD0"
+        assert result["IFD1:Orientation"]["ifd"] == "IFD1"
+        assert result["IFD0:Orientation"]["value"] == "Top-left"
+        assert result["IFD1:Orientation"]["value"] == "Right-top"
+        assert len(result) == collection.n_tags
+
     def test_image_collection_files_loaded(self, mock_exif_w_patch):
         n_files_expected = 3
 
@@ -146,13 +160,13 @@ class TestImageCollection:
         files = [f"foo_{i}" for i in range(2)]
         tags: dict[Union[str, int], TagValue] = {
             "Artist": "Jane Doe",
-            "Copyright": b"2025 John",
+            "Copyright": "2025 John",
         }
         collection = ExifImageCollection(files)
         collection.write_tags(tags)
         for fname in files:
             assert collection.files[fname].tags["Artist"].value == "Jane Doe"
-            assert collection.files[fname].tags["Copyright"].value == b"2025 John"
+            assert collection.files[fname].tags["Copyright"].value == "2025 John"
 
     @pytest.mark.parametrize("file_type", [str, Path])
     def test_write_tags_selected_files(self, mock_exif_w_patch: dict, file_type):

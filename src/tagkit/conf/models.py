@@ -10,7 +10,11 @@ This module defines Pydantic models for validating all configuration files:
 
 from typing import Any, Literal, Union
 
-from pydantic import BaseModel, Field, RootModel, field_validator
+from pydantic import BaseModel, Field, RootModel, field_validator, model_validator
+
+from typing_extensions import Self
+
+from tagkit.core.types import ExifType, IfdName, NAMESPACE_IFDS, TagNamespace
 
 
 # ========================== Registry Configuration ==========================
@@ -20,49 +24,76 @@ class RegistryTagEntry(BaseModel):
     """Entry for a single EXIF tag in the registry."""
 
     name: str = Field(description="Tag name (e.g., 'Make', 'Model')")
-    type: Literal[
-        "ASCII", "BYTE", "RATIONAL", "SRATIONAL", "SHORT", "LONG", "UNDEFINED", "FLOAT"
-    ] = Field(description="EXIF data type")
+    type: ExifType | list[ExifType] = Field(description="Allowed EXIF data types")
+    count: Union[int, Literal["any"], None] = Field(
+        default=None,
+        description="Expected EXIF component count, or 'any' for variable count",
+    )
+
+    ifds: list[IfdName] | None = Field(
+        default=None,
+        min_length=1,
+        description="Supported directories; defaults by namespace",
+    )
+    default_ifd: IfdName | None = Field(
+        default=None, description="Default target directory; defaults by namespace"
+    )
+
+    @field_validator("type")
+    @classmethod
+    def validate_type_list(
+        cls, v: ExifType | list[ExifType]
+    ) -> ExifType | list[ExifType]:
+        """Validate that multi-type definitions are not empty."""
+        if isinstance(v, list) and not v:
+            raise ValueError("type list must contain at least one EXIF type")
+        return v
+
+    @field_validator("count")
+    @classmethod
+    def validate_count(
+        cls, v: Union[int, Literal["any"], None]
+    ) -> Union[int, Literal["any"], None]:
+        """Validate fixed counts are positive."""
+        if isinstance(v, int) and v <= 0:
+            raise ValueError("count must be a positive integer or 'any'")
+        return v
 
     model_config = {"extra": "forbid"}
 
 
-class RegistryIfdSection(RootModel[dict[int, RegistryTagEntry]]):
-    """
-    IFD section in the registry, mapping tag IDs to tag entries.
-
-    Each key is a tag ID (integer), and each value is a RegistryTagEntry.
-    """
+class RegistryNamespaceSection(RootModel[dict[int, RegistryTagEntry]]):
+    """Tag definitions keyed by numeric ID within one namespace."""
 
     root: dict[int, RegistryTagEntry]
 
 
-class RegistryConfig(BaseModel):
+class RegistryConfig(RootModel[dict[TagNamespace, RegistryNamespaceSection]]):
+    """Definitions grouped by namespace, with optional per-tag placement policy.
+
+    Image defaults to IFD0 and supports IFD0/IFD1. Other namespaces default to
+    their namesake directory. Explicit placements must stay within the namespace,
+    and the effective default must be a supported placement. Partial registries
+    are supported.
     """
-    Complete registry configuration for EXIF tags.
 
-    Contains sections for Image (IFD0/IFD1), Exif, GPS, and Interop tags.
-    All sections are optional to allow partial configurations for testing.
-    """
+    root: dict[TagNamespace, RegistryNamespaceSection]
 
-    Image: RegistryIfdSection = Field(
-        default_factory=lambda: RegistryIfdSection.model_validate({}),
-        description="Image IFD tags (IFD0/IFD1)",
-    )
-    Exif: RegistryIfdSection = Field(
-        default_factory=lambda: RegistryIfdSection.model_validate({}),
-        description="Exif IFD tags",
-    )
-    GPS: RegistryIfdSection = Field(
-        default_factory=lambda: RegistryIfdSection.model_validate({}),
-        description="GPS IFD tags",
-    )
-    Interop: RegistryIfdSection = Field(
-        default_factory=lambda: RegistryIfdSection.model_validate({}),
-        description="Interop IFD tags",
-    )
-
-    model_config = {"extra": "forbid"}
+    @model_validator(mode="after")
+    def validate_placements(self) -> Self:
+        """Reject conflicting namespace, placement, and default declarations."""
+        for namespace, section in self.root.items():
+            supported = NAMESPACE_IFDS[namespace]
+            for tag_id, entry in section.root.items():
+                ifds = entry.ifds if entry.ifds is not None else supported
+                default_ifd = entry.default_ifd or supported[0]
+                if len(set(ifds)) != len(ifds) or not set(ifds).issubset(supported):
+                    raise ValueError(f"Invalid placements for {namespace}:{tag_id}")
+                if default_ifd not in ifds:
+                    raise ValueError(
+                        f"Default IFD must be a supported placement for {namespace}:{tag_id}"
+                    )
+        return self
 
 
 # ======================== Formatting Configuration ========================
@@ -110,7 +141,9 @@ class ImageMetadataTag(BaseModel):
     value: Union[str, int, float, list[Any]] = Field(
         description="Tag value (string, number, or array)"
     )
-    ifd: Literal["0th", "1st", "Exif", "GPS"] = Field(description="IFD location")
+    ifd: Literal["0th", "1st", "Exif", "GPS", "Interop"] = Field(
+        description="IFD location"
+    )
 
     model_config = {"extra": "forbid"}
 

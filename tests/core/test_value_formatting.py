@@ -119,24 +119,24 @@ def test_format_value(formatter: ValueFormatter):
 
 
 def test_format_value_with_bytes_base64(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format="base64") == "base64://79/A=="
 
 
 def test_format_value_with_bytes_hex(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format="hex") == "hex:fffefdfc"
 
 
 def test_format_value_with_bytes_bytes(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert (
         formatter.format_value(tag, binary_format="bytes") == "b'\\xff\\xfe\\xfd\\xfc'"
     )
 
 
 def test_format_value_with_bytes_no_render(formatter: ValueFormatter):
-    tag = ExifTag(id=1, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
+    tag = ExifTag(id=37510, value=b"\xff\xfe\xfd\xfc", ifd="Exif")
     assert formatter.format_value(tag, binary_format=None) == "<bytes: 4>"
 
 

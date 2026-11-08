@@ -52,29 +52,26 @@ def print_exif_table(
         exif_data: EXIF data to print.
         binary_format: How to format binary data - 'bytes' (default), 'hex', or 'base64'.
     """
-    render_bytes = False if binary_format is None else True
-
     table = Table(title="Exif Data")
     table.add_column("filename", style="cyan")
+    table.add_column("ifd", style="magenta", no_wrap=True)
     table.add_column("id", style="magenta", no_wrap=True)
     table.add_column("name", style="magenta")
     table.add_column("value")
 
     for filename, tags in exif_data.files.items():
-        is_first = True
-        is_last = False
-        for i, tag in enumerate(tags.tags.items()):
-            if i == len(tags.tags.items()) - 1:
-                is_last = True
-            filename_val = filename if is_first else ""
-            is_first = False
+        entries = tags.tag_entries
+        for i, tag in enumerate(entries.values()):
             row_data = [
-                filename_val,
-                tag[1].id,
-                tag[1].name,
-                tag[1].format(binary_format=binary_format),
+                filename if i == 0 else "",
+                tag.ifd,
+                tag.id,
+                tag.name,
+                tag.format(binary_format=binary_format),
             ]
-            table.add_row(*[str(d) for d in row_data], end_section=is_last)
+            table.add_row(
+                *[str(d) for d in row_data], end_section=i == len(entries) - 1
+            )
 
     console = Console()
     console.print(table)

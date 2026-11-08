@@ -9,7 +9,6 @@ import base64
 import math
 from pathlib import Path
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union, cast
-
 import yaml
 from typing_extensions import Self
 
@@ -48,7 +47,7 @@ class ValueFormatter:
         'f/1.2'
 
         # Bytes
-        >>> tag_entry = ExifTag(1, b'\\xff\\xfe\\xfd\\xfc', 'Exif')
+        >>> tag_entry = ExifTag(37510, b'\\xff\\xfe\\xfd\\xfc', 'Exif')
         >>> formatter.format_value(tag_entry)
         '<bytes: 4>'
 

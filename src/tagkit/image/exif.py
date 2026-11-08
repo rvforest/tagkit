@@ -5,14 +5,16 @@ This module provides classes for reading, modifying, and removing EXIF tags from
 image files.
 """
 
+from collections import Counter
 from datetime import datetime, timedelta
 from typing import Iterable, Optional, Union, Mapping
 
-from tagkit.core.exceptions import TagNotFound, DateTimeError
+from tagkit.core.exceptions import AmbiguousTagKey, TagNotFound, DateTimeError
 from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
 from tagkit.core.registry import tag_registry
 from tagkit.core.tag import ExifTag
 from tagkit.core.types import TagValue, FilePath, IfdName
+from tagkit.core.validation import validate_tag_value
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
 
@@ -56,7 +58,7 @@ class ExifImage:
 
     def __len__(self) -> int:
         """Return the number of tags in this image."""
-        return len(self.tags)
+        return len(self.tag_entries)
 
     def write_tag(
         self,
@@ -80,10 +82,14 @@ class ExifImage:
             >>> exif = ExifImage('image1.jpg')
             >>> exif.write_tag('Artist', 'John Doe', ifd='IFD0')
         """
-        if ifd is None:
-            ifd = tag_registry.get_ifd(tag_key)
-        tag_id = tag_registry.resolve_tag_id(tag_key)
-        self._tag_dict[tag_id, ifd] = ExifTag(tag_id, value, ifd)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
+        normalized_value = validate_tag_value(definition, value)
+        self._tag_dict[definition.tag_id, resolved.ifd] = ExifTag(
+            definition.tag_id,
+            normalized_value,
+            resolved.ifd,
+        )
 
     def write_tags(
         self,
@@ -123,9 +129,10 @@ class ExifImage:
             >>> exif = ExifImage('image10.jpg')
             >>> exif.delete_tag('Make', ifd='IFD0')
         """
-        tag_id = tag_registry.resolve_tag_id(tag_key)
-        if ifd is None:
-            ifd = tag_registry.get_ifd(tag_id)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
+        tag_id = definition.tag_id
+        ifd = resolved.ifd
         # Only delete if present; do not raise if missing
         if (tag_id, ifd) in self._tag_dict:
             del self._tag_dict[tag_id, ifd]
@@ -190,14 +197,14 @@ class ExifImage:
                 "binary_format must be one of 'bytes', 'hex', 'base64' or None"
             )
 
-        tag_id = tag_registry.resolve_tag_id(tag_key)
-        if ifd is None:
-            ifd = tag_registry.get_ifd(tag_id)
+        resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
+        definition = resolved.definition
+        tag_id = definition.tag_id
+        ifd = resolved.ifd
 
         # Check if tag exists in the image
         if (tag_id, ifd) not in self._tag_dict:
-            tag_name = tag_registry.resolve_tag_name(tag_id)
-            raise TagNotFound(tag_name)
+            raise TagNotFound(definition.name)
 
         exif_tag = self._tag_dict[tag_id, ifd]
 
@@ -246,7 +253,7 @@ class ExifImage:
         result: dict[str, TagValue] = {}
 
         for tag_key in tag_keys:
-            tag_name = tag_registry.resolve_tag_name(tag_key)
+            definition = tag_registry.get_definition(tag_key, ifd=ifd)
             try:
                 value = self.read_tag(
                     tag_key,
@@ -254,12 +261,36 @@ class ExifImage:
                     format_value=format_value,
                     binary_format=binary_format,
                 )
-                result[tag_name] = value
+                result[definition.name] = value
             except TagNotFound:
                 if skip_missing:
                     continue
                 raise
         return result
+
+    @property
+    def tag_entries(self) -> Mapping[tuple[IfdName, int], ExifTag]:
+        """
+        Get filtered tags keyed by canonical ``(ifd, tag_id)`` identity.
+
+        Returns:
+            Mapping of IFD-aware tag keys to tags.
+        """
+        tag_filter_set: set[tuple[IfdName, int]] | None = None
+        if self.tag_filter is not None:
+            tag_filter_set = set()
+            for tag_key in self.tag_filter:
+                definition = tag_registry.get_definition(tag_key, ifd=self.ifd)
+                tag_filter_set.update(
+                    (ifd, definition.tag_id) for ifd in definition.allowed_ifds
+                )
+
+        return {
+            (ifd, tag_id): tag
+            for (tag_id, ifd), tag in self._tag_dict.items()
+            if (tag_filter_set is None or (ifd, tag_id) in tag_filter_set)
+            and (self.ifd is None or ifd == self.ifd)
+        }
 
     @property
     def tags(self) -> Mapping[str, ExifTag]:
@@ -269,18 +300,19 @@ class ExifImage:
         Returns:
             dict: A dictionary of filtered tags with tag names as keys.
         """
-        tag_filter_set = (
-            {tag_registry.resolve_tag_id(tag) for tag in self.tag_filter}
-            if self.tag_filter is not None
-            else None
-        )
-
-        return {
-            tag_registry.resolve_tag_name(tag_id): tag
-            for (tag_id, ifd), tag in self._tag_dict.items()
-            if (tag_filter_set is None or tag_id in tag_filter_set)
-            and (self.ifd is None or ifd == self.ifd)
-        }
+        result: dict[str, ExifTag] = {}
+        for (ifd, tag_id), tag in self.tag_entries.items():
+            tag_name = tag_registry.resolve_tag_name(tag_id, ifd=ifd)
+            if tag_name in result:
+                raise AmbiguousTagKey(
+                    tag_name,
+                    [
+                        f"{result[tag_name].ifd}:{result[tag_name].id}",
+                        f"{tag.ifd}:{tag.id}",
+                    ],
+                )
+            result[tag_name] = tag
+        return result
 
     def save(self, create_backup: bool = False):
         """
@@ -306,20 +338,24 @@ class ExifImage:
                 If None, <bytes: N> will be shown as a placeholder.
 
         Returns:
-            dict: A nested dictionary containing the EXIF data for the image.
+            A dictionary keyed by tag name. Repeated names are qualified with
+            their IFD, such as ``IFD0:Orientation`` and ``IFD1:Orientation``,
+            so every occurrence is preserved.
 
         Example:
             >>> exif = ExifImage('image2.jpg')
             >>> exif.as_dict()
             {'Make': {'id': 271, 'value': 'Tagkit', 'ifd': 'IFD0'}, 'DateTime': {'id': 306, 'value': '2025:05:02 14:30:00', 'ifd': 'IFD0'}}
         """
+        entries = self.tag_entries
+        name_counts = Counter(tag.name for tag in entries.values())
         return {
-            tag_name: {
+            (f"{ifd}:{tag.name}" if name_counts[tag.name] > 1 else tag.name): {
                 "id": tag.id,
                 "value": tag.format(binary_format=binary_format),
                 "ifd": tag.ifd,
             }
-            for tag_name, tag in self.tags.items()
+            for (ifd, _), tag in entries.items()
         }
 
     # DateTime operations

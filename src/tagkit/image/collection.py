@@ -68,6 +68,8 @@ class ExifImageCollection:
 
         Returns:
             Dictionary mapping file paths to their EXIF data dictionaries.
+            Repeated tag names in each image are qualified with their IFD,
+            such as ``IFD0:Orientation`` and ``IFD1:Orientation``.
 
         Example:
             >>> collection = ExifImageCollection(["image2.jpg", "image3.jpg"])
@@ -454,8 +456,8 @@ class ExifImageCollection:
         # Pre-resolve tag names; respect skip_missing for invalid tags
         resolved_tags: list[tuple[Union[str, int], str]] = []
         for tag_key in tag_keys:
-            tag_name = tag_registry.resolve_tag_name(tag_key)
-            resolved_tags.append((tag_key, tag_name))
+            definition = tag_registry.get_definition(tag_key, ifd=ifd)
+            resolved_tags.append((tag_key, definition.name))
 
         result: dict[str, dict[str, TagValue]] = {}
         for fname in targets:

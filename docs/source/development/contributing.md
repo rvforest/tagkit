@@ -120,10 +120,33 @@ All configuration files in the project are validated using [Pydantic](https://do
 - `tests/conf/test-img-metadata.json` — Test image metadata (validated by `ImageMetadataConfig`)
 - `tests/conf/doctest-img-metadata.json` — Doctest image metadata (validated by `ImageMetadataConfig`)
 
+Test image metadata uses piexif directory names: `0th`, `1st`, `Exif`, `GPS`,
+and `Interop` are supported by the schema and image generator.
+
+The registry groups definitions by namespace: `Image`, `Exif`, `GPS`, and
+`Interop`. These groups describe tag families, not occurrences in a file.
+Image definitions support `IFD0` and `IFD1` by default; the other namespaces
+support their namesake directory. Tagkit defaults Image operations to `IFD0`.
+A tag can override its supported placements with `ifds` and its default target
+with `default_ifd`. Placements must belong to the namespace, contain no duplicates,
+and include the effective default. For example, JPEG thumbnail location tags use
+`ifds: [IFD1]` and `default_ifd: IFD1`. These rules check supported directories;
+they do not implement all compression-dependent EXIF conformance requirements.
+
+`ExifTagDefinition` contains the namespace, ID, value constraints, and supported
+IFDs. `ExifRegistry.get_definition()` returns that same shared definition for
+both image directories. `resolve_tag()` returns a `ResolvedTag` containing the
+definition and selected IFD. Default directory policy is separate from definition
+identity; an `ExifTag` records the actual location and value in an image.
+
 **Pydantic models** are defined in `src/tagkit/conf/models.py`. When modifying configuration files:
 1. Ensure your changes conform to the Pydantic models
 2. Run `uv run pytest tests/test_conf_schemas.py` to validate all configs
 3. Update the Pydantic models if you need to change the schema
+
+Registry entries include a tag `name`, one EXIF `type` or a list of allowed
+types, and optional `count` metadata. Use a positive integer for fixed-count
+tags and `any` for variable-count values.
 
 The validation happens automatically when configs are loaded and during CI testing.
 

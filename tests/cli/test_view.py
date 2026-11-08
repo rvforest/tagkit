@@ -6,6 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from tagkit.cli.main import app
+from tagkit import ExifImage
 
 runner = CliRunner()
 test_dir = Path(__file__).parents[1]
@@ -30,6 +31,53 @@ def img_metadata():
 
 
 class TestViewCommand:
+    @pytest.mark.parametrize("json_output", [False, True])
+    def test_view_preserves_duplicate_tag_names(
+        self, test_images, monkeypatch, json_output
+    ):
+        path = test_images / "minimal.jpg"
+        image = ExifImage(path)
+        image.write_tag("Orientation", 1, ifd="IFD0")
+        image.write_tag("Orientation", 6, ifd="IFD1")
+        image.write_tag("UserComment", b"\xff\x00")
+        tags = {(tag_id, ifd): tag for (ifd, tag_id), tag in image.tag_entries.items()}
+        monkeypatch.setattr(
+            "tagkit.tag_io.piexif_io.PiexifBackend.load_tags",
+            lambda self, file_path: tags,
+        )
+        monkeypatch.delenv("FORCE_COLOR", raising=False)
+        monkeypatch.setenv("COLUMNS", "160")
+        options = ["--json"] if json_output else []
+
+        result = runner.invoke(
+            app, ["view", str(path), *options, "--binary-format", "hex"]
+        )
+
+        assert result.exit_code == 0, result.exception
+        if json_output:
+            data = json.loads(result.output)["minimal.jpg"]
+            assert data["IFD0:Orientation"] == {
+                "id": 274,
+                "value": "Top-left",
+                "ifd": "IFD0",
+            }
+            assert data["IFD1:Orientation"] == {
+                "id": 274,
+                "value": "Right-top",
+                "ifd": "IFD1",
+            }
+            assert data["Make"]["value"] == "TestMake"
+            assert data["UserComment"]["value"] == "hex:ff00"
+            assert len(data) == len(tags)
+        else:
+            lines = result.output.splitlines()
+            assert "ifd" in lines[2]
+            orientation_rows = [line for line in lines if "Orientation" in line]
+            assert len(orientation_rows) == 2
+            assert "IFD0" in orientation_rows[0]
+            assert "IFD1" in orientation_rows[1]
+            assert "hex:ff00" in result.output
+
     def test_view(self, test_images):
         """Make sure view command runs and prints something in table view.
         Don't check exact number of lines to make maintainability easier.

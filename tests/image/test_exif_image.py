@@ -8,10 +8,12 @@ from pathlib import Path
 from tagkit import ExifImage
 from tagkit.core.tag import ExifTag
 from tagkit.core.exceptions import (
+    AmbiguousTagKey,
     DateTimeError,
     InvalidTagId,
     InvalidTagName,
     TagNotFound,
+    ValidationError,
 )
 from tagkit.core.types import TagValue
 
@@ -35,12 +37,47 @@ def test_tags_property_with_filter(test_images):
     assert tags["Make"].value == "TestMake"
 
 
+@pytest.mark.parametrize(
+    "tag_name, ifd", [("GPSLatitudeRef", "GPS"), ("InteroperabilityIndex", "Interop")]
+)
+def test_tag_filter_preserves_namespace_for_duplicate_ids(test_images, tag_name, ifd):
+    exif = ExifImage(test_images / "with_interop.jpg", tag_filter=[tag_name])
+
+    assert set(exif.tag_entries) == {(ifd, 1)}
+    assert set(exif.tags) == {tag_name}
+    assert set(exif.as_dict()) == {tag_name}
+    assert len(exif) == 1
+
+    exif.tag_filter = [1]
+    with pytest.raises(AmbiguousTagKey):
+        _ = exif.tag_entries
+    exif.ifd = ifd
+    assert set(exif.tag_entries) == {(ifd, 1)}
+
+
+def test_tag_filter_can_select_namespaces_with_the_same_id(test_images):
+    exif = ExifImage(
+        test_images / "with_interop.jpg",
+        tag_filter=["GPSLatitudeRef", "InteroperabilityIndex"],
+    )
+
+    assert set(exif.tag_entries) == {("GPS", 1), ("Interop", 1)}
+
+
 def test_tags_property_with_ifd(test_images):
     """Test tags property with IFD filter"""
     exif = ExifImage(test_images / "minimal.jpg", ifd="IFD0")
     tags = exif.tags
     # All returned tags should be from IFD0
     assert all(tag.ifd == "IFD0" for tag in tags.values())
+
+
+def test_tag_entries_uses_canonical_ifd_id_keys(test_images):
+    """Canonical tag access is keyed by (ifd, tag_id)."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    entries = exif.tag_entries
+    assert ("IFD0", 271) in entries
+    assert entries["IFD0", 271].name == "Make"
 
 
 def test_tags_property_with_thumbnail(test_images):
@@ -148,6 +185,33 @@ def test_as_dict_with_binary_format(test_images):
     assert isinstance(dict_data, dict)
 
 
+def test_as_dict_preserves_duplicate_names_and_respects_filters(test_images):
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag("Orientation", 1, ifd="IFD0")
+    exif.write_tag("Orientation", 6, ifd="IFD1")
+
+    result = exif.as_dict()
+
+    assert result["Make"] == {"id": 271, "value": "TestMake", "ifd": "IFD0"}
+    assert result["IFD0:Orientation"] == {"id": 274, "value": "Top-left", "ifd": "IFD0"}
+    assert result["IFD1:Orientation"] == {
+        "id": 274,
+        "value": "Right-top",
+        "ifd": "IFD1",
+    }
+    assert len(result) == len(exif.tag_entries)
+    assert "Orientation" not in result
+    with pytest.raises(AmbiguousTagKey):
+        _ = exif.tags
+
+    exif.tag_filter = ["Orientation"]
+    assert set(exif.as_dict()) == {"IFD0:Orientation", "IFD1:Orientation"}
+    exif.ifd = "IFD1"
+    assert exif.as_dict() == {
+        "Orientation": {"id": 274, "value": "Right-top", "ifd": "IFD1"}
+    }
+
+
 def test_save_creates_backup(test_images, tmp_path):
     """Test that save(create_backup=True) creates a backup file."""
     import shutil
@@ -166,13 +230,209 @@ def test_write_tags_multiple_tags(test_images, file_type: Callable):
     """Test writing multiple tags at once with both str and Path file_path types."""
     tags: dict[Union[str, int], TagValue] = {
         "Artist": "Jane Doe",
-        "Copyright": b"2025 John",
+        "Copyright": "2025 John",
     }
     file_path = file_type(test_images / "minimal.jpg")
     exif = ExifImage(file_path)
     exif.write_tags(tags)
     assert exif.tags["Artist"].value == "Jane Doe"
-    assert exif.tags["Copyright"].value == b"2025 John"
+    assert exif.tags["Copyright"].value == "2025 John"
+
+
+def test_write_ascii_tag_rejects_bytes(test_images):
+    """Low-level writes reject bytes for ASCII tags."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValidationError, match="ASCII values must be str"):
+        exif.write_tag("Copyright", b"2025 John")
+    assert "Copyright" not in exif.tags
+
+
+def test_invalid_ascii_writes_do_not_mutate_existing_values(test_images):
+    exif = ExifImage(test_images / "with_gps.jpg")
+    original = dict(exif.tag_entries)
+
+    with pytest.raises(
+        ValidationError, match="count 3 does not match expected count 2"
+    ):
+        exif.write_tag("GPSLatitudeRef", "é")
+    assert exif.tag_entries == original
+
+    with pytest.raises(ValidationError, match="encodable as utf-8"):
+        exif.write_tag("Artist", "\ud800")
+    assert exif.tag_entries == original
+
+
+def test_utf8_text_and_fixed_ascii_count_round_trip(test_images):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag("Artist", "测试用户")
+    exif.write_tag("DateTime", "2025:05:01 14:30:00")
+    exif.write_tag("GPSLatitudeRef", "N")
+    exif.save()
+
+    reloaded = ExifImage(path)
+    assert reloaded.read_tag("Artist") == "测试用户"
+    assert reloaded.read_tag("DateTime") == "2025:05:01 14:30:00"
+    assert reloaded.read_tag("GPSLatitudeRef") == "N"
+
+
+def test_float_overflow_does_not_mutate_existing_values(test_images):
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag("ProfileToneCurve", (0.0, 1.0))
+    original = dict(exif.tag_entries)
+
+    for value in (1e39, -1e39, 10**1000, (0.0, 1e39), [0.0, -1e39]):
+        with pytest.raises(ValidationError, match="representable 32-bit range"):
+            exif.write_tag("ProfileToneCurve", value)
+        assert exif.tag_entries == original
+
+
+def test_float_boundaries_round_trip(test_images):
+    path = test_images / "minimal.jpg"
+    maximum = float.fromhex("0x1.fffffep+127")
+    exif = ExifImage(path)
+    exif.write_tag("ProfileToneCurve", [-maximum, maximum])
+    exif.save()
+
+    assert ExifImage(path).read_tag("ProfileToneCurve") == (-maximum, maximum)
+
+
+def test_ambiguous_low_level_lookup_requires_ifd(test_images):
+    """Ambiguous IDs or names require an explicit IFD."""
+    exif = ExifImage(test_images / "with_gps.jpg")
+    with pytest.raises(AmbiguousTagKey):
+        exif.read_tag(1)
+    assert exif.read_tag(1, ifd="GPS") == "N"
+
+
+def test_write_gps_coordinate_normalizes_lists(test_images):
+    """Generic list-to-tuple normalization is allowed for exact EXIF shapes."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag("GPSLatitude", [[40, 1], [44, 1], [52, 1]])
+    assert exif.read_tag("GPSLatitude") == ((40, 1), (44, 1), (52, 1))
+
+
+def test_write_rejects_other_sequence_types(test_images):
+    """Low-level writes accept list and tuple sequence shapes only."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValidationError, match="BYTE value must be"):
+        exif.write_tag("GPSVersionID", range(4))
+
+
+def test_write_gps_coordinate_rejects_wrong_count_without_mutation(test_images):
+    """Invalid fixed-count writes fail before mutating existing values."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    original = ((40, 1), (44, 1), (52, 1))
+    exif.write_tag("GPSLatitude", original)
+    with pytest.raises(ValidationError, match="expected count 3"):
+        exif.write_tag("GPSLatitude", ((40, 1), (44, 1)))
+    assert exif.read_tag("GPSLatitude") == original
+
+
+def test_write_rejects_semantic_float_to_rational_coercion(test_images):
+    """Low-level writes do not coerce semantic float values to rationals."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(ValidationError, match="rational value"):
+        exif.write_tag("GPSAltitude", 10.5)
+
+
+def test_write_fixed_count_rational_sequence(test_images):
+    """Fixed-count rational sequence tags enforce their declared count."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    value = ((0, 1), (255, 1), (0, 1), (255, 1), (0, 1), (255, 1))
+    exif.write_tag("ReferenceBlackWhite", value)
+    assert exif.read_tag("ReferenceBlackWhite") == value
+    with pytest.raises(ValidationError, match="expected count 6"):
+        exif.write_tag("ReferenceBlackWhite", value[:4])
+
+
+@pytest.mark.parametrize("value", [(2, 2), [2, 2]])
+def test_write_two_integer_components_round_trip(test_images, value):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag("YCbCrSubSampling", value)
+    assert exif.read_tag("YCbCrSubSampling") == (2, 2)
+
+    exif.save()
+
+    assert ExifImage(path).read_tag("YCbCrSubSampling") == (2, 2)
+
+
+@pytest.mark.parametrize(
+    "tag_key, value",
+    [
+        ("XResolution", (0, 1)),
+        ("XResolution", ((1 << 32) - 1, 1)),
+        ("XResolution", (1, (1 << 32) - 1)),
+        ("ExposureBiasValue", (-(1 << 31), 1)),
+        ("ExposureBiasValue", ((1 << 31) - 1, 1)),
+        ("ExposureBiasValue", (1, -(1 << 31))),
+        ("ExposureBiasValue", (1, (1 << 31) - 1)),
+    ],
+)
+def test_write_rational_boundaries_round_trip(test_images, tag_key, value):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag(tag_key, value)
+    exif.save()
+
+    assert ExifImage(path).read_tag(tag_key) == value
+
+
+@pytest.mark.parametrize(
+    "tag_key, component",
+    [
+        ("XResolution", -1),
+        ("XResolution", 1 << 32),
+        ("ExposureBiasValue", -(1 << 31) - 1),
+        ("ExposureBiasValue", 1 << 31),
+    ],
+)
+@pytest.mark.parametrize("position", [0, 1])
+@pytest.mark.parametrize("existing", [False, True])
+def test_write_rational_out_of_range_does_not_mutate(
+    test_images, tag_key, component, position, existing
+):
+    exif = ExifImage(test_images / "minimal.jpg")
+    if existing:
+        exif.write_tag(tag_key, (72, 1))
+    original = dict(exif.tag_entries)
+    value = [1, 1]
+    value[position] = component
+
+    with pytest.raises(ValidationError):
+        exif.write_tag(tag_key, tuple(value))
+
+    assert exif.tag_entries == original
+
+
+@pytest.mark.parametrize("tag_key", ["XResolution", "ExposureBiasValue"])
+def test_write_rational_zero_denominator_does_not_mutate(test_images, tag_key):
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag(tag_key, (72, 1))
+    original = dict(exif.tag_entries)
+
+    with pytest.raises(ValidationError, match="denominator must not be zero"):
+        exif.write_tag(tag_key, (1, 0))
+
+    assert exif.tag_entries == original
+
+
+def test_write_rational_sequence_out_of_range_does_not_mutate(test_images):
+    exif = ExifImage(test_images / "with_gps.jpg")
+    original = dict(exif.tag_entries)
+
+    with pytest.raises(ValidationError, match="outside range"):
+        exif.write_tag("GPSLatitude", ((37, 1), (48, 1), (1, 1 << 32)))
+
+    assert exif.tag_entries == original
+
+
+def test_ambiguous_duplicate_name_requires_ifd(test_images):
+    """Duplicate names across IFDs do not silently choose a definition."""
+    exif = ExifImage(test_images / "minimal.jpg")
+    with pytest.raises(AmbiguousTagKey):
+        exif.write_tag("CFAPattern", b"\x00\x01")
 
 
 @pytest.mark.parametrize("file_type", [str, Path])
@@ -781,3 +1041,66 @@ def test_read_tags_invalid_binary_entry(test_images):
     exif = ExifImage(test_images / "minimal.jpg")
     with pytest.raises(ValueError):
         exif.read_tags(["Make", "Model"], binary_format="invalid_format")
+
+
+@pytest.mark.parametrize("tag_key", ["GPSLatitude", "ExifVersion"])
+def test_write_rejects_thumbnail_placement_before_mutation(test_images, tag_key):
+    exif = ExifImage(test_images / "minimal.jpg")
+    original = dict(exif.tag_entries)
+    with pytest.raises(InvalidTagName):
+        exif.write_tag(tag_key, b"test", ifd="IFD1")
+    assert exif.tag_entries == original
+
+
+def test_shared_definition_operations_pass_occurrence_locations_to_backend(test_images):
+    from unittest.mock import Mock
+    from tagkit.tag_io.base import ExifIOBackend
+
+    backend = Mock(spec=ExifIOBackend)
+    primary = ExifTag(274, 1, "IFD0")
+    thumbnail = ExifTag(274, 6, "IFD1")
+    backend.load_tags.return_value = {(274, "IFD0"): primary, (274, "IFD1"): thumbnail}
+    exif = ExifImage(test_images / "minimal.jpg", io_backend=backend)
+
+    assert exif.read_tag("Orientation") == 1
+    assert exif.read_tag("Orientation", ifd="IFD1") == 6
+    assert exif.tag_entries["IFD0", 274] is primary
+    assert exif.tag_entries["IFD1", 274] is thumbnail
+    with pytest.raises(AmbiguousTagKey):
+        _ = exif.tags
+
+    exif.write_tag("Orientation", 3, ifd="IFD1")
+    assert exif.read_tag("Orientation") == 1
+    assert exif.read_tag("Orientation", ifd="IFD1") == 3
+    exif.delete_tag("Orientation")
+    assert ("IFD0", 274) not in exif.tag_entries
+    assert exif.read_tag("Orientation", ifd="IFD1") == 3
+    exif.save()
+    saved = backend.save_tags.call_args.args[1]
+    assert set(saved) == {(274, "IFD1")}
+    assert saved[274, "IFD1"].ifd == "IFD1"
+    assert saved[274, "IFD1"].value == 3
+
+
+def test_image_operations_follow_configured_default_without_relocating_tags(
+    test_images, monkeypatch
+):
+    from tagkit.core.registry import ExifRegistry
+
+    registry = ExifRegistry(
+        {
+            "Image": {
+                274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}
+            }
+        }
+    )
+    monkeypatch.setattr("tagkit.image.exif.tag_registry", registry)
+    exif = ExifImage(test_images / "minimal.jpg")
+    exif.write_tag("Orientation", 1, ifd="IFD0")
+    exif.write_tag("Orientation", 6)
+    assert exif.read_tag("Orientation") == 6
+    assert exif.read_tag("Orientation", ifd="IFD0") == 1
+    assert exif.tag_entries["IFD0", 274].ifd == "IFD0"
+    exif.delete_tag("Orientation")
+    assert ("IFD1", 274) not in exif.tag_entries
+    assert exif.read_tag("Orientation", ifd="IFD0") == 1
