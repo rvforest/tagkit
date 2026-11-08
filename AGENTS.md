@@ -59,7 +59,8 @@ src/tagkit/
 
 1. **Prerequisites**: Python 3.11+, Git, uv package manager
 2. **Setup**: Run `uv sync` to create virtual environment and install dependencies
-3. **Workflow**: Create feature branches, make changes, test, commit, and open PRs
+3. **Git hooks**: Run `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` in each fresh checkout. `uv sync` installs dependencies but does not install Git hooks.
+4. **Workflow**: Create feature branches, make changes, test, commit, and open PRs
 
 ### Code Quality Standards
 
@@ -126,7 +127,8 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 - **Enabled**: Ruff linting/formatting, mypy type checking, yaml validation
 - **Spell checking**: cspell for Markdown files only
 - **Security**: detect-secrets for credential scanning
-- **Setup**: Automatically configured with uv sync
+- **Setup**: Install commit and push hooks with `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` after `uv sync`
+- **Final verification**: Before pushing, run `uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure` to check the whole repository, including tests. Review and stage any automatic fixes, then rerun until all hooks pass. Resolve or report hook setup failures explicitly.
 
 #### Continuous Integration
 - **Platform**: GitHub Actions
@@ -154,7 +156,7 @@ Pydantic models are defined in `src/tagkit/conf/models.py` and provide type-safe
 1. **Understanding**: Review existing code, tests, and documentation before making changes
 2. **Minimal Changes**: Make the smallest possible changes to achieve the goal
 3. **Testing**: Run relevant tests early and frequently
-4. **Quality**: Ensure code passes all linting, formatting, and type checking
+4. **Quality**: Run the complete pre-commit suite before pushing, including test files, and ensure every hook passes
 5. **Documentation**: Update docstrings and docs if changing public APIs
 
 ### Guidance for coding agents: test-image metadata schema
@@ -178,9 +180,10 @@ If you (the agent) modify the Pydantic models, update the pytest and the human-f
 ```bash
 # Setup development environment
 uv sync
+uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 
-# Run all quality checks
-uv run nox -s check
+# Run the complete hook suite used by CI
+uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
 
 # Run tests
 uv run nox -s tests
