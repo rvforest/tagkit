@@ -2,6 +2,8 @@
 
 This guide demonstrates how to read EXIF metadata from image files using tagkit.
 
+Upgrading existing code? See the [0.4.0 migration guide](migration_0_4_0.md).
+
 (cli)=
 
 ## Command Line Interface

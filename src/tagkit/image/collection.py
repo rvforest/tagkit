@@ -92,7 +92,7 @@ class ExifImageCollection:
         Example:
             >>> collection = ExifImageCollection(["image1.jpg", "image2.jpg"])
             >>> collection.n_tags
-            11
+            12
         """
         return sum(len(exif) for exif in self.files.values())
 
