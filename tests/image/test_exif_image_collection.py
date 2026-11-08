@@ -408,8 +408,7 @@ class TestImageCollectionDatetime:
 
 class TestImageCollectionIntegration:
     def test_bulk_write_save_reload(self, test_images: Path):
-        # files = list(test_images.glob("*.jpg"))
-        files = test_images.glob("*.jpg")
+        files = list(test_images.glob("*.jpg"))
 
         collection = ExifImageCollection(files)
         collection.write_tag("Make", "IntegrationTest")
@@ -418,7 +417,7 @@ class TestImageCollectionIntegration:
         # Reload and check
         reloaded = ExifImageCollection(files)
         for exif in reloaded.files.values():
-            assert exif.tags["Make"].value == "IntegrationTest"
+            assert exif.read_tag("Make") == "IntegrationTest"
 
     def test_bulk_delete_save_reload(self, test_images: Path):
         files = list(test_images.glob("*.jpg"))
@@ -429,7 +428,7 @@ class TestImageCollectionIntegration:
         # Reload and check
         reloaded = ExifImageCollection(files)
         for exif in reloaded.files.values():
-            assert "Make" not in exif.tags
+            assert ("IFD0", 271) not in exif.tag_entries
 
     def test_partial_write_delete_save_reload(self, test_images: Path):
         files = list(test_images.glob("*.jpg"))
@@ -486,8 +485,8 @@ class TestImageCollectionIntegration:
         collection.save_all()
         reloaded = ExifImageCollection(files)
         for exif in reloaded.files.values():
-            assert exif.tags["Artist"].value == "Jane Doe"
-            assert exif.tags["Copyright"].value == "2025 John"
+            assert exif.read_tag("Artist") == "Jane Doe"
+            assert exif.read_tag("Copyright") == "2025 John"
 
     def test_bulk_delete_tags_save_reload(self, test_images: Path):
         files = list(test_images.glob("*.jpg"))
@@ -502,8 +501,8 @@ class TestImageCollectionIntegration:
         collection.save_all()
         reloaded = ExifImageCollection(files)
         for exif in reloaded.files.values():
-            assert "Artist" not in exif.tags
-            assert "Copyright" not in exif.tags
+            assert ("IFD0", 315) not in exif.tag_entries
+            assert ("IFD0", 33432) not in exif.tag_entries
 
 
 # Tests for read_tag and read_tags collection methods

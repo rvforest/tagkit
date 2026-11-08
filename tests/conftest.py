@@ -76,6 +76,10 @@ def create_test_images_from_metadata(img_dir: Path, metadata_path: str | Path) -
             # Add to exif_dict
             exif_dict[ifd_name][tag_id] = formatted_value
 
+        # Piexif requires a JPEG payload to emit the thumbnail directory.
+        if exif_dict["1st"]:
+            exif_dict["thumbnail"] = base_image
+
         # Create and save the image
         exif_bytes = piexif.dump(exif_dict)
         piexif.insert(exif_bytes, base_image, str(img_dir / filename))

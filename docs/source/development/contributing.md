@@ -135,6 +135,8 @@ All configuration files in the project are validated using [Pydantic](https://do
 
 Test image metadata uses piexif directory names: `0th`, `1st`, `Exif`, `GPS`,
 and `Interop` are supported by the schema and image generator.
+When metadata contains `1st` tags, the generator embeds the base JPEG fixture as
+the thumbnail payload.
 
 The registry groups definitions by namespace: `Image`, `Exif`, `GPS`, and
 `Interop`. These groups describe tag families, not occurrences in a file.
