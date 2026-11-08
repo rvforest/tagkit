@@ -320,6 +320,7 @@ class ExifImage:
 
         Raises:
             IOError: If writing to the file fails.
+            ValueError: If IFD1 tags have no JPEG thumbnail with piexif.
         """
         if create_backup:
             import shutil

@@ -44,6 +44,9 @@ class PiexifBackend(ExifIOBackend):
         Args:
             image_path: Path to the image file
             tags: Dictionary of EXIF tags to save
+
+        Raises:
+            ValueError: If IFD1 tags exist without an embedded JPEG thumbnail.
         """
         # Initialize the piexif data structure (nested dictionaries by IFD)
         piexif_data: dict[PiexifIfdName, dict[int, TagValue]] = {
@@ -69,8 +72,14 @@ class PiexifBackend(ExifIOBackend):
             # Add the tag to the piexif data structure
             piexif_data[piexif_ifd][tag.id] = tag_value
 
-        # Convert the structured data to EXIF bytes
-        exif_bytes = piexif.dump(piexif_data)
+        # Thumbnail pixels are separate from tags. Read the destination's payload
+        # for each save so a shared backend cannot mix thumbnails between files.
+        thumbnail = piexif.load(str(image_path)).get("thumbnail")
+        if piexif_data["1st"] and thumbnail is None:
+            raise ValueError("Saving IFD1 tags requires an embedded JPEG thumbnail")
+
+        # Piexif emits IFD1 only when its JPEG thumbnail payload is included.
+        exif_bytes = piexif.dump({**piexif_data, "thumbnail": thumbnail})
 
         # Write the EXIF data to the image file
         piexif.insert(exif_bytes, str(image_path))

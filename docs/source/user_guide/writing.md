@@ -24,10 +24,9 @@ occurrence is updated. Exif, GPS, and Interop definitions default to their
 namesake directories. Unsupported placements are rejected before changing tags.
 Registry defaults select a target; they do not relocate existing occurrences.
 
-The default piexif backend currently omits the embedded JPEG thumbnail and its
-`IFD1` tags when saving an image. Accessing or changing an `IFD1` occurrence in
-memory does not establish persistence. A separate backend fix is required before
-thumbnail edits can be saved, and must be included in the 0.4.0 release.
+The default piexif backend preserves existing embedded JPEG thumbnails and their
+`IFD1` tags when saving an image. Saving `IFD1` tags requires an embedded JPEG
+thumbnail; otherwise, `save()` raises `ValueError` before changing the file.
 
 Low-level writes expect EXIF-shaped values. Tagkit validates the value type, numeric range, rational shape, and count before changing the in-memory tag. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`.
 

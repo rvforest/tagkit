@@ -34,6 +34,14 @@
             }
         ]
     },
+    "with_thumbnail.jpg": {
+        "tags": [
+            {"id": 271, "name": "Make", "value": "TestMake", "ifd": "0th"},
+            {"id": 274, "name": "Orientation", "value": 1, "ifd": "0th"},
+            {"id": 274, "name": "Orientation", "value": 6, "ifd": "1st"},
+            {"id": 270, "name": "ImageDescription", "value": "Thumbnail", "ifd": "1st"}
+        ]
+    },
     "with_interop.jpg": {
         "tags": [
             {"id": 1, "name": "GPSLatitudeRef", "value": "N", "ifd": "GPS"},
