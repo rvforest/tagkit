@@ -1,3 +1,7 @@
+# Count/type metadata for the tested EXIF baseline follows CIPA DC-X008-2019,
+# sections 4.6.4 (Image), 4.6.5 (Exif), 4.6.6 (GPS), and 4.6.7 (Interop):
+# https://www.cipa.jp/std/documents/e/DC-X008-Translation-2019-E.pdf
+# "any" is a known variable count; omitted counts remain unspecified.
 Image:
   11:
     name: ProcessingSoftware
@@ -17,7 +21,7 @@ Image:
   258:
     name: BitsPerSample
     type: SHORT
-    count: any
+    count: 3 # EXIF RGB components; see section 4.6.4, Table 4.
   259:
     name: Compression
     type: SHORT
@@ -42,6 +46,7 @@ Image:
   270:
     name: ImageDescription
     type: ASCII
+    count: any
   271:
     name: Make
     type: ASCII
@@ -56,6 +61,7 @@ Image:
   274:
     name: Orientation
     type: SHORT
+    count: 1
   277:
     name: SamplesPerPixel
     type: SHORT
@@ -648,6 +654,7 @@ Exif:
   37380:
     name: ExposureBiasValue
     type: SRATIONAL
+    count: 1
   37381:
     name: MaxApertureValue
     type: RATIONAL
@@ -927,3 +934,4 @@ Interop:
   1:
     name: InteroperabilityIndex
     type: ASCII
+    count: any # Table 16 declares Any; R98/R03/THM use four bytes with NULL.

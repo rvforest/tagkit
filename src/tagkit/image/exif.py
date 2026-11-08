@@ -84,7 +84,7 @@ class ExifImage:
         """
         resolved = tag_registry.resolve_tag(tag_key, ifd=ifd)
         definition = resolved.definition
-        normalized_value = validate_tag_value(definition, value)
+        normalized_value = validate_tag_value(definition, value, ifd=resolved.ifd)
         self._tag_dict[definition.tag_id, resolved.ifd] = ExifTag(
             definition.tag_id,
             normalized_value,

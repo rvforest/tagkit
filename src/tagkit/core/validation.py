@@ -5,15 +5,35 @@ from typing import Any, cast
 
 from tagkit.core.exceptions import ValidationError
 from tagkit.core.registry import ExifTagDefinition
-from tagkit.core.types import ExifCount, ExifType, Rational, TagValue, STR_ENCODING
+from tagkit.core.types import (
+    ExifCount,
+    ExifType,
+    IfdName,
+    Rational,
+    TagValue,
+    STR_ENCODING,
+)
 
 
-def validate_tag_value(definition: ExifTagDefinition, value: TagValue) -> TagValue:
+def validate_tag_value(
+    definition: ExifTagDefinition, value: TagValue, *, ifd: IfdName | None = None
+) -> TagValue:
     """
     Validate and structurally normalize a tag value for a definition.
 
     The low-level write API expects EXIF-shaped values. This function only
     converts lists to tuples when the resulting shape is otherwise valid.
+
+    Args:
+        definition: Shared tag definition containing the known constraints.
+        value: Value to validate and normalize.
+        ifd: Resolved target directory to include in validation errors.
+
+    Returns:
+        The validated, structurally normalized value.
+
+    Raises:
+        ValidationError: If the value violates a known constraint.
     """
     normalized = _normalize_sequences(value)
     errors: list[str] = []
@@ -25,9 +45,10 @@ def validate_tag_value(definition: ExifTagDefinition, value: TagValue) -> TagVal
 
     expected = _format_expected(definition)
     received = f"{type(value).__name__}: {value!r}"
+    location = f", IFD {ifd}" if ifd is not None else ""
     raise ValidationError(
         f"Invalid value for {definition.name} "
-        f"(namespace {definition.namespace}, tag ID {definition.tag_id}). "
+        f"(namespace {definition.namespace}, tag ID {definition.tag_id}{location}). "
         f"Expected {expected}; received {received}. "
         f"Details: {'; '.join(errors)}"
     )

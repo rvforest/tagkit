@@ -329,6 +329,29 @@ def test_write_gps_coordinate_rejects_wrong_count_without_mutation(test_images):
     assert exif.read_tag("GPSLatitude") == original
 
 
+@pytest.mark.parametrize("ifd", ["IFD0", "IFD1"])
+@pytest.mark.parametrize("value", [(1, 2), "top-left"])
+def test_invalid_orientation_reports_target_without_mutation(test_images, ifd, value):
+    exif = ExifImage(test_images / "with_thumbnail.jpg")
+    original = dict(exif.tag_entries)
+
+    with pytest.raises(ValidationError) as exc_info:
+        exif.write_tag("Orientation", value, ifd=ifd)
+
+    message = str(exc_info.value)
+    for expected in (
+        "Orientation",
+        "tag ID 274",
+        "namespace Image",
+        f"IFD {ifd}",
+        "type SHORT, count 1",
+        type(value).__name__,
+        repr(value),
+    ):
+        assert expected in message
+    assert exif.tag_entries == original
+
+
 def test_write_rejects_semantic_float_to_rational_coercion(test_images):
     """Low-level writes do not coerce semantic float values to rationals."""
     exif = ExifImage(test_images / "minimal.jpg")
@@ -344,6 +367,27 @@ def test_write_fixed_count_rational_sequence(test_images):
     assert exif.read_tag("ReferenceBlackWhite") == value
     with pytest.raises(ValidationError, match="expected count 6"):
         exif.write_tag("ReferenceBlackWhite", value[:4])
+
+
+@pytest.mark.parametrize(
+    "tag_key, value",
+    [
+        ("BitsPerSample", (8, 8, 8)),
+        ("YCbCrSubSampling", (2, 2)),
+        ("WhitePoint", ((1, 3), (1, 3))),
+        ("PrimaryChromaticities", ((1, 3),) * 6),
+        ("ReferenceBlackWhite", ((0, 1), (255, 1)) * 3),
+    ],
+)
+def test_fixed_sequence_counts_round_trip(test_images, tag_key, value):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag(tag_key, value)
+    with pytest.raises(ValidationError, match="count"):
+        exif.write_tag(tag_key, value[:-1])
+    assert exif.read_tag(tag_key) == value
+    exif.save()
+    assert ExifImage(path).read_tag(tag_key) == value
 
 
 @pytest.mark.parametrize("value", [(2, 2), [2, 2]])
