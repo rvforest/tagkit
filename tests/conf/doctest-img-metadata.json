@@ -69,6 +69,12 @@
       }
     ]
   },
+  "migration_thumbnail.jpg": {
+    "tags": [
+      {"id": 274, "name": "Orientation", "value": 1, "ifd": "0th"},
+      {"id": 274, "name": "Orientation", "value": 6, "ifd": "1st"}
+    ]
+  },
   "image20.jpg": {
     "tags": [
       {

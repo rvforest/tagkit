@@ -22,6 +22,7 @@ Tagkit provides a simple API, CLI, and extensible backend system for working wit
 
 getting_started/installation.md
 getting_started/quickstart.md
+user_guide/migration_0_4_0.md
 
 ```
 
@@ -44,6 +45,7 @@ user_guide/datetime.md
 
 apidocs/index
 reference/tag_reference.md
+releases/0_4_0.md
 ```
 
 ```{toctree}

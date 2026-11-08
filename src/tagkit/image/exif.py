@@ -65,18 +65,23 @@ class ExifImage:
         tag_key: Union[str, int],
         value: TagValue,
         ifd: Optional[IfdName] = None,
-    ):
+    ) -> None:
         """
         Set the value of a specific EXIF tag.
 
+        Known definition constraints are validated before replacing the target
+        occurrence. Lists are normalized to tuples; semantic conversions such
+        as floats to rationals are not performed. Call save() to persist changes.
+
         Args:
             tag_key: Tag name or tag ID.
-            value: Value to set.
-            ifd: Specific IFD to use.
+            value: EXIF-shaped value to validate and set.
+            ifd: Explicit target directory; otherwise use the unique definition's configured default.
 
         Raises:
-            KeyError: If the tag is not found.
-            ValueError: If the tag or IFD is invalid.
+            AmbiguousTagKey: If multiple definitions match without an IFD.
+            InvalidTagName, InvalidTagId: If the key or placement is unsupported.
+            ValidationError: If a known constraint is violated; identifies the target IFD and leaves the existing occurrence unchanged.
 
         Example:
             >>> exif = ExifImage('image1.jpg')
@@ -95,9 +100,12 @@ class ExifImage:
         self,
         tags: Mapping[Union[str, int], TagValue],
         ifd: Optional[IfdName] = None,
-    ):
+    ) -> None:
         """
         Set multiple EXIF tags at once.
+
+        Writes are applied in order. If a write fails, earlier successful
+        writes remain applied in memory.
 
         Args:
             tags: A dictionary mapping tag names or IDs to values.
@@ -114,16 +122,20 @@ class ExifImage:
         self,
         tag_key: Union[str, int],
         ifd: Optional[IfdName] = None,
-    ):
+    ) -> None:
         """
         Remove a specific EXIF tag if it exists.
+
+        Only the selected occurrence is removed. An omitted IFD uses the
+        definition's configured default without falling back to another IFD.
 
         Args:
             tag_key: Tag name or tag ID.
             ifd: Specific IFD to use.
 
         Raises:
-            ValueError: If the tag or IFD is invalid.
+            AmbiguousTagKey: If multiple definitions match without an IFD.
+            InvalidTagName, InvalidTagId: If the key or placement is unsupported.
 
         Example:
             >>> exif = ExifImage('image10.jpg')
@@ -177,6 +189,7 @@ class ExifImage:
 
         Raises:
             TagNotFound: If the tag is not present in the image.
+            AmbiguousTagKey: If multiple definitions match without an IFD.
             InvalidTagName, InvalidTagId: If the provided tag name or id is invalid.
             ValueError: If the tag or IFD is invalid or if `binary_format` is unsupported.
 

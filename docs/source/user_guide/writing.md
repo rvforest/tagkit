@@ -2,6 +2,8 @@
 
 This guide demonstrates how to write EXIF metadata to image files using tagkit.
 
+Upgrading existing code? See the [0.4.0 migration guide](migration_0_4_0.md).
+
 ## CLI
 
 Writing tag values via the CLI is not yet supported.
@@ -28,7 +30,7 @@ The default piexif backend preserves existing embedded JPEG thumbnails and their
 `IFD1` tags when saving an image. Saving `IFD1` tags requires an embedded JPEG
 thumbnail; otherwise, `save()` raises `ValueError` before changing the file.
 
-Low-level writes expect EXIF-shaped values. Tagkit validates the value type, numeric range, rational shape, and count before changing the in-memory tag. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`.
+Low-level writes expect EXIF-shaped values. Tagkit validates known type, numeric range, rational shape, and count constraints before changing the in-memory tag. Some registry entries still have unspecified counts; those count checks are skipped. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`. A high-level GPS helper remains planned separately.
 
 **Note:** Changes are not saved to disk until you call the `save()` method.
 
