@@ -390,6 +390,55 @@ def test_fixed_sequence_counts_round_trip(test_images, tag_key, value):
     assert ExifImage(path).read_tag(tag_key) == value
 
 
+@pytest.mark.parametrize(
+    "tag_key, value, invalid",
+    [
+        ("ImageWidth", 640, (640, 480)),
+        ("ExifVersion", b"0232", b"023"),
+        ("OffsetTimeOriginal", "+05:30", "+0530"),
+        ("SubjectLocation", (10, 20), (10, 20, 30)),
+        ("LensSpecification", ((24, 1), (70, 1), (28, 10), (4, 1)), ((24, 1),)),
+        ("GPSDestLatitude", ((40, 1), (44, 1), (52, 1)), ((40, 1), (44, 1))),
+        ("GPSDateStamp", "2026:11:08", "2026:11"),
+    ],
+)
+def test_expanded_count_constraints_preserve_and_reload_values(
+    test_images, tag_key, value, invalid
+):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag(tag_key, value)
+    with pytest.raises(ValidationError, match="count"):
+        exif.write_tag(tag_key, invalid)
+    assert exif.read_tag(tag_key) == value
+    exif.save()
+    assert ExifImage(path).read_tag(tag_key) == value
+
+
+@pytest.mark.parametrize("value", [(10, 20), (10, 20, 30), (10, 20, 30, 40)])
+def test_subject_area_accepts_each_specified_count(test_images, value):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag("SubjectArea", value)
+    for invalid in (10, (10, 20, 30, 40, 50)):
+        with pytest.raises(ValidationError, match="allowed counts"):
+            exif.write_tag("SubjectArea", invalid)
+        assert exif.read_tag("SubjectArea") == value
+    exif.save()
+    assert ExifImage(path).read_tag("SubjectArea") == value
+
+
+def test_unspecified_and_variable_counts_remain_writable(test_images):
+    path = test_images / "minimal.jpg"
+    exif = ExifImage(path)
+    exif.write_tag("ProfileToneCurve", (0.0, 1.0))
+    exif.write_tag("GPSSatellites", "several")
+    exif.save()
+    reloaded = ExifImage(path)
+    assert reloaded.read_tag("ProfileToneCurve") == (0.0, 1.0)
+    assert reloaded.read_tag("GPSSatellites") == "several"
+
+
 @pytest.mark.parametrize("value", [(2, 2), [2, 2]])
 def test_write_two_integer_components_round_trip(test_images, value):
     path = test_images / "minimal.jpg"

@@ -15,7 +15,7 @@ from tagkit.core.types import ExifCount, ExifType, IfdName, NAMESPACE_IFDS, TagN
 class RegistryConfValue(TypedDict, total=False):
     name: str
     type: ExifType | list[ExifType]
-    count: ExifCount | None
+    count: ExifCount | list[int] | None
     ifds: list[IfdName] | None
     default_ifd: IfdName | None
 
