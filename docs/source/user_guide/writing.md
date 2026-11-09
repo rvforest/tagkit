@@ -2,6 +2,10 @@
 
 This guide demonstrates how to write EXIF metadata to image files using tagkit.
 
+JPEG is the primary tested format. The default backend may also accept WebP,
+but WebP writing is not yet covered by the project test suite. The default
+backend does not save TIFF or DNG files.
+
 Upgrading existing code? See the [0.4.0 migration guide](migration_0_4_0.md).
 
 ## CLI
@@ -31,6 +35,11 @@ The default piexif backend preserves existing embedded JPEG thumbnails and their
 thumbnail; otherwise, `save()` raises `ValueError` before changing the file.
 
 Low-level writes expect EXIF-shaped values. Tagkit validates known type, numeric range, rational shape, and count constraints before changing the in-memory tag. Some registry entries still have unspecified counts; those count checks are skipped. Generic structural normalization is allowed, such as converting JSON-style lists to tuples, but semantic conversions belong in higher-level helpers. For example, pass `(105, 10)` for `GPSAltitude`, not `10.5`; pass `"N"` for `GPSLatitudeRef`, not `b"N"`. A high-level GPS helper remains planned separately.
+
+The [tag reference](../reference/tag_reference.md) lists fixed, variable, and
+unspecified counts and explains the limits of this partial validation. Adding a
+fixed count to a registry definition can reject writes previously accepted by
+older versions; existing values loaded from an image are not revalidated.
 
 **Note:** Changes are not saved to disk until you call the `save()` method.
 

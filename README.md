@@ -21,6 +21,10 @@
 
 **Tagkit** is a Python toolkit and CLI for viewing and manipulating EXIF metadata in image files. It provides both a user-friendly command-line interface and a flexible Python API for programmatic access to EXIF data, with rich formatting options for photographers.
 
+JPEG is the primary tested format for reading and writing EXIF metadata. The
+default backend may also accept WebP, but that format is not yet covered by the
+project's test suite. It does not save TIFF or DNG files.
+
 ![Screenshot: tagkit CLI table output](https://github.com/rvforest/tagkit/blob/main/docs/source/_static/screenshots/cli-table-example.png?raw=true)
 
 ---

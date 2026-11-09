@@ -160,8 +160,9 @@ identity; an `ExifTag` records the actual location and value in an image.
 3. Update the Pydantic models if you need to change the schema
 
 Registry entries include a tag `name`, one EXIF `type` or a list of allowed
-types, and optional `count` metadata. Use a positive integer for fixed-count
-tags and `any` for variable-count values.
+types, and optional `count` metadata. Use a positive integer for a fixed count,
+a nonempty list of distinct positive integers for alternatives, and `any` for
+variable-count values. Omit the count if its constraint is not modeled.
 
 The validation happens automatically when configs are loaded and during CI testing.
 
