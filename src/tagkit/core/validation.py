@@ -210,6 +210,12 @@ def _validate_integer_range(value: int, minimum: int, maximum: int, label: str) 
 def _validate_count(count: ExifCount | None, actual: int) -> None:
     if count is None or count == "any":
         return
+    if isinstance(count, tuple):
+        if actual not in count:
+            raise ValidationError(
+                f"count {actual} does not match allowed counts {count}"
+            )
+        return
     if actual != count:
         raise ValidationError(f"count {actual} does not match expected count {count}")
 

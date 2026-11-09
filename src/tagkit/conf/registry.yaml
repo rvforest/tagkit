@@ -1,7 +1,7 @@
-# Count/type metadata for the tested EXIF baseline follows CIPA DC-X008-2019,
+# EXIF count metadata follows CIPA DC-X008-2019,
 # sections 4.6.4 (Image), 4.6.5 (Exif), 4.6.6 (GPS), and 4.6.7 (Interop):
 # https://www.cipa.jp/std/documents/e/DC-X008-Translation-2019-E.pdf
-# "any" is a known variable count; omitted counts remain unspecified.
+# "any" is a variable count; omitted counts remain unspecified.
 Image:
   11:
     name: ProcessingSoftware
@@ -15,9 +15,11 @@ Image:
   256:
     name: ImageWidth
     type: LONG
+    count: 1
   257:
     name: ImageLength
     type: LONG
+    count: 1
   258:
     name: BitsPerSample
     type: SHORT
@@ -25,9 +27,11 @@ Image:
   259:
     name: Compression
     type: SHORT
+    count: 1
   262:
     name: PhotometricInterpretation
     type: SHORT
+    count: 1
   263:
     name: Thresholding
     type: SHORT
@@ -65,9 +69,11 @@ Image:
   277:
     name: SamplesPerPixel
     type: SHORT
+    count: 1
   278:
     name: RowsPerStrip
     type: LONG
+    count: 1
   279:
     name: StripByteCounts
     type: LONG
@@ -82,6 +88,7 @@ Image:
   284:
     name: PlanarConfiguration
     type: SHORT
+    count: 1
   290:
     name: GrayResponseUnit
     type: SHORT
@@ -97,9 +104,11 @@ Image:
   296:
     name: ResolutionUnit
     type: SHORT
+    count: 1
   301:
     name: TransferFunction
     type: SHORT
+    count: 768
   305:
     name: Software
     type: ASCII
@@ -201,11 +210,13 @@ Image:
   513:
     name: JPEGInterchangeFormat
     type: LONG
+    count: 1
     ifds: [IFD1]
     default_ifd: IFD1
   514:
     name: JPEGInterchangeFormatLength
     type: LONG
+    count: 1
     ifds: [IFD1]
     default_ifd: IFD1
   515:
@@ -229,6 +240,7 @@ Image:
   529:
     name: YCbCrCoefficients
     type: RATIONAL
+    count: 3
   530:
     name: YCbCrSubSampling
     type: SHORT
@@ -236,6 +248,7 @@ Image:
   531:
     name: YCbCrPositioning
     type: SHORT
+    count: 1
   532:
     name: ReferenceBlackWhite
     type: RATIONAL
@@ -276,12 +289,14 @@ Image:
   34665:
     name: ExifTag
     type: LONG
+    count: 1
   34675:
     name: InterColorProfile
     type: UNDEFINED
   34853:
     name: GPSTag
     type: LONG
+    count: 1
   34857:
     name: Interlace
     type: SHORT
@@ -588,9 +603,11 @@ Exif:
   34850:
     name: ExposureProgram
     type: SHORT
+    count: 1
   34852:
     name: SpectralSensitivity
     type: ASCII
+    count: any
   34855:
     name: ISOSpeedRatings
     type: SHORT
@@ -598,27 +615,35 @@ Exif:
   34856:
     name: OECF
     type: UNDEFINED
+    count: any
   34864:
     name: SensitivityType
     type: SHORT
+    count: 1
   34865:
     name: StandardOutputSensitivity
     type: LONG
+    count: 1
   34866:
     name: RecommendedExposureIndex
     type: LONG
+    count: 1
   34867:
     name: ISOSpeed
     type: LONG
+    count: 1
   34868:
     name: ISOSpeedLatitudeyyy
     type: LONG
+    count: 1
   34869:
     name: ISOSpeedLatitudezzz
     type: LONG
+    count: 1
   36864:
     name: ExifVersion
     type: UNDEFINED
+    count: 4
   36867:
     name: DateTimeOriginal
     type: ASCII
@@ -630,27 +655,35 @@ Exif:
   36880:
     name: OffsetTime
     type: ASCII
+    count: 7
   36881:
     name: OffsetTimeOriginal
     type: ASCII
+    count: 7
   36882:
     name: OffsetTimeDigitized
     type: ASCII
+    count: 7
   37121:
     name: ComponentsConfiguration
     type: UNDEFINED
+    count: 4
   37122:
     name: CompressedBitsPerPixel
     type: RATIONAL
+    count: 1
   37377:
     name: ShutterSpeedValue
     type: SRATIONAL
+    count: 1
   37378:
     name: ApertureValue
     type: RATIONAL
+    count: 1
   37379:
     name: BrightnessValue
     type: SRATIONAL
+    count: 1
   37380:
     name: ExposureBiasValue
     type: SRATIONAL
@@ -658,15 +691,19 @@ Exif:
   37381:
     name: MaxApertureValue
     type: RATIONAL
+    count: 1
   37382:
     name: SubjectDistance
     type: RATIONAL
+    count: 1
   37383:
     name: MeteringMode
     type: SHORT
+    count: 1
   37384:
     name: LightSource
     type: SHORT
+    count: 1
   37385:
     name: Flash
     type: SHORT
@@ -678,6 +715,7 @@ Exif:
   37396:
     name: SubjectArea
     type: SHORT
+    count: [2, 3, 4]
   37500:
     name: MakerNote
     type: UNDEFINED
@@ -689,78 +727,103 @@ Exif:
   37520:
     name: SubSecTime
     type: ASCII
+    count: any
   37521:
     name: SubSecTimeOriginal
     type: ASCII
+    count: any
   37522:
     name: SubSecTimeDigitized
     type: ASCII
+    count: any
   37888:
     name: Temperature
     type: SRATIONAL
+    count: 1
   37889:
     name: Humidity
     type: RATIONAL
+    count: 1
   37890:
     name: Pressure
     type: RATIONAL
+    count: 1
   37891:
     name: WaterDepth
     type: SRATIONAL
+    count: 1
   37892:
     name: Acceleration
     type: RATIONAL
+    count: 1
   37893:
     name: CameraElevationAngle
     type: SRATIONAL
+    count: 1
   40960:
     name: FlashpixVersion
     type: UNDEFINED
+    count: 4
   40961:
     name: ColorSpace
     type: SHORT
+    count: 1
   40962:
     name: PixelXDimension
     type: LONG
+    count: 1
   40963:
     name: PixelYDimension
     type: LONG
+    count: 1
   40964:
     name: RelatedSoundFile
     type: ASCII
+    count: 13
   40965:
     name: InteroperabilityTag
     type: LONG
+    count: 1
   41483:
     name: FlashEnergy
     type: RATIONAL
+    count: 1
   41484:
     name: SpatialFrequencyResponse
     type: UNDEFINED
+    count: any
   41486:
     name: FocalPlaneXResolution
     type: RATIONAL
+    count: 1
   41487:
     name: FocalPlaneYResolution
     type: RATIONAL
+    count: 1
   41488:
     name: FocalPlaneResolutionUnit
     type: SHORT
+    count: 1
   41492:
     name: SubjectLocation
     type: SHORT
+    count: 2
   41493:
     name: ExposureIndex
     type: RATIONAL
+    count: 1
   41495:
     name: SensingMethod
     type: SHORT
+    count: 1
   41728:
     name: FileSource
     type: UNDEFINED
+    count: 1
   41729:
     name: SceneType
     type: UNDEFINED
+    count: 1
   41730:
     name: CFAPattern
     type: UNDEFINED
@@ -768,63 +831,83 @@ Exif:
   41985:
     name: CustomRendered
     type: SHORT
+    count: 1
   41986:
     name: ExposureMode
     type: SHORT
+    count: 1
   41987:
     name: WhiteBalance
     type: SHORT
+    count: 1
   41988:
     name: DigitalZoomRatio
     type: RATIONAL
+    count: 1
   41989:
     name: FocalLengthIn35mmFilm
     type: SHORT
+    count: 1
   41990:
     name: SceneCaptureType
     type: SHORT
+    count: 1
   41991:
     name: GainControl
     type: SHORT
+    count: 1
   41992:
     name: Contrast
     type: SHORT
+    count: 1
   41993:
     name: Saturation
     type: SHORT
+    count: 1
   41994:
     name: Sharpness
     type: SHORT
+    count: 1
   41995:
     name: DeviceSettingDescription
     type: UNDEFINED
+    count: any
   41996:
     name: SubjectDistanceRange
     type: SHORT
+    count: 1
   42016:
     name: ImageUniqueID
     type: ASCII
+    count: 33
   42032:
     name: CameraOwnerName
     type: ASCII
+    count: any
   42033:
     name: BodySerialNumber
     type: ASCII
+    count: any
   42034:
     name: LensSpecification
     type: RATIONAL
+    count: 4
   42035:
     name: LensMake
     type: ASCII
+    count: any
   42036:
     name: LensModel
     type: ASCII
+    count: any
   42037:
     name: LensSerialNumber
     type: ASCII
+    count: any
   42240:
     name: Gamma
     type: RATIONAL
+    count: 1
 GPS:
   0:
     name: GPSVersionID
@@ -861,75 +944,99 @@ GPS:
   8:
     name: GPSSatellites
     type: ASCII
+    count: any
   9:
     name: GPSStatus
     type: ASCII
+    count: 2
   10:
     name: GPSMeasureMode
     type: ASCII
+    count: 2
   11:
     name: GPSDOP
     type: RATIONAL
+    count: 1
   12:
     name: GPSSpeedRef
     type: ASCII
+    count: 2
   13:
     name: GPSSpeed
     type: RATIONAL
+    count: 1
   14:
     name: GPSTrackRef
     type: ASCII
+    count: 2
   15:
     name: GPSTrack
     type: RATIONAL
+    count: 1
   16:
     name: GPSImgDirectionRef
     type: ASCII
+    count: 2
   17:
     name: GPSImgDirection
     type: RATIONAL
+    count: 1
   18:
     name: GPSMapDatum
     type: ASCII
+    count: any
   19:
     name: GPSDestLatitudeRef
     type: ASCII
+    count: 2
   20:
     name: GPSDestLatitude
     type: RATIONAL
+    count: 3
   21:
     name: GPSDestLongitudeRef
     type: ASCII
+    count: 2
   22:
     name: GPSDestLongitude
     type: RATIONAL
+    count: 3
   23:
     name: GPSDestBearingRef
     type: ASCII
+    count: 2
   24:
     name: GPSDestBearing
     type: RATIONAL
+    count: 1
   25:
     name: GPSDestDistanceRef
     type: ASCII
+    count: 2
   26:
     name: GPSDestDistance
     type: RATIONAL
+    count: 1
   27:
     name: GPSProcessingMethod
     type: UNDEFINED
+    count: any
   28:
     name: GPSAreaInformation
     type: UNDEFINED
+    count: any
   29:
     name: GPSDateStamp
     type: ASCII
+    count: 11
   30:
     name: GPSDifferential
     type: SHORT
+    count: 1
   31:
     name: GPSHPositioningError
     type: RATIONAL
+    count: 1
 Interop:
   1:
     name: InteroperabilityIndex

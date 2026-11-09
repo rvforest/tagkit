@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field, RootModel, field_validator, model_validat
 
 from typing_extensions import Self
 
-from tagkit.core.types import ExifType, IfdName, NAMESPACE_IFDS, TagNamespace
+from tagkit.core.types import ExifCount, ExifType, IfdName, NAMESPACE_IFDS, TagNamespace
 
 
 # ========================== Registry Configuration ==========================
@@ -25,9 +25,9 @@ class RegistryTagEntry(BaseModel):
 
     name: str = Field(description="Tag name (e.g., 'Make', 'Model')")
     type: ExifType | list[ExifType] = Field(description="Allowed EXIF data types")
-    count: Union[int, Literal["any"], None] = Field(
+    count: ExifCount | None = Field(
         default=None,
-        description="Expected EXIF component count, or 'any' for variable count",
+        description="Fixed count, allowed counts, or 'any' for variable count",
     )
 
     ifds: list[IfdName] | None = Field(
@@ -51,12 +51,14 @@ class RegistryTagEntry(BaseModel):
 
     @field_validator("count")
     @classmethod
-    def validate_count(
-        cls, v: Union[int, Literal["any"], None]
-    ) -> Union[int, Literal["any"], None]:
-        """Validate fixed counts are positive."""
+    def validate_count(cls, v: ExifCount | None) -> ExifCount | None:
+        """Validate fixed counts and lists of permitted counts."""
         if isinstance(v, int) and v <= 0:
             raise ValueError("count must be a positive integer or 'any'")
+        if isinstance(v, tuple) and (
+            not v or any(count <= 0 for count in v) or len(set(v)) != len(v)
+        ):
+            raise ValueError("count list must contain distinct positive integers")
         return v
 
     model_config = {"extra": "forbid"}

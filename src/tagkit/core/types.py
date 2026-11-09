@@ -41,7 +41,7 @@ ExifType = Literal[
     "SRATIONAL",
     "UNDEFINED",
 ]
-ExifCount = Union[int, Literal["any"]]
+ExifCount = Union[int, tuple[int, ...], Literal["any"]]
 IfdName = Literal["IFD0", "IFD1", "Exif", "GPS", "Interop"]
 TagNamespace = Literal["Image", "Exif", "GPS", "Interop"]
 

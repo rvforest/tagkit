@@ -58,6 +58,53 @@ def test_fixture_tags_have_complete_definitions(config_path):
             assert definition.count is not None, context
 
 
+@pytest.mark.parametrize("namespace", ["Exif", "GPS", "Interop"])
+def test_exif_namespace_counts_are_documented(namespace):
+    """Keep count policies explicit for the JPEG EXIF namespaces."""
+    for tag_id, tag in tag_registry.tags_by_namespace[namespace].items():
+        assert tag.get("count") is not None, f"{namespace}:{tag_id} {tag['name']}"
+
+
+def test_exif_image_count_policies_include_dependent_strips():
+    """Fixed EXIF counts are declared; strip counts need other image data."""
+    image_tags = tag_registry.tags_by_namespace["Image"]
+    for tag_id in (
+        256,
+        257,
+        258,
+        259,
+        262,
+        270,
+        271,
+        272,
+        274,
+        277,
+        278,
+        282,
+        283,
+        284,
+        296,
+        301,
+        305,
+        306,
+        315,
+        318,
+        319,
+        513,
+        514,
+        529,
+        530,
+        531,
+        532,
+        33432,
+        34665,
+        34853,
+    ):
+        assert image_tags[tag_id].get("count") is not None, tag_id
+    assert image_tags[273].get("count") is None
+    assert image_tags[279].get("count") is None
+
+
 def test_formatting_yaml_config():
     """Validate formatting.yaml using Pydantic models."""
     formatting_path = (
@@ -178,6 +225,14 @@ def test_registry_rejects_invalid_count():
     }
     with pytest.raises(ValidationError, match="count must be a positive integer"):
         RegistryConfig.model_validate(invalid_data)
+
+
+@pytest.mark.parametrize("count", [[], [1, 0], [2, 2], [-1, 2]])
+def test_registry_rejects_invalid_count_lists(count):
+    with pytest.raises(ValidationError, match="distinct positive integers"):
+        RegistryConfig.model_validate(
+            {"Exif": {37396: {"name": "SubjectArea", "type": "SHORT", "count": count}}}
+        )
 
 
 def test_registry_missing_name():
