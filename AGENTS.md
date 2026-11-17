@@ -127,6 +127,7 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 - **Enabled**: Ruff linting/formatting, mypy type checking, yaml validation
 - **Spell checking**: cspell for Markdown files only
 - **Security**: gitleaks for credential scanning; zizmor and actionlint for GitHub Actions workflows
+- **Diff coverage** (pre-push): `uv run nox -s diff-coverage` fails if changed lines are under 90% covered (skipped in CI, where Codecov enforces the same patch target)
 - **Setup**: Install commit and push hooks with `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` after `uv sync`
 - **Final verification**: Before pushing, run `uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure` to check the whole repository, including tests. Review and stage any automatic fixes, then rerun until all hooks pass. Resolve or report hook setup failures explicitly.
 

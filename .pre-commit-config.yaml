@@ -1,3 +1,9 @@
+# Install both hook types with `pre-commit install`. The diff-coverage hook
+# is pre-push only so it does not run on every commit.
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+
 repos:
   - repo: local
     hooks:
@@ -23,6 +29,13 @@ repos:
         language: system
         files: ^\.github/workflows/
         pass_filenames: false
+      - id: diff-coverage
+        name: diff coverage
+        entry: uv run nox -s diff-coverage
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

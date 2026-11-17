@@ -177,6 +177,11 @@ Use the all-files command in the development workflow for final verification.
 Resolve hook setup failures before relying on the checks, and report any checks
 you could not run. All required CI checks must pass before merging.
 
+On push, the `diff-coverage` hook runs the tests and fails if the lines you
+changed are under 90% covered compared with `origin/main` (set
+`DIFF_COVER_COMPARE_BRANCH` to compare against another branch). It is skipped
+in CI, where Codecov enforces the same patch target.
+
 ## Dependency Updates
 
 `.github/dependabot.yml` only schedules monthly version updates, and for Python
