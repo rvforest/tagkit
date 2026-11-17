@@ -126,7 +126,7 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 #### Pre-commit Hooks
 - **Enabled**: Ruff linting/formatting, mypy type checking, yaml validation
 - **Spell checking**: cspell for Markdown files only
-- **Security**: detect-secrets for credential scanning
+- **Security**: gitleaks for credential scanning; zizmor and actionlint for GitHub Actions workflows
 - **Setup**: Install commit and push hooks with `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` after `uv sync`
 - **Final verification**: Before pushing, run `uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure` to check the whole repository, including tests. Review and stage any automatic fixes, then rerun until all hooks pass. Resolve or report hook setup failures explicitly.
 
