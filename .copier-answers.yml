@@ -1,0 +1,11 @@
+# Changes here will be overwritten by Copier
+_commit: v0.3.5
+_src_path: https://github.com/rvforest/copier-py-general
+author: Robert Forest
+author_email: rvforest@gmail.com
+cli_command: tagkit
+description: A CLI & Python API for editing EXIF data in photos.
+gh_owner: rvforest
+has_cli: true
+project_name: tagkit
+py_min_version: '3.11'
