@@ -25,9 +25,9 @@ repos:
         types: [python]
       - id: zizmor
         name: check GitHub Actions security
-        entry: uv run zizmor --offline --format=github .github/workflows
+        entry: uv run zizmor --offline --format=github .
         language: system
-        files: ^\.github/workflows/
+        files: ^\.github/
         pass_filenames: false
       - id: diff-coverage
         name: diff coverage
@@ -46,7 +46,7 @@ repos:
       - id: trailing-whitespace
       - id: no-commit-to-branch
         args: [--branch, main]
-        stages: [commit]
+        stages: [pre-commit]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0

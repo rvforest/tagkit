@@ -134,6 +134,7 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 #### Continuous Integration
 - **Platform**: GitHub Actions
 - **Checks**: All pre-commit hooks, tests across Python 3.11-3.15, coverage reporting
+- **Actions**: referenced by exact version tags and locked to commit SHAs in `.github/workflows/actions.lock`; Dependabot bumps both monthly. After adding or changing a `uses:` line, run `gh actions-lock` (from the `github/gh-actions-lock` extension) and commit the updated lockfile, or GitHub will refuse to run the workflow
 
 ### Configuration Files
 

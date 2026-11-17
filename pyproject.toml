@@ -6,7 +6,8 @@ build-backend = "hatchling.build"
 name = "tagkit"
 description = "A CLI & Python API for editing EXIF data in photos."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["exif", "image", "metadata", "cli", "photo", "python"]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -15,7 +16,6 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3.15",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Intended Audience :: Developers",
   "Topic :: Multimedia :: Graphics",
@@ -51,7 +51,7 @@ dev = [
   "pytest-cov>=6.1.1",
   "ruff>=0.11.6",
   "types-pyyaml>=6.0.12.20250516",
-  "zizmor>=1.26.1",
+  "zizmor>=1.32.0",
 ]
 docs = [
   "furo>=2024.8.6",
