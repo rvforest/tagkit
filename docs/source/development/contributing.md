@@ -177,6 +177,14 @@ Use the all-files command in the development workflow for final verification.
 Resolve hook setup failures before relying on the checks, and report any checks
 you could not run. All required CI checks must pass before merging.
 
+## Dependency Updates
+
+`.github/dependabot.yml` only schedules monthly version updates, and for Python
+packages it only refreshes `uv.lock` within the ranges in `pyproject.toml`.
+Security fixes come from a repository setting instead, so turn on **Dependabot
+alerts** and **Dependabot security updates** in the repository's Settings >
+Advanced Security.
+
 ## GitHub Actions
 
 We use [GitHub Actions](https://docs.github.com/en/actions) for continuous integration (CI).
