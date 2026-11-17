@@ -1,3 +1,9 @@
+# Install both hook types with `pre-commit install`. The diff-coverage hook
+# is pre-push only so it does not run on every commit.
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+
 repos:
   - repo: local
     hooks:
@@ -19,10 +25,17 @@ repos:
         types: [python]
       - id: zizmor
         name: check GitHub Actions security
-        entry: uv run zizmor --offline --format=github .github/workflows
+        entry: uv run zizmor --offline --format=github .
         language: system
-        files: ^\.github/workflows/
+        files: ^\.github/
         pass_filenames: false
+      - id: diff-coverage
+        name: diff coverage
+        entry: uv run nox -s diff-coverage
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -33,7 +46,7 @@ repos:
       - id: trailing-whitespace
       - id: no-commit-to-branch
         args: [--branch, main]
-        stages: [commit]
+        stages: [pre-commit]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -47,10 +60,10 @@ repos:
         name: check docs spelling
         files: \.(md)$
 
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
     hooks:
-      - id: detect-secrets
+      - id: gitleaks
 
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
