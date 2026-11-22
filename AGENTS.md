@@ -126,13 +126,15 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 #### Pre-commit Hooks
 - **Enabled**: Ruff linting/formatting, mypy type checking, yaml validation
 - **Spell checking**: cspell for Markdown files only
-- **Security**: detect-secrets for credential scanning
+- **Security**: gitleaks for credential scanning; zizmor and actionlint for GitHub Actions workflows
+- **Diff coverage** (pre-push): `uv run nox -s diff-coverage` fails if changed lines are under 90% covered (skipped in CI, where Codecov enforces the same patch target)
 - **Setup**: Install commit and push hooks with `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` after `uv sync`
 - **Final verification**: Before pushing, run `uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure` to check the whole repository, including tests. Review and stage any automatic fixes, then rerun until all hooks pass. Resolve or report hook setup failures explicitly.
 
 #### Continuous Integration
 - **Platform**: GitHub Actions
 - **Checks**: All pre-commit hooks, tests across Python 3.11-3.15, coverage reporting
+- **Actions**: referenced by exact version tags and locked to commit SHAs in `.github/workflows/actions.lock`; Dependabot bumps both monthly. After adding or changing a `uses:` line, run `gh actions-lock` (from the `github/gh-actions-lock` extension) and commit the updated lockfile, or GitHub will refuse to run the workflow
 
 ### Configuration Files
 
