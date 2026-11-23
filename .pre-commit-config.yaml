@@ -20,9 +20,11 @@ repos:
         types: [python]
       - id: types
         name: check types
-        entry: uv run mypy
+        entry: uv run mypy .
         language: system
         types: [python]
+        pass_filenames: false  # mypy is a whole-program checker; "." is the project root
+        require_serial: true  # avoid SQLite cache races between hook processes
       - id: zizmor
         name: check GitHub Actions security
         entry: uv run zizmor --offline --format=github .
