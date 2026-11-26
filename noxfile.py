@@ -53,10 +53,12 @@ def fix(session: nox.Session) -> None:
 
 
 @nox.session(
-    venv_backend="uv", tags=[TEST_TAG], python=["3.11", "3.12", "3.13", "3.14", "3.15"]
+    venv_backend="uv",
+    tags=[TEST_TAG],
+    python=["3.11", "3.12", "3.13", "3.14", "3.15"],
 )
 def test(session: nox.Session) -> None:
-    """Run tests with pytest across multiple Python versions (3.11-3.15)."""
+    """Run tests with pytest across Python 3.11-3.15."""
     _run_install(session)
     session.run("pytest", *session.posargs)
 
@@ -90,7 +92,9 @@ def doctest_docs(session: nox.Session) -> None:
 
 
 @nox.session(
-    venv_backend="uv", tags=[TEST_TAG], python=["3.11", "3.12", "3.13", "3.14", "3.15"]
+    venv_backend="uv",
+    tags=[TEST_TAG],
+    python=["3.11", "3.12", "3.13", "3.14", "3.15"],
 )
 def coverage(session: nox.Session) -> None:
     """Run tests with coverage reporting."""
@@ -166,7 +170,6 @@ def livedocs(session: nox.Session) -> None:
 def clean(session: nox.Session) -> None:
     """Clean up build artifacts."""
     patterns = [
-        ".mypy_cache",
         ".pytest_cache",
         ".ruff_cache",
         "htmlcov",
