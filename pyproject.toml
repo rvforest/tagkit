@@ -44,7 +44,7 @@ Issues = "https://github.com/rvforest/tagkit/issues"
 [dependency-groups]
 dev = [
   "diff-cover>=9.0",
-  "mypy>=1.15.0",
+  "pyrefly>=0.43.1",
   "nox>=2025.2.9",
   "pre-commit>=4.2.0",
   "pytest>=8.3.5",
@@ -95,12 +95,17 @@ pep440 = true
 [tool.coverage.run]
 omit = ["noxfile.py", "tests/*"]
 
-[tool.mypy]
-exclude = ['^docs/']
-
-[[tool.mypy.overrides]]
-module = ["piexif.*"]
-follow_untyped_imports = true
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
+project-excludes = [
+    "docs/**",
+]
+search-path = ["src", "."]
+# Treat untyped third-party packages as Any, except piexif, whose source we still analyze.
+replace-untyped-imports-with-any = ["*", "!piexif.*"]
 
 [[tool.uv.index]]
 name = "testpypi"

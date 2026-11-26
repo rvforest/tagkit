@@ -73,7 +73,7 @@ src/tagkit/
 
 #### Type Hints
 - **Required**: All public functions, classes, and methods must have type hints
-- **Tool**: mypy for static type checking
+- **Tool**: pyrefly for static type checking
 - **Command**: `uv run nox -s types`
 
 #### Documentation
@@ -124,7 +124,7 @@ This convention makes it explicit that parameters accept both numeric IDs and te
 ### Pre-commit Hooks and CI
 
 #### Pre-commit Hooks
-- **Enabled**: Ruff linting/formatting, mypy type checking, yaml validation
+- **Enabled**: Ruff linting/formatting, pyrefly type checking, yaml validation
 - **Spell checking**: cspell for Markdown files only
 - **Security**: gitleaks for credential scanning; zizmor and actionlint for GitHub Actions workflows
 - **Diff coverage** (pre-push): `uv run nox -s diff-coverage` fails if changed lines are under 90% covered (skipped in CI, where Codecov enforces the same patch target)

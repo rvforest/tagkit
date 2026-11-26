@@ -5,7 +5,7 @@ This module contains type definitions used throughout the tagkit package.
 """
 
 from pathlib import Path
-from typing import Literal, TypedDict, Union
+from typing import Any, Literal, TypedDict, Union
 
 FilePath = Union[str, Path]
 
@@ -30,6 +30,8 @@ TagValue = Union[
     Rational,
     RationalCollection,
 ]
+# Write APIs also accept lists, which are normalized to tuples before validation.
+TagValueInput = Union[TagValue, list[Any]]
 ExifIfdCollection = dict[str, dict[int, TagValue]]
 ExifType = Literal[
     "ASCII",

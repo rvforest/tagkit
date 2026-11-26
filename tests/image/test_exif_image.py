@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import shutil
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 import pytest
 from pathlib import Path
@@ -315,8 +315,9 @@ def test_write_gps_coordinate_normalizes_lists(test_images):
 def test_write_rejects_other_sequence_types(test_images):
     """Low-level writes accept list and tuple sequence shapes only."""
     exif = ExifImage(test_images / "minimal.jpg")
+    invalid_value: Any = range(4)
     with pytest.raises(ValidationError, match="BYTE value must be"):
-        exif.write_tag("GPSVersionID", range(4))
+        exif.write_tag("GPSVersionID", invalid_value)
 
 
 def test_write_gps_coordinate_rejects_wrong_count_without_mutation(test_images):

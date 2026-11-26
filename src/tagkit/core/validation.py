@@ -11,12 +11,13 @@ from tagkit.core.types import (
     IfdName,
     Rational,
     TagValue,
+    TagValueInput,
     STR_ENCODING,
 )
 
 
 def validate_tag_value(
-    definition: ExifTagDefinition, value: TagValue, *, ifd: IfdName | None = None
+    definition: ExifTagDefinition, value: TagValueInput, *, ifd: IfdName | None = None
 ) -> TagValue:
     """
     Validate and structurally normalize a tag value for a definition.
