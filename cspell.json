@@ -39,6 +39,7 @@
     "pydantic",
     "pypi",
     "pyproject",
+    "pyrefly",
     "pyyaml",
     "pytest",
     "readthedocs",

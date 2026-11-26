@@ -11,7 +11,7 @@ from typing import Iterable, Mapping, Optional, Union
 
 from tagkit.core.exceptions import FileNotInCollection, TagNotFound
 from tagkit.core.registry import tag_registry
-from tagkit.core.types import FilePath, IfdName, TagValue
+from tagkit.core.types import FilePath, IfdName, TagValue, TagValueInput
 from tagkit.image.exif import ExifImage
 
 
@@ -139,7 +139,7 @@ class ExifImageCollection:
     def write_tag(
         self,
         tag_key: Union[str, int],
-        value: TagValue,
+        value: TagValueInput,
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):
@@ -168,7 +168,7 @@ class ExifImageCollection:
 
     def write_tags(
         self,
-        tags: Mapping[Union[str, int], TagValue],
+        tags: Mapping[Union[str, int], TagValueInput],
         ifd: Optional[IfdName] = None,
         files: Optional[Iterable[FilePath]] = None,
     ):

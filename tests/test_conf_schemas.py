@@ -11,6 +11,7 @@ from tagkit.conf.models import (
     RegistryConfig,
 )
 from tagkit.core.registry import tag_registry
+from tests.helpers import fixture_ifd
 
 
 HERE = Path(__file__).parent
@@ -49,12 +50,13 @@ def test_registry_yaml_config():
 @pytest.mark.parametrize("config_path", CONFIG_FILES, ids=lambda path: path.name)
 def test_fixture_tags_have_complete_definitions(config_path):
     """Fixtures must identify the intended tag and declare its count policy."""
-    for filename, image in load_json(config_path).items():
-        for tag in image.get("tags", []):
-            ifd = {"0th": "IFD0", "1st": "IFD1"}.get(tag["ifd"], tag["ifd"])
-            definition = tag_registry.get_definition(tag["id"], ifd=ifd)
-            context = f"{config_path.name}: {filename}: {tag['name']}"
-            assert definition.name == tag["name"], context
+    for filename, image in ImageMetadataConfig.model_validate(
+        load_json(config_path)
+    ).root.items():
+        for tag in image.tags:
+            definition = tag_registry.get_definition(tag.id, ifd=fixture_ifd(tag.ifd))
+            context = f"{config_path.name}: {filename}: {tag.name}"
+            assert definition.name == tag.name, context
             assert definition.count is not None, context
 
 

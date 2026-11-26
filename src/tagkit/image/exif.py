@@ -13,7 +13,7 @@ from tagkit.core.exceptions import AmbiguousTagKey, TagNotFound, DateTimeError
 from tagkit.core.datetime_utils import format_exif_datetime, parse_exif_datetime
 from tagkit.core.registry import tag_registry
 from tagkit.core.tag import ExifTag
-from tagkit.core.types import TagValue, FilePath, IfdName
+from tagkit.core.types import TagValue, TagValueInput, FilePath, IfdName
 from tagkit.core.validation import validate_tag_value
 from tagkit.tag_io.base import ExifIOBackend
 from tagkit.tag_io.piexif_io import PiexifBackend
@@ -63,7 +63,7 @@ class ExifImage:
     def write_tag(
         self,
         tag_key: Union[str, int],
-        value: TagValue,
+        value: TagValueInput,
         ifd: Optional[IfdName] = None,
     ) -> None:
         """
@@ -98,7 +98,7 @@ class ExifImage:
 
     def write_tags(
         self,
-        tags: Mapping[Union[str, int], TagValue],
+        tags: Mapping[Union[str, int], TagValueInput],
         ifd: Optional[IfdName] = None,
     ) -> None:
         """

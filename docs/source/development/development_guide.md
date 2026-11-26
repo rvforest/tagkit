@@ -108,6 +108,7 @@ To add support for a new tag:
 ## Testing
 
 - Unit tests are in `tests/core/`, `tests/image/`, `tests/tag_io/`, and `tests/cli/`.
+- Run type checking with `uv run nox -s types`.
 
 ## API Stability
 

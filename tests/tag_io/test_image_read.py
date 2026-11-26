@@ -1,22 +1,17 @@
 import json
 from pathlib import Path
-from typing import Any, overload
-
-import pytest
+from typing import Any
 
 from tagkit import ExifImage
+from tagkit.conf.models import ImageMetadataConfig
+
+from tests.helpers import fixture_ifd
 
 
-@overload
-def list_to_tuple(obj: dict[str, Any]) -> dict[str, Any]: ...
-@overload
-def list_to_tuple(obj: list) -> tuple: ...
-
-
-def list_to_tuple(obj):
+def list_to_tuple(obj: Any) -> Any:
     if isinstance(obj, list):
         return tuple(list_to_tuple(item) for item in obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: list_to_tuple(v) for k, v in obj.items()}
     return obj
 
@@ -37,21 +32,19 @@ def test_get_tags_no_filter(test_images: Path):
     metadata_path = here / "conf/test-img-metadata.json"
 
     with open(metadata_path, "r", encoding="utf-8") as f:
-        img_metadata = json.load(f)
+        img_metadata = ImageMetadataConfig.model_validate(json.load(f))
 
-    for filename, expected in img_metadata.items():
+    for filename, expected in img_metadata.root.items():
         # Skip corrupt images or entries without tags
-        if not expected.get("tags") or expected.get("corrupt", False):
+        if not expected.tags or expected.corrupt:
             continue
 
         path = test_images / filename
         exif_handler = ExifImage(path)
-        expected_tags = list_to_tuple(expected["tags"])
-        for expected_tag in expected_tags:
-            ifd = {"0th": "IFD0", "1st": "IFD1"}.get(
-                expected_tag["ifd"], expected_tag["ifd"]
+        for expected_tag in expected.tags:
+            actual_val = exif_handler.read_tag(
+                expected_tag.id, ifd=fixture_ifd(expected_tag.ifd)
             )
-            actual_val = exif_handler.read_tag(expected_tag["id"], ifd=ifd)
-            assert actual_val == expected_tag["value"], (
-                f"Failed for {filename}, tag {expected_tag['name']}"
+            assert actual_val == list_to_tuple(expected_tag.value), (
+                f"Failed for {filename}, tag {expected_tag.name}"
             )

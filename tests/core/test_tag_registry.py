@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from tagkit.core.registry import ExifRegistry, tag_registry
+from tagkit.core.registry import ExifRegistry, RegistryConf, tag_registry
 from tagkit.core.exceptions import AmbiguousTagKey, InvalidTagId, InvalidTagName
 from tagkit.core.types import ExifType
 
@@ -240,7 +240,7 @@ def test_thumbnail_selection_rejects_other_namespaces(registry, tag_key):
 
 
 def test_default_policy_does_not_change_definition_identity():
-    conf = {
+    conf: RegistryConf = {
         "Image": {274: {"name": "Orientation", "type": "SHORT", "default_ifd": "IFD1"}}
     }
     registry = ExifRegistry(conf)
@@ -252,12 +252,11 @@ def test_default_policy_does_not_change_definition_identity():
 
 
 def test_explicit_directory_disambiguates_shared_name_and_id():
-    registry = ExifRegistry(
-        {
-            "Image": {123: {"name": "TestTag", "type": "SHORT"}},
-            "Exif": {123: {"name": "TestTag", "type": "LONG"}},
-        }
-    )
+    conf: RegistryConf = {
+        "Image": {123: {"name": "TestTag", "type": "SHORT"}},
+        "Exif": {123: {"name": "TestTag", "type": "LONG"}},
+    }
+    registry = ExifRegistry(conf)
     for key in (123, "TestTag"):
         with pytest.raises(AmbiguousTagKey):
             registry.resolve_tag(key)
