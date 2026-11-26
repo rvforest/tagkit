@@ -29,7 +29,6 @@
     "junitxml",
     "livedocs",
     "listdir",
-    "mypy",
     "myst",
     "noqa",
     "noxfile",
